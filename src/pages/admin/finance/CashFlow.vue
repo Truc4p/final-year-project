@@ -888,9 +888,6 @@ onMounted(async () => {
             <h1 class="text-2xl font-bold text-primary-600 mb-2">Cash Flow Dashboard</h1>
             <p class="text-secondary-600 text-lg">Monitor your business cash position and financial health</p>
           </div>
-          <router-link to="/admin/advanced-finance" class="btn btn-primary whitespace-nowrap">
-            Advanced Finance
-          </router-link>
         </div>
       </div>
 

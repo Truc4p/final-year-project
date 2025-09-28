@@ -36,7 +36,6 @@ import Users from '@/pages/admin/users/Users.vue';
 
 // Admin - Finance
 import CashFlow from '@/pages/admin/finance/CashFlow.vue';
-import AdvancedFinance from '@/pages/admin/finance/AdvancedFinance.vue';
 import HumanResources from '@/pages/admin/finance/HumanResources.vue';
 
 // Admin - Analytics
@@ -59,6 +58,13 @@ import DeleteOrder from '@/pages/customer/orders/DeleteOrder.vue';
 
 // Customer - Account
 import Profile from '@/pages/customer/account/Profile.vue';
+
+// Customer - Live Stream
+import LiveStream from '@/pages/customer/live-stream/LiveStream.vue';
+import LiveStreamWatch from '@/pages/customer/live-stream/LiveStreamWatch.vue';
+
+// Admin - Live Stream
+import AdminLiveStream from '@/pages/admin/live-stream/AdminLiveStream.vue';
 
 const routes = [
   {
@@ -93,13 +99,15 @@ const routes = [
       { path: "users", component: Users },
       { path: "analytics", component: Analytics },
       { path: "cashflow", component: CashFlow },
-      { path: "advanced-finance", component: AdvancedFinance },
       { path: "hr", component: HumanResources },
 
       { path: "orders", component: Orders },
       { path: "orders/order/:id", component: DetailOrder },
       { path: "orders/order/edit/:id", component: EditOrder },
       { path: "orders/delete/:id", component: DeleteOrderByAdmin },
+      
+      { path: "live-stream", component: AdminLiveStream },
+      { path: "live-stream/watch/:id", component: LiveStreamWatch },
 
 
     ],
@@ -115,6 +123,8 @@ const routes = [
       { path: "checkout", component: Checkout },
       { path: "orders/order/:id", component: OrderDetail },
       { path: "order-history", component: OrderHistory },
+      { path: "live-stream", component: LiveStream },
+      { path: "live-stream/watch/:id", component: LiveStreamWatch },
       { path: "profile", component: Profile },
       { path: "orders/delete/:id", component: DeleteOrder },
 
