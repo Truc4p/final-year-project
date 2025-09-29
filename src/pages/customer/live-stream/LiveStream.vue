@@ -290,7 +290,7 @@ const fetchPastStreams = async () => {
       duration: stream.formattedDuration || formatDuration(stream.duration),
       views: stream.viewCount.toLocaleString(),
       recordingUrl: stream.videoUrl,
-      thumbnailUrl: stream.thumbnailUrl,
+      thumbnailUrl: stream.thumbnailUrl ? `${apiUrl}${stream.thumbnailUrl}` : '',
       streamId: stream._id
     }));
     console.log('Customer: Mapped past streams:', pastStreams.value);

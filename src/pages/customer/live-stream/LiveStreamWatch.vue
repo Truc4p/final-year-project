@@ -264,7 +264,11 @@ const fetchRelatedStreams = async () => {
       // Filter out the current stream and limit to 4 related streams
       relatedStreams.value = data.livestreams
         .filter(s => s._id !== stream.value?._id)
-        .slice(0, 4);
+        .slice(0, 4)
+        .map(stream => ({
+          ...stream,
+          thumbnailUrl: stream.thumbnailUrl ? `${apiUrl}${stream.thumbnailUrl}` : ''
+        }));
     }
   } catch (error) {
     console.error('Error fetching related streams:', error);

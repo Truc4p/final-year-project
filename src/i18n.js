@@ -198,6 +198,7 @@ const messages = {
     streamSettings: 'Stream Settings',
     streamTitle: 'Stream Title',
     enterStreamTitle: 'Enter stream title',
+    failedToCreateStream: 'Failed to create livestream',
     streamDescription: 'Stream Description',
     enterStreamDescription: 'Enter stream description',
     streamQuality: 'Stream Quality',

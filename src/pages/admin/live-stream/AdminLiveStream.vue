@@ -47,14 +47,14 @@
               </div>
               
               <!-- Stream Status Overlay -->
-              <div v-if="isStreaming" class="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-2">
-                <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <div v-if="isStreaming" class="absolute top-4 left-4 text-red-700 px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-2">
+                <div class="w-2 h-2 bg-red-700 rounded-full animate-pulse"></div>
                 <span>{{ t('live') }}</span>
               </div>
               
               <!-- Recording Status Overlay -->
-              <div v-if="isRecording" class="absolute top-4 right-4 bg-red-700 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-2">
-                <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <div v-if="isRecording" class="absolute top-4 right-4 text-red-700 px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-2">
+                <div class="w-2 h-2 bg-red-700 rounded-full animate-pulse"></div>
                 <span>{{ t('recording') || 'REC' }}</span>
               </div>
               
@@ -74,7 +74,8 @@
               <button
                 @click="toggleStream"
                 :disabled="isLoading"
-                :class="{ 'bg-red-300 hover:bg-red-400': isStreaming, 'bg-green-300 hover:bg-green-400': !isStreaming }"
+                :class="{ 'bg-red-300': isStreaming }"
+                :style="{ backgroundColor: !isStreaming ? '#F1F2CE' : '' }"
                 class="flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
               >
                 <svg v-if="!isStreaming" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,7 +93,8 @@
               <button
                 @click="toggleCamera"
                 :disabled="isLoading"
-                :class="{ 'bg-gray-400': !cameraEnabled, 'bg-blue-300 hover:bg-blue-400': cameraEnabled }"
+                :class="{ 'bg-gray-300': !cameraEnabled }"
+                :style="{ backgroundColor: cameraEnabled ? '#DBEDEC' : '' }"
                 class="flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
               >
                 <i class="fas fa-video"></i>
@@ -103,7 +105,8 @@
               <button
                 @click="toggleMicrophone"
                 :disabled="isLoading"
-                :class="{ 'bg-gray-400': !microphoneEnabled, 'bg-pink-300 hover:bg-pink-400': microphoneEnabled }"
+                :class="{ 'bg-gray-300': !micEnabled }"
+                :style="{ backgroundColor: micEnabled ? '#f9dbd1' : '' }"
                 class="flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
               >
                 <i class="fas fa-microphone"></i>
@@ -114,7 +117,8 @@
               <button
                 @click="togglePreview"
                 :disabled="isLoading"
-                :class="{ 'bg-gray-400': !previewEnabled, 'bg-purple-300 hover:bg-purple-400': previewEnabled }"
+                :class="{ 'bg-gray-300': !isPreviewing }"
+                :style="{ backgroundColor: isPreviewing ? '#F7E0E5' : '' }"
                 class="flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
               >
                 <i class="fas fa-eye"></i>
@@ -268,7 +272,7 @@
                 </svg>
               </div>
               <!-- Play button overlay -->
-              <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer" @click="viewStreamDetails(stream)">
+              <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer" @click="() => router.push(`/admin/live-stream/watch/${stream.id}`)">
                 <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
                   <svg v-if="stream.videoUrl && stream.videoUrl.trim() !== ''" class="w-8 h-8 text-primary-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M8 5v10l8-5-8-5z" />
@@ -295,19 +299,6 @@
                 <span class="text-sm text-gray-500">{{ formatDate(stream.date) }}</span>
                 <div class="flex items-center space-x-4">
                   <span class="text-sm primary-text">{{ stream.views }} {{ t('views') }}</span>
-                  <button 
-                    v-if="stream.videoUrl && stream.videoUrl.trim() !== ''" 
-                    class="text-sm text-blue-500 hover:text-blue-700" 
-                    @click="() => router.push(`/admin/live-stream/watch/${stream.id}`)"
-                  >
-                    {{ t('watch') || 'Watch' }}
-                  </button>
-                  <button 
-                    class="text-sm text-green-500 hover:text-green-700" 
-                    @click="viewStreamDetails(stream)"
-                  >
-                    {{ t('viewDetails') || 'View Details' }}
-                  </button>
                   <button class="text-sm text-red-500 hover:text-red-700" @click="deleteStream(stream.id)">
                     {{ t('delete') }}
                   </button>
@@ -366,8 +357,43 @@ const apiUrl = 'http://localhost:3000';
 const pastStreams = ref([]);
 
 // API functions
+const stopAnyActiveStreams = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${apiUrl}/livestreams/active`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.livestream) {
+        console.log('Found active stream, stopping it...');
+        const stopResponse = await fetch(`${apiUrl}/livestreams/${data.livestream._id}/stop`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({})
+        });
+        
+        if (stopResponse.ok) {
+          console.log('Successfully stopped active stream');
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error checking/stopping active streams:', error);
+  }
+};
+
 const createLiveStream = async () => {
   try {
+    // First, stop any active streams as a safety measure
+    await stopAnyActiveStreams();
+    
     const token = localStorage.getItem('token');
     const response = await fetch(`${apiUrl}/livestreams`, {
       method: 'POST',
@@ -383,7 +409,9 @@ const createLiveStream = async () => {
     });
     
     if (!response.ok) {
-      throw new Error('Failed to create livestream');
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || 'Failed to create livestream';
+      throw new Error(errorMessage);
     }
     
     const data = await response.json();
@@ -391,7 +419,7 @@ const createLiveStream = async () => {
     return data.livestream;
   } catch (error) {
     console.error('Error creating livestream:', error);
-    alert(t('failedToCreateStream') || 'Failed to create livestream');
+    alert(error.message || t('failedToCreateStream') || 'Failed to create livestream');
     throw error;
   }
 };
@@ -448,7 +476,7 @@ const fetchPastStreams = async () => {
       duration: stream.formattedDuration || formatDuration(stream.duration),
       views: stream.viewCount.toLocaleString(),
       videoUrl: stream.videoUrl,
-      thumbnailUrl: stream.thumbnailUrl
+      thumbnailUrl: stream.thumbnailUrl ? `${apiUrl}${stream.thumbnailUrl}` : ''
     }));
     console.log('Mapped past streams:', pastStreams.value);
   } catch (error) {
@@ -890,23 +918,6 @@ const deleteStream = async (streamId) => {
       alert(t('failedToDeleteStream') || 'Failed to delete stream');
     }
   }
-};
-
-const viewStreamDetails = (stream) => {
-  // Create a modal or detailed view of the stream
-  const details = `
-Stream Details:
-Title: ${stream.title}
-Description: ${stream.description}
-Duration: ${stream.duration}
-Views: ${stream.views}
-Date: ${formatDate(stream.date)}
-Has Video: ${stream.videoUrl && stream.videoUrl.trim() !== '' ? 'Yes' : 'No'}
-Has Thumbnail: ${stream.thumbnailUrl && stream.thumbnailUrl.trim() !== '' ? 'Yes' : 'No'}
-  `;
-  
-  alert(details);
-  // In a real app, this would open a proper modal or navigate to a details page
 };
 
 // Simulate live data when streaming
