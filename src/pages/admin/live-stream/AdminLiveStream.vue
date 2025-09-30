@@ -313,7 +313,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onUnmounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, nextTick, onUnmounted, onBeforeUnmount, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import { livestreamStore } from '@/stores/livestreamStore';
@@ -339,8 +339,8 @@ const streamDescription = ref('Join us for an exclusive live beauty session with
 const streamQuality = ref('720p');
 
 // Chat and stats
-const viewerCount = ref(0);
-const likes = ref(0);
+const viewerCount = computed(() => livestreamStore.adminStreamData.viewerCount);
+const likes = computed(() => livestreamStore.adminStreamData.likes);
 // Use livestreamStore.chatMessages instead of local array
 const newMessage = ref('');
 const chatContainer = ref(null);
@@ -447,7 +447,9 @@ const stopLiveStream = async () => {
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        maxViewers: viewerCount.value
+        maxViewers: viewerCount.value,
+        viewCount: viewerCount.value,
+        likes: likes.value
       })
     });
     
@@ -1061,27 +1063,7 @@ const deleteStream = async (streamId) => {
   }
 };
 
-// Simulate live data when streaming
-const simulateLiveData = () => {
-  setInterval(() => {
-    if (isStreaming.value) {
-      // Simulate viewer count changes
-      const newViewerCount = Math.floor(Math.random() * 150) + 25;
-      viewerCount.value = newViewerCount;
-      livestreamStore.updateViewerCount(newViewerCount);
-      
-      // Simulate likes
-      if (Math.random() > 0.8) {
-        likes.value++;
-        livestreamStore.updateLikes(likes.value);
-      }
-    }
-  }, 5000);
-};
-
 onMounted(async () => {
-  // Initialize simulation
-  simulateLiveData();
   // Fetch past streams from backend
   fetchPastStreams();
   

@@ -249,7 +249,7 @@ const streamUrl = computed(() => {
 });
 const currentStream = computed(() => livestreamStore.isAdminStreaming ? livestreamStore.adminStreamData : null);
 const viewerCount = computed(() => livestreamStore.adminStreamData.viewerCount);
-const likes = ref(livestreamStore.adminStreamData.likes);
+const likes = computed(() => livestreamStore.adminStreamData.likes);
 const isLiked = ref(false);
 const chatMessages = computed(() => livestreamStore.chatMessages);
 const newMessage = ref('');
@@ -486,9 +486,6 @@ const onVideoError = (event) => {
 };
 
 onMounted(async () => {
-  // Initialize mock data for upcoming and past streams
-  likes.value = livestreamStore.adminStreamData.likes;
-  
   // Fetch past streams from backend
   fetchPastStreams();
   
