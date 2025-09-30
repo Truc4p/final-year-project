@@ -38,10 +38,10 @@
                 <video 
                   v-else
                   ref="videoPlayer"
-                  :src="streamUrl"
                   controls
                   autoplay
                   muted
+                  playsinline
                   class="w-full h-full"
                   @loadstart="onVideoLoadStart"
                   @canplay="onVideoCanPlay"
@@ -225,7 +225,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, computed } from 'vue';
+import { ref, onMounted, nextTick, computed, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { livestreamStore } from '@/stores/livestreamStore';
@@ -235,7 +235,22 @@ const router = useRouter();
 
 // Reactive data - now using shared store for live stream data
 const isLive = computed(() => livestreamStore.isAdminStreaming);
-const streamUrl = computed(() => livestreamStore.isAdminStreaming ? livestreamStore.adminStreamData.streamUrl : '');
+const streamUrl = computed(() => {
+  if (!livestreamStore.isAdminStreaming) return '';
+  
+  // Check if there's a shared MediaStream - we'll handle it in the watcher
+  if (livestreamStore.sharedMediaStream) {
+    return 'mediastream://active'; // Placeholder to indicate stream is active
+  }
+  
+  // Fallback to stored stream URL
+  const url = livestreamStore.adminStreamData.streamUrl;
+  // Only return valid video URLs (http/https or blob URLs)
+  if (url && (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:'))) {
+    return url;
+  }
+  return '';
+});
 const currentStream = computed(() => livestreamStore.isAdminStreaming ? livestreamStore.adminStreamData : null);
 const viewerCount = computed(() => livestreamStore.adminStreamData.viewerCount);
 const likes = ref(livestreamStore.adminStreamData.likes);
@@ -435,14 +450,49 @@ const onVideoCanPlay = () => {
 
 const onVideoError = (event) => {
   console.error('Video error:', event);
+  
+  // Get more specific error information
+  const video = event.target;
+  const error = video.error;
+  
+  if (error) {
+    let errorMessage = 'Unknown video error';
+    
+    switch (error.code) {
+      case error.MEDIA_ERR_ABORTED:
+        errorMessage = 'Video playback was aborted';
+        break;
+      case error.MEDIA_ERR_NETWORK:
+        errorMessage = 'Network error occurred while loading video';
+        break;
+      case error.MEDIA_ERR_DECODE:
+        errorMessage = 'Video decoding error';
+        break;
+      case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+        errorMessage = 'Video format not supported or source URL invalid';
+        break;
+    }
+    
+    console.error('Specific video error:', errorMessage);
+    console.error('Stream URL:', streamUrl.value);
+    
+    // Optionally, show user-friendly error message
+    if (error.code === error.MEDIA_ERR_SRC_NOT_SUPPORTED && streamUrl.value) {
+      console.warn('Stream URL appears to be invalid or the video format is not supported by the browser');
+    }
+  }
 };
 
-onMounted(() => {
+onMounted(async () => {
   // Initialize mock data for upcoming and past streams
   likes.value = livestreamStore.adminStreamData.likes;
   
   // Fetch past streams from backend
   fetchPastStreams();
+  
+  // Connect to WebSocket as customer - WebRTC will auto-initialize after registration
+  const token = localStorage.getItem('token'); // May be null for anonymous users
+  livestreamStore.connectWebSocket('customer', token);
   
   // Auto scroll chat to bottom when new messages arrive
   setInterval(() => {
@@ -456,6 +506,78 @@ onMounted(() => {
   // For demo purposes, we're not setting a real stream URL
   // In production, this would come from your streaming service
   // streamUrl.value = 'your-stream-url-here';
+});
+
+// Watch for shared MediaStream and WebRTC remote streams
+watch([
+  () => livestreamStore.sharedMediaStream,
+  () => livestreamStore.remoteMediaStreams.size > 0 ? Array.from(livestreamStore.remoteMediaStreams.values())[0] : null
+], ([sharedStream, remoteStream]) => {
+  console.log('🔍 Watcher triggered:', {
+    sharedStreamExists: !!sharedStream,
+    remoteStreamExists: !!remoteStream,
+    videoPlayerExists: !!videoPlayer.value,
+    remoteStreamMapSize: livestreamStore.remoteMediaStreams.size
+  });
+  
+  // Use nextTick to ensure video element is ready
+  nextTick(() => {
+    if (!videoPlayer.value) {
+      console.log('⚠️ videoPlayer.value is null, retrying...');
+      // Retry after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        if (videoPlayer.value) {
+          applyStreamToVideo(sharedStream, remoteStream);
+        }
+      }, 100);
+      return;
+    }
+    
+    applyStreamToVideo(sharedStream, remoteStream);
+  });
+}, { immediate: true });
+
+// Helper function to apply stream to video element
+const applyStreamToVideo = (sharedStream, remoteStream) => {
+  if (!videoPlayer.value) return;
+  
+  // Priority: WebRTC remote stream (cross-browser) > shared stream (same context)
+  const streamToUse = remoteStream || sharedStream;
+  
+  if (streamToUse) {
+    console.log('🎥 Customer: Setting stream to video element:', remoteStream ? 'WebRTC Remote Stream' : 'Shared MediaStream');
+    
+    // Clear any existing src to avoid conflicts
+    videoPlayer.value.src = '';
+    videoPlayer.value.removeAttribute('src');
+    videoPlayer.value.srcObject = streamToUse;
+    
+    // Force the video to play
+    videoPlayer.value.play().then(() => {
+      console.log('✅ Video playing successfully');
+    }).catch(error => {
+      console.error('❌ Error playing stream:', error);
+      
+      // Try to play again without autoplay restrictions
+      setTimeout(() => {
+        if (videoPlayer.value) {
+          videoPlayer.value.play().catch(err => console.error('❌ Retry failed:', err));
+        }
+      }, 100);
+    });
+  } else {
+    console.log('🎥 Customer: Clearing stream from video element');
+    videoPlayer.value.srcObject = null;
+    // If no stream, try to use the streamUrl as fallback
+    if (streamUrl.value && streamUrl.value !== 'mediastream://active') {
+      videoPlayer.value.src = streamUrl.value;
+    }
+  }
+};
+
+onUnmounted(() => {
+  // Disconnect WebSocket when component is unmounted
+  livestreamStore.disconnectWebSocket();
 });
 </script>
 
