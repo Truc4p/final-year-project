@@ -19,9 +19,33 @@
             <div class="footer-newsletter">
               <h4>{{ t('stayUpdated') || 'Stay Updated' }}</h4>
               <p>{{ t('newsletterDesc') || 'Get the latest updates on new products and exclusive offers.' }}</p>
-              <div class="newsletter-form">
-                <input type="email" class="newsletter-input" :placeholder="t('enterEmail') || 'Enter your email'">
-                <button class="newsletter-btn">{{ t('subscribe') || 'Subscribe' }}</button>
+              <form @submit.prevent="subscribeToNewsletter" class="newsletter-form">
+                <input 
+                  v-model="newsletterEmail"
+                  type="email" 
+                  class="newsletter-input" 
+                  :placeholder="t('enterEmail') || 'Enter your email'"
+                  required
+                  :disabled="isSubscribing"
+                >
+                <button 
+                  type="submit"
+                  class="newsletter-btn"
+                  :disabled="isSubscribing || !newsletterEmail"
+                >
+                  <span v-if="!isSubscribing">{{ t('subscribe') || 'Subscribe' }}</span>
+                  <span v-else>{{ t('subscribing') || 'Subscribing...' }}</span>
+                </button>
+              </form>
+              
+              <!-- Success Message -->
+              <div v-if="subscriptionSuccess" class="newsletter-message newsletter-success">
+                <p>{{ t('subscriptionSuccess') || 'Thank you for subscribing! You\'ll receive our latest updates.' }}</p>
+              </div>
+              
+              <!-- Error Message -->
+              <div v-if="subscriptionError" class="newsletter-message newsletter-error">
+                <p>{{ subscriptionError }}</p>
               </div>
             </div>
           </div>
@@ -94,10 +118,55 @@
 <script setup>
 import PublicNavbar from "./Public-Navbar.vue";
 import { useI18n } from 'vue-i18n';
+import axios from "axios";
+import { ref } from "vue";
+import { API_URL } from '../utils/config';
 
 const { t } = useI18n();
+
+// Newsletter subscription
+const newsletterEmail = ref('');
+const isSubscribing = ref(false);
+const subscriptionSuccess = ref(false);
+const subscriptionError = ref('');
+
+const subscribeToNewsletter = async () => {
+  if (!newsletterEmail.value) return;
+  
+  isSubscribing.value = true;
+  subscriptionError.value = '';
+  subscriptionSuccess.value = false;
+  
+  try {
+    await axios.post(`${API_URL}/newsletter/subscribe`, {
+      email: newsletterEmail.value
+    });
+    
+    subscriptionSuccess.value = true;
+    newsletterEmail.value = '';
+    
+    // Hide success message after 5 seconds
+    setTimeout(() => {
+      subscriptionSuccess.value = false;
+    }, 5000);
+  } catch (err) {
+    console.error("Error subscribing to newsletter:", err);
+    if (err.response?.data?.message) {
+      subscriptionError.value = err.response.data.message;
+    } else {
+      subscriptionError.value = t('subscriptionError') || 'Failed to subscribe. Please try again.';
+    }
+    
+    // Hide error message after 5 seconds
+    setTimeout(() => {
+      subscriptionError.value = '';
+    }, 5000);
+  } finally {
+    isSubscribing.value = false;
+  }
+};
 </script>
 
 <style scoped>
-
+/* Component-specific styles if needed */
 </style>

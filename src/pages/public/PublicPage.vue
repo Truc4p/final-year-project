@@ -247,6 +247,7 @@ onMounted(() => {
         </div>
       </div>
     </section>
+    
     <ChatWidget />
   </div>
 </template>
