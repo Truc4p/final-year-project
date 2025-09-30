@@ -18,6 +18,8 @@ const hrRoutes = require("./routes/hrRoutes");
 const liveStreamRoutes = require("./routes/liveStreamRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
+const emailCampaignRoutes = require("./routes/emailCampaignRoutes");
+const emailTemplateRoutes = require("./routes/emailTemplateRoutes");
 
 const connectDB = require("./db");
 const path = require("path"); // Import the path module
@@ -60,6 +62,8 @@ app.use("/hr", hrRoutes);
 app.use("/livestreams", liveStreamRoutes);
 app.use("/uploads", uploadRoutes);
 app.use("/newsletter", newsletterRoutes);
+app.use("/email-campaigns", emailCampaignRoutes);
+app.use("/email-templates", emailTemplateRoutes);
 
 // Define a route for the root URL
 app.get('/', (req, res) => {

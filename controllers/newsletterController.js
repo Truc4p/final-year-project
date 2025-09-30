@@ -133,24 +133,76 @@ const unsubscribe = async (req, res) => {
   }
 };
 
-// Get all active subscriptions (admin only)
+// Get all active subscriptions (admin only) with enhanced filtering
 const getActiveSubscriptions = async (req, res) => {
   try {
-    const { page = 1, limit = 50, search = '' } = req.query;
+    const { 
+      page = 1, 
+      limit = 50, 
+      search = '', 
+      source,
+      dateFrom,
+      dateTo,
+      sortBy = 'subscriptionDate',
+      sortOrder = 'desc',
+      preferences
+    } = req.query;
     
     const query = { isActive: true };
     
+    // Search by email
     if (search) {
       query.email = { $regex: search, $options: 'i' };
     }
+    
+    // Filter by source
+    if (source && source !== 'all') {
+      query.source = source;
+    }
+    
+    // Filter by date range
+    if (dateFrom || dateTo) {
+      query.subscriptionDate = {};
+      if (dateFrom) {
+        query.subscriptionDate.$gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        query.subscriptionDate.$lte = new Date(dateTo);
+      }
+    }
+    
+    // Filter by preferences
+    if (preferences) {
+      try {
+        const prefObj = JSON.parse(preferences);
+        Object.keys(prefObj).forEach(key => {
+          if (prefObj[key] !== undefined) {
+            query[`preferences.${key}`] = prefObj[key];
+          }
+        });
+      } catch (e) {
+        // Ignore invalid preference JSON
+      }
+    }
+    
+    const sortDirection = sortOrder === 'desc' ? -1 : 1;
+    const sort = { [sortBy]: sortDirection };
 
     const subscriptions = await NewsletterSubscription.find(query)
-      .select('email subscriptionDate source preferences')
-      .sort({ subscriptionDate: -1 })
+      .select('email subscriptionDate source preferences ipAddress userId')
+      .populate('userId', 'username email')
+      .sort(sort)
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
     const total = await NewsletterSubscription.countDocuments(query);
+
+    // Get additional stats
+    const sourceStats = await NewsletterSubscription.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: '$source', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
 
     res.status(200).json({
       success: true,
@@ -159,8 +211,10 @@ const getActiveSubscriptions = async (req, res) => {
         pagination: {
           current: parseInt(page),
           pages: Math.ceil(total / limit),
-          total
-        }
+          total,
+          limit: parseInt(limit)
+        },
+        sourceStats
       }
     });
 
@@ -244,10 +298,312 @@ const updatePreferences = async (req, res) => {
   }
 };
 
+// Get single subscription details (admin only)
+const getSubscription = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const subscription = await NewsletterSubscription.findById(id)
+      .populate('userId', 'username email role');
+    
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Subscription not found'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: subscription
+    });
+    
+  } catch (error) {
+    console.error('Get subscription error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch subscription'
+    });
+  }
+};
+
+// Update subscription (admin only)
+const updateSubscription = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { preferences, isActive } = req.body;
+    
+    const updateData = {};
+    if (preferences) updateData.preferences = preferences;
+    if (isActive !== undefined) updateData.isActive = isActive;
+    
+    const subscription = await NewsletterSubscription.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+    
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Subscription not found'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: 'Subscription updated successfully',
+      data: subscription
+    });
+    
+  } catch (error) {
+    console.error('Update subscription error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update subscription'
+    });
+  }
+};
+
+// Bulk operations on subscriptions (admin only)
+const bulkUpdateSubscriptions = async (req, res) => {
+  try {
+    const { operation, subscriptionIds, updateData } = req.body;
+    
+    if (!operation || !subscriptionIds || !Array.isArray(subscriptionIds)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid operation data'
+      });
+    }
+    
+    let result;
+    
+    switch (operation) {
+      case 'activate':
+        result = await NewsletterSubscription.updateMany(
+          { _id: { $in: subscriptionIds } },
+          { isActive: true }
+        );
+        break;
+        
+      case 'deactivate':
+        result = await NewsletterSubscription.updateMany(
+          { _id: { $in: subscriptionIds } },
+          { isActive: false, unsubscribedDate: new Date() }
+        );
+        break;
+        
+      case 'updatePreferences':
+        if (!updateData || !updateData.preferences) {
+          return res.status(400).json({
+            success: false,
+            message: 'Preferences data required'
+          });
+        }
+        result = await NewsletterSubscription.updateMany(
+          { _id: { $in: subscriptionIds } },
+          { preferences: updateData.preferences }
+        );
+        break;
+        
+      case 'delete':
+        result = await NewsletterSubscription.deleteMany(
+          { _id: { $in: subscriptionIds } }
+        );
+        break;
+        
+      default:
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid operation'
+        });
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: `Bulk ${operation} completed successfully`,
+      data: {
+        modifiedCount: result.modifiedCount || result.deletedCount,
+        operation
+      }
+    });
+    
+  } catch (error) {
+    console.error('Bulk update error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to perform bulk operation'
+    });
+  }
+};
+
+// Export subscriptions to CSV (admin only)
+const exportSubscriptions = async (req, res) => {
+  try {
+    const { format = 'csv', filters = {} } = req.query;
+    
+    const query = { isActive: true };
+    
+    // Apply filters similar to getActiveSubscriptions
+    if (filters.source) query.source = filters.source;
+    if (filters.dateFrom || filters.dateTo) {
+      query.subscriptionDate = {};
+      if (filters.dateFrom) query.subscriptionDate.$gte = new Date(filters.dateFrom);
+      if (filters.dateTo) query.subscriptionDate.$lte = new Date(filters.dateTo);
+    }
+    
+    const subscriptions = await NewsletterSubscription.find(query)
+      .select('email subscriptionDate source preferences')
+      .sort({ subscriptionDate: -1 });
+    
+    if (format === 'csv') {
+      const csvHeader = 'Email,Subscription Date,Source,New Products,Promotions,Newsletter\n';
+      const csvRows = subscriptions.map(sub => {
+        return [
+          sub.email,
+          sub.subscriptionDate.toISOString().split('T')[0],
+          sub.source,
+          sub.preferences.newProducts,
+          sub.preferences.promotions,
+          sub.preferences.newsletter
+        ].join(',');
+      }).join('\n');
+      
+      const csvContent = csvHeader + csvRows;
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=newsletter_subscriptions.csv');
+      res.send(csvContent);
+    } else {
+      res.status(200).json({
+        success: true,
+        data: subscriptions
+      });
+    }
+    
+  } catch (error) {
+    console.error('Export subscriptions error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to export subscriptions'
+    });
+  }
+};
+
+// Get subscription analytics and insights (admin only)
+const getSubscriptionAnalytics = async (req, res) => {
+  try {
+    const { timeframe = '30d' } = req.query;
+    
+    // Calculate date range
+    const now = new Date();
+    let dateFrom;
+    
+    switch (timeframe) {
+      case '7d':
+        dateFrom = new Date(now.setDate(now.getDate() - 7));
+        break;
+      case '30d':
+        dateFrom = new Date(now.setDate(now.getDate() - 30));
+        break;
+      case '90d':
+        dateFrom = new Date(now.setDate(now.getDate() - 90));
+        break;
+      case '1y':
+        dateFrom = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+      default:
+        dateFrom = new Date(now.setDate(now.getDate() - 30));
+    }
+    
+    // Subscription growth over time
+    const growthData = await NewsletterSubscription.aggregate([
+      {
+        $match: {
+          subscriptionDate: { $gte: dateFrom }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: '%Y-%m-%d',
+              date: '$subscriptionDate'
+            }
+          },
+          newSubscriptions: { $sum: 1 },
+          unsubscriptions: {
+            $sum: {
+              $cond: [
+                { $and: [
+                  { $eq: ['$isActive', false] },
+                  { $gte: ['$unsubscribedDate', dateFrom] }
+                ]},
+                1,
+                0
+              ]
+            }
+          }
+        }
+      },
+      { $sort: { '_id': 1 } }
+    ]);
+    
+    // Source breakdown
+    const sourceBreakdown = await NewsletterSubscription.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: '$source', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+    
+    // Preferences breakdown
+    const preferencesBreakdown = await NewsletterSubscription.aggregate([
+      { $match: { isActive: true } },
+      {
+        $group: {
+          _id: null,
+          newProducts: { $sum: { $cond: ['$preferences.newProducts', 1, 0] } },
+          promotions: { $sum: { $cond: ['$preferences.promotions', 1, 0] } },
+          newsletter: { $sum: { $cond: ['$preferences.newsletter', 1, 0] } },
+          total: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        timeframe,
+        growthData,
+        sourceBreakdown,
+        preferencesBreakdown: preferencesBreakdown[0] || {
+          newProducts: 0,
+          promotions: 0,
+          newsletter: 0,
+          total: 0
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Get subscription analytics error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch subscription analytics'
+    });
+  }
+};
+
 module.exports = {
   subscribe,
   unsubscribe,
   getActiveSubscriptions,
+  getSubscription,
+  updateSubscription,
+  bulkUpdateSubscriptions,
+  exportSubscriptions,
+  getSubscriptionAnalytics,
   getSubscriptionStats,
   updatePreferences
 };
