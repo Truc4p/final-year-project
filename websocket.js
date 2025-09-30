@@ -50,6 +50,9 @@ class WebSocketManager {
         if (conn.ws === ws) {
           this.customerConnections.delete(sessionId);
           console.log(`🔌 Customer WebSocket disconnected for session: ${sessionId}`);
+          
+          // Update viewer count when customer leaves
+          this.updateViewerCount();
           return;
         }
       }
@@ -155,6 +158,9 @@ class WebSocketManager {
       });
 
       console.log(`✅ Registered customer WebSocket connection: ${sessionId} (${userRole})`);
+      
+      // Update and broadcast viewer count
+      await this.updateViewerCount();
 
       // Send confirmation
       ws.send(JSON.stringify({
@@ -364,6 +370,32 @@ class WebSocketManager {
     for (const connection of this.adminConnections.values()) {
       if (connection.ws.readyState === WebSocket.OPEN) {
         connection.ws.send(JSON.stringify(data));
+      }
+    }
+  }
+
+  // Update and broadcast viewer count
+  async updateViewerCount() {
+    const viewerCount = this.customerConnections.size;
+    console.log(`👥 Current viewer count: ${viewerCount}`);
+    
+    // Broadcast viewer count update to all connections
+    const updateData = {
+      type: 'stream_update',
+      viewerCount: viewerCount
+    };
+    
+    // Send to all customers
+    for (const connection of this.customerConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(updateData));
+      }
+    }
+    
+    // Send to admin
+    for (const connection of this.adminConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(updateData));
       }
     }
   }

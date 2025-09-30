@@ -232,7 +232,7 @@ exports.updateLiveStream = async (req, res) => {
 exports.stopLiveStream = async (req, res) => {
   try {
     const { id } = req.params;
-    const { videoUrl, thumbnailUrl, maxViewers } = req.body;
+    const { videoUrl, thumbnailUrl, maxViewers, viewCount, likes } = req.body;
     
     const livestream = await LiveStream.findById(id);
     
@@ -256,6 +256,10 @@ exports.stopLiveStream = async (req, res) => {
     livestream.videoUrl = videoUrl || '';
     livestream.thumbnailUrl = thumbnailUrl || '';
     livestream.maxViewers = maxViewers || livestream.maxViewers;
+    livestream.viewCount = viewCount || livestream.viewCount;
+    livestream.likes = likes || livestream.likes;
+
+    console.log(`💾 Saving livestream with final stats: viewCount=${livestream.viewCount}, likes=${livestream.likes}, maxViewers=${livestream.maxViewers}`);
 
     await livestream.save();
 
