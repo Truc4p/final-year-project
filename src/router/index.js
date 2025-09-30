@@ -109,6 +109,12 @@ const routes = [
       { path: "live-stream", component: AdminLiveStream },
       { path: "live-stream/watch/:id", component: LiveStreamWatch },
 
+      // Email Marketing Routes
+      { path: "email-marketing/subscribers", component: () => import("@/pages/admin/email-marketing/Subscribers.vue") },
+      { path: "email-marketing/templates", component: () => import("@/pages/admin/email-marketing/Templates.vue") },
+      { path: "email-marketing/campaigns", component: () => import("@/pages/admin/email-marketing/CreateCampaign.vue") },
+      { path: "email-marketing/campaigns/create", component: () => import("@/pages/admin/email-marketing/CreateCampaign.vue") },
+      { path: "email-marketing/analytics", component: () => import("@/pages/admin/email-marketing/Analytics.vue") },
 
     ],
   },
