@@ -34,7 +34,17 @@ const upload = multer({
 // Create a new livestream
 exports.createLiveStream = async (req, res) => {
   try {
-    const { title, description, quality, categories, tags } = req.body;
+    const { title, description, quality, categories, tags, streamUrl } = req.body;
+    
+    // Debug: Log received data
+    console.log('🔍 Creating livestream with received data:', {
+      title,
+      description,
+      quality,
+      streamUrl,
+      categories,
+      tags
+    });
     
     // Check if there's already an active stream
     const activeStream = await LiveStream.getActiveStream();
@@ -48,6 +58,7 @@ exports.createLiveStream = async (req, res) => {
       title,
       description,
       quality,
+      streamUrl: streamUrl || '',
       categories: categories ? categories.split(',').map(c => c.trim()) : [],
       tags: tags ? tags.split(',').map(t => t.trim()) : [],
       isActive: true,
@@ -56,6 +67,12 @@ exports.createLiveStream = async (req, res) => {
     });
 
     await liveStream.save();
+    
+    console.log('✅ Livestream saved to database:', {
+      id: liveStream._id,
+      title: liveStream.title,
+      streamUrl: liveStream.streamUrl
+    });
     
     res.status(201).json({
       message: 'Livestream created successfully',

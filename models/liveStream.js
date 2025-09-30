@@ -16,6 +16,12 @@ const liveStreamSchema = new mongoose.Schema({
     trim: true,
     default: ''
   },
+  streamUrl: {
+    type: String,
+    trim: true,
+    default: '',
+    comment: 'URL for live streaming (used during active stream)'
+  },
   thumbnailUrl: {
     type: String,
     trim: true,

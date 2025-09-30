@@ -13,6 +13,10 @@ class WebSocketManager {
     this.customerConnections = new Map(); // sessionId -> { ws, userId, userRole }
     this.adminConnections = new Map(); // userId -> { ws, userRole }
     
+    // WebRTC signaling management
+    this.webrtcConnections = new Map(); // connectionId -> { type: 'admin'|'customer', ws, peerId }
+    this.activeBroadcaster = null; // Currently streaming admin
+    
     this.wss.on('connection', this.handleConnection.bind(this));
     console.log('🔗 WebSocket server running on port 8080');
   }
@@ -81,6 +85,47 @@ class WebSocketManager {
         await this.handleStaffMessage(sessionId, content);
         break;
         
+      case 'stream_started':
+        await this.broadcastStreamStatus(data);
+        break;
+        
+      case 'stream_stopped':
+        await this.broadcastStreamStatus(data);
+        break;
+        
+      case 'stream_update':
+        await this.broadcastStreamUpdate(data);
+        break;
+        
+      case 'chat_message':
+        await this.broadcastChatMessage(data);
+        break;
+        
+      // WebRTC signaling messages
+      case 'webrtc_register':
+        await this.handleWebRTCRegister(ws, data);
+        break;
+        
+      case 'webrtc_offer':
+        await this.handleWebRTCOffer(ws, data);
+        break;
+        
+      case 'webrtc_answer':
+        await this.handleWebRTCAnswer(ws, data);
+        break;
+        
+      case 'webrtc_ice_candidate':
+        await this.handleWebRTCIceCandidate(ws, data);
+        break;
+        
+      case 'webrtc_broadcast_start':
+        await this.handleWebRTCBroadcastStart(ws, data);
+        break;
+        
+      case 'webrtc_broadcast_stop':
+        await this.handleWebRTCBroadcastStop(ws, data);
+        break;
+        
       default:
         console.log('❓ Unknown message type:', type);
     }
@@ -117,6 +162,9 @@ class WebSocketManager {
         sessionId,
         status: 'connected'
       }));
+
+      // Send current stream status if there's an active stream
+      await this.sendCurrentStreamStatus(ws);
 
     } catch (error) {
       console.error('❌ Error registering connection:', error);
@@ -281,6 +329,258 @@ class WebSocketManager {
         client.send(JSON.stringify(message));
       }
     });
+  }
+
+  // Handle livestream status broadcasts
+  async broadcastStreamStatus(data) {
+    console.log(`📡 Broadcasting stream status: ${data.type}`);
+    
+    // Broadcast to all customer connections
+    for (const connection of this.customerConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(data));
+      }
+    }
+    
+    // Also broadcast to other admin connections for sync
+    for (const connection of this.adminConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(data));
+      }
+    }
+  }
+
+  // Handle stream updates (viewer count, likes, etc.)
+  async broadcastStreamUpdate(data) {
+    console.log(`📡 Broadcasting stream update:`, data);
+    
+    // Broadcast to all connections
+    for (const connection of this.customerConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(data));
+      }
+    }
+    
+    for (const connection of this.adminConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(data));
+      }
+    }
+  }
+
+  // Handle chat message broadcasts
+  async broadcastChatMessage(data) {
+    console.log(`💬 Broadcasting chat message from ${data.username}`);
+    
+    // Broadcast to all connections
+    for (const connection of this.customerConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(data));
+      }
+    }
+    
+    for (const connection of this.adminConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(data));
+      }
+    }
+  }
+
+  // Send current stream status to a new connection
+  async sendCurrentStreamStatus(ws) {
+    try {
+      // Check if there's an active livestream in the database
+      const LiveStream = require('./models/liveStream');
+      const activeStream = await LiveStream.findOne({ 
+        isActive: true 
+      }).sort({ createdAt: -1 });
+
+      if (activeStream) {
+        console.log('📡 Sending current stream status to new connection');
+        console.log('🔍 Active stream from database:', {
+          id: activeStream._id,
+          title: activeStream.title,
+          streamUrl: activeStream.streamUrl,
+          isActive: activeStream.isActive
+        });
+        
+        const streamData = {
+          title: activeStream.title,
+          description: activeStream.description,
+          startTime: activeStream.createdAt,
+          viewerCount: activeStream.viewerCount || 0,
+          likes: activeStream.likes || 0,
+          streamUrl: activeStream.streamUrl || '', // Use stream URL from database
+          quality: activeStream.quality || '720p'
+        };
+
+        console.log('📡 Sending stream data via WebSocket:', streamData);
+
+        ws.send(JSON.stringify({
+          type: 'stream_started',
+          streamData: streamData
+        }));
+      } else {
+        console.log('📡 No active stream found in database');
+      }
+    } catch (error) {
+      console.error('❌ Error sending current stream status:', error);
+    }
+  }
+
+  // WebRTC Signaling Methods
+  async handleWebRTCRegister(ws, data) {
+    const { peerId, userType } = data; // userType: 'admin' or 'customer'
+    
+    console.log(`🎥 WebRTC registration: ${peerId} as ${userType}`);
+    
+    this.webrtcConnections.set(peerId, {
+      type: userType,
+      ws: ws,
+      peerId: peerId
+    });
+    
+    // If admin is registering, notify all customers
+    if (userType === 'admin') {
+      this.activeBroadcaster = peerId;
+      this.notifyCustomersOfBroadcaster();
+    } else if (userType === 'customer' && this.activeBroadcaster) {
+      // If customer is registering and there's an active broadcaster, initiate connection
+      this.initiateWebRTCConnection(this.activeBroadcaster, peerId);
+    }
+    
+    ws.send(JSON.stringify({
+      type: 'webrtc_registered',
+      peerId: peerId,
+      userType: userType
+    }));
+  }
+
+  async handleWebRTCOffer(ws, data) {
+    const { from, to, offer } = data;
+    
+    console.log(`📡 WebRTC offer: ${from} -> ${to}`);
+    
+    const targetConnection = this.webrtcConnections.get(to);
+    if (targetConnection) {
+      targetConnection.ws.send(JSON.stringify({
+        type: 'webrtc_offer',
+        from: from,
+        offer: offer
+      }));
+    } else {
+      console.log(`❌ Target peer ${to} not found for offer`);
+    }
+  }
+
+  async handleWebRTCAnswer(ws, data) {
+    const { from, to, answer } = data;
+    
+    console.log(`📡 WebRTC answer: ${from} -> ${to}`);
+    
+    const targetConnection = this.webrtcConnections.get(to);
+    if (targetConnection) {
+      targetConnection.ws.send(JSON.stringify({
+        type: 'webrtc_answer',
+        from: from,
+        answer: answer
+      }));
+    } else {
+      console.log(`❌ Target peer ${to} not found for answer`);
+    }
+  }
+
+  async handleWebRTCIceCandidate(ws, data) {
+    const { from, to, candidate } = data;
+    
+    console.log(`🧊 WebRTC ICE candidate: ${from} -> ${to}`);
+    
+    const targetConnection = this.webrtcConnections.get(to);
+    if (targetConnection) {
+      targetConnection.ws.send(JSON.stringify({
+        type: 'webrtc_ice_candidate',
+        from: from,
+        candidate: candidate
+      }));
+    } else {
+      console.log(`❌ Target peer ${to} not found for ICE candidate`);
+    }
+  }
+
+  async handleWebRTCBroadcastStart(ws, data) {
+    const { peerId } = data;
+    
+    console.log(`🔴 WebRTC broadcast started by: ${peerId}`);
+    
+    // Clean up any existing broadcaster connections first
+    if (this.activeBroadcaster && this.activeBroadcaster !== peerId) {
+      console.log(`🧹 Cleaning up previous broadcaster: ${this.activeBroadcaster}`);
+      this.cleanupBroadcaster(this.activeBroadcaster);
+    }
+    
+    this.activeBroadcaster = peerId;
+    this.notifyCustomersOfBroadcaster();
+  }
+
+  cleanupBroadcaster(broadcasterId) {
+    // Remove the broadcaster connection
+    if (this.webrtcConnections.has(broadcasterId)) {
+      this.webrtcConnections.delete(broadcasterId);
+    }
+    
+    // Notify customers that broadcast stopped
+    this.broadcastToConnections({
+      type: 'webrtc_broadcast_stopped',
+      broadcasterId: broadcasterId
+    }, 'customer');
+  }
+
+  async handleWebRTCBroadcastStop(ws, data) {
+    const { peerId } = data;
+    
+    console.log(`⏹️ WebRTC broadcast stopped by: ${peerId}`);
+    
+    if (this.activeBroadcaster === peerId) {
+      this.activeBroadcaster = null;
+      
+      // Notify all customers that broadcast has stopped
+      for (const [connectionId, connection] of this.webrtcConnections.entries()) {
+        if (connection.type === 'customer') {
+          connection.ws.send(JSON.stringify({
+            type: 'webrtc_broadcast_stopped',
+            broadcaster: peerId
+          }));
+        }
+      }
+    }
+  }
+
+  notifyCustomersOfBroadcaster() {
+    if (!this.activeBroadcaster) return;
+    
+    console.log(`📢 Notifying customers of broadcaster: ${this.activeBroadcaster}`);
+    
+    for (const [connectionId, connection] of this.webrtcConnections.entries()) {
+      if (connection.type === 'customer') {
+        connection.ws.send(JSON.stringify({
+          type: 'webrtc_broadcaster_available',
+          broadcaster: this.activeBroadcaster
+        }));
+      }
+    }
+  }
+
+  initiateWebRTCConnection(broadcasterId, customerId) {
+    const broadcasterConnection = this.webrtcConnections.get(broadcasterId);
+    
+    if (broadcasterConnection) {
+      console.log(`🤝 Initiating WebRTC connection: ${broadcasterId} -> ${customerId}`);
+      
+      broadcasterConnection.ws.send(JSON.stringify({
+        type: 'webrtc_new_customer',
+        customerId: customerId
+      }));
+    }
   }
 
   // Close all connections
