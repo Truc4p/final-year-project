@@ -611,12 +611,12 @@ const uploadRecording = async (videoBlob) => {
   try {
     // Create FormData to upload the video
     const formData = new FormData();
-    formData.append('video', videoBlob, `stream-${currentStreamId.value}-${Date.now()}.webm`);
+    formData.append('video', videoBlob, `stream-${streamId}-${Date.now()}.webm`);
     
     const token = localStorage.getItem('token');
     
     // Upload the video file
-    const uploadResponse = await fetch(`${apiUrl}/livestreams/${currentStreamId.value}/upload`, {
+    const uploadResponse = await fetch(`${apiUrl}/livestreams/${streamId}/upload`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -640,7 +640,7 @@ const uploadRecording = async (videoBlob) => {
     }
     
     // Update the livestream record with video URL and thumbnail
-    const updateResponse = await fetch(`${apiUrl}/livestreams/${currentStreamId.value}`, {
+    const updateResponse = await fetch(`${apiUrl}/livestreams/${streamId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
