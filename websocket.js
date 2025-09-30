@@ -372,6 +372,29 @@ class WebSocketManager {
   async broadcastChatMessage(data) {
     console.log(`💬 Broadcasting chat message from ${data.username}`);
     
+    try {
+      // Save message to database if there's an active stream
+      const LiveStream = require('./models/liveStream');
+      const activeStream = await LiveStream.findOne({ isActive: true }).sort({ createdAt: -1 });
+      
+      if (activeStream) {
+        const chatMessage = {
+          username: data.username,
+          message: data.message,
+          timestamp: new Date(data.timestamp),
+          isAdmin: data.isAdmin || false
+        };
+        
+        await LiveStream.findByIdAndUpdate(activeStream._id, {
+          $push: { chatMessages: chatMessage }
+        });
+        
+        console.log(`💾 Saved chat message to database for stream ${activeStream._id}`);
+      }
+    } catch (error) {
+      console.error('❌ Error saving chat message to database:', error);
+    }
+    
     // Broadcast to all connections
     for (const connection of this.customerConnections.values()) {
       if (connection.ws.readyState === WebSocket.OPEN) {
@@ -420,11 +443,34 @@ class WebSocketManager {
           type: 'stream_started',
           streamData: streamData
         }));
+        
+        // Send chat history to new connection
+        await this.sendChatHistory(ws, activeStream);
       } else {
         console.log('📡 No active stream found in database');
       }
     } catch (error) {
       console.error('❌ Error sending current stream status:', error);
+    }
+  }
+  
+  // Send chat history to new connection
+  async sendChatHistory(ws) {
+    try {
+      const LiveStream = require('./models/liveStream');
+      const activeStream = await LiveStream.findOne({ isActive: true }).sort({ createdAt: -1 });
+      
+      if (activeStream && activeStream.chatMessages && activeStream.chatMessages.length > 0) {
+        console.log(`� Sending chat history: ${activeStream.chatMessages.length} messages`);
+        
+        // Send all chat history as a single batch to prevent duplicates
+        ws.send(JSON.stringify({
+          type: 'chat_history',
+          messages: activeStream.chatMessages
+        }));
+      }
+    } catch (error) {
+      console.error('❌ Error sending chat history:', error);
     }
   }
 
@@ -512,13 +558,17 @@ class WebSocketManager {
     
     console.log(`🔴 WebRTC broadcast started by: ${peerId}`);
     
-    // Clean up any existing broadcaster connections first
+    // Only clean up if there's a different broadcaster
     if (this.activeBroadcaster && this.activeBroadcaster !== peerId) {
       console.log(`🧹 Cleaning up previous broadcaster: ${this.activeBroadcaster}`);
       this.cleanupBroadcaster(this.activeBroadcaster);
+    } else if (this.activeBroadcaster === peerId) {
+      console.log(`🔄 Same broadcaster restarting: ${peerId}`);
     }
     
     this.activeBroadcaster = peerId;
+    
+    // Always notify customers of broadcaster availability (even for restart)
     this.notifyCustomersOfBroadcaster();
   }
 
