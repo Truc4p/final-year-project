@@ -458,8 +458,8 @@ const stopLiveStream = async () => {
     const data = await response.json();
     currentStreamId.value = null;
     
-    // Refresh past streams
-    await fetchPastStreams();
+    // Don't refresh past streams immediately - let recording upload complete first
+    // fetchPastStreams() will be called after recording upload finishes
     
     return data.livestream;
   } catch (error) {
@@ -620,11 +620,20 @@ const uploadRecording = async (videoBlob) => {
     console.log('Video uploaded successfully:', uploadData);
     
     // Generate thumbnail
+    console.log('🖼️ Generating thumbnail for recorded video...');
     const thumbnail = await generateThumbnail(videoBlob);
     let thumbnailUrl = '';
     
     if (thumbnail) {
-      thumbnailUrl = await uploadThumbnail(thumbnail);
+      console.log('✅ Thumbnail generated, uploading...');
+      thumbnailUrl = await uploadThumbnail(thumbnail, streamId);
+      if (thumbnailUrl) {
+        console.log('✅ Thumbnail upload completed:', thumbnailUrl);
+      } else {
+        console.warn('⚠️ Thumbnail upload returned empty URL');
+      }
+    } else {
+      console.warn('⚠️ Thumbnail generation failed - video will be saved without thumbnail');
     }
     
     // Update the livestream record with video URL and thumbnail
@@ -646,6 +655,10 @@ const uploadRecording = async (videoBlob) => {
     }
     
     console.log('Livestream updated with recording details');
+    
+    // Now refresh the past streams to show the completed recording with thumbnail
+    console.log('🔄 Refreshing past streams with completed recording...');
+    await fetchPastStreams();
   } catch (error) {
     console.error('Error uploading recording:', error);
     alert('Failed to save recording');
@@ -654,41 +667,105 @@ const uploadRecording = async (videoBlob) => {
 
 const generateThumbnail = (videoBlob) => {
   return new Promise((resolve) => {
+    console.log('🖼️ Starting thumbnail generation for video blob:', videoBlob.size, 'bytes');
+    
     const video = document.createElement('video');
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
+    let thumbnailGenerated = false;
+    
+    // Add timeout to prevent hanging
+    const timeout = setTimeout(() => {
+      if (!thumbnailGenerated) {
+        console.error('❌ Thumbnail generation timed out after 10 seconds');
+        URL.revokeObjectURL(video.src);
+        resolve(null);
+      }
+    }, 10000);
+    
     video.onloadeddata = () => {
+      console.log('📹 Video loaded - Duration:', video.duration, 'Size:', video.videoWidth + 'x' + video.videoHeight);
+      
+      if (video.videoWidth === 0 || video.videoHeight === 0) {
+        console.error('❌ Invalid video dimensions');
+        clearTimeout(timeout);
+        URL.revokeObjectURL(video.src);
+        resolve(null);
+        return;
+      }
+      
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       
       // Seek to 1 second (or 10% of video duration)
-      video.currentTime = Math.min(1, video.duration * 0.1);
+      const seekTime = Math.min(1, video.duration * 0.1);
+      console.log('⏭️ Seeking to time:', seekTime);
+      video.currentTime = seekTime;
     };
     
     video.onseeked = () => {
-      ctx.drawImage(video, 0, 0);
-      canvas.toBlob(resolve, 'image/jpeg', 0.8);
+      try {
+        console.log('🎯 Video seek completed, drawing to canvas');
+        ctx.drawImage(video, 0, 0);
+        
+        canvas.toBlob((blob) => {
+          thumbnailGenerated = true;
+          clearTimeout(timeout);
+          URL.revokeObjectURL(video.src);
+          
+          if (blob) {
+            console.log('✅ Thumbnail generated successfully:', blob.size, 'bytes');
+            resolve(blob);
+          } else {
+            console.error('❌ Failed to create thumbnail blob');
+            resolve(null);
+          }
+        }, 'image/jpeg', 0.8);
+      } catch (error) {
+        console.error('❌ Error during thumbnail generation:', error);
+        thumbnailGenerated = true;
+        clearTimeout(timeout);
+        URL.revokeObjectURL(video.src);
+        resolve(null);
+      }
     };
     
-    video.onerror = () => resolve(null);
+    video.onerror = (error) => {
+      console.error('❌ Video error during thumbnail generation:', error);
+      thumbnailGenerated = true;
+      clearTimeout(timeout);
+      URL.revokeObjectURL(video.src);
+      resolve(null);
+    };
     
-    video.src = URL.createObjectURL(videoBlob);
-    video.load();
+    try {
+      video.src = URL.createObjectURL(videoBlob);
+      video.load();
+    } catch (error) {
+      console.error('❌ Error creating video URL:', error);
+      clearTimeout(timeout);
+      resolve(null);
+    }
   });
 };
 
-const uploadThumbnail = async (thumbnailBlob) => {
-  if (!currentStreamId.value) return '';
+const uploadThumbnail = async (thumbnailBlob, streamId = null) => {
+  const useStreamId = streamId || currentStreamId.value;
+  
+  if (!useStreamId) {
+    console.error('❌ No stream ID available for thumbnail upload');
+    return '';
+  }
   
   try {
+    console.log('📤 Uploading thumbnail for stream:', useStreamId, 'Size:', thumbnailBlob.size, 'bytes');
+    
     const formData = new FormData();
-    formData.append('thumbnail', thumbnailBlob, `thumbnail-${currentStreamId.value}-${Date.now()}.jpg`);
+    formData.append('thumbnail', thumbnailBlob, `thumbnail-${useStreamId}-${Date.now()}.jpg`);
     
     const token = localStorage.getItem('token');
     
-    // You might need to create a separate endpoint for thumbnail upload
-    // For now, we'll use a general file upload approach
     const response = await fetch(`${apiUrl}/uploads/thumbnail`, {
       method: 'POST',
       headers: {
@@ -699,10 +776,17 @@ const uploadThumbnail = async (thumbnailBlob) => {
     
     if (response.ok) {
       const data = await response.json();
+      console.log('✅ Thumbnail uploaded successfully:', data);
       return data.path || '';
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('❌ Thumbnail upload failed with status:', response.status, errorData);
+      throw new Error(errorData.message || `HTTP ${response.status}`);
     }
   } catch (error) {
-    console.error('Error uploading thumbnail:', error);
+    console.error('❌ Error uploading thumbnail:', error);
+    // Don't silently fail - this helps debug thumbnail issues
+    alert(`Warning: Thumbnail upload failed - ${error.message}. Video will be saved without thumbnail.`);
   }
   
   return '';
