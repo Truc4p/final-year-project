@@ -172,18 +172,6 @@
                   <option value="480p">480p (SD)</option>
                 </select>
               </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Stream URL (Auto-generated)</label>
-                <input
-                  v-model="actualStreamUrl"
-                  type="url"
-                  disabled
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-                  placeholder="Stream URL will be generated automatically when you start your camera"
-                />
-                <p class="text-xs text-gray-500 mt-1">This URL is automatically created from your camera feed when you start streaming.</p>
-              </div>
             </div>
           </div>
         </div>
@@ -207,7 +195,7 @@
               
               <div class="flex justify-between items-center">
                 <span class="text-gray-600">{{ t('chatMessages') }}</span>
-                <span class="font-semibold text-lg">{{ chatMessages.length }}</span>
+                <span class="font-semibold text-lg">{{ livestreamStore.chatMessages.length }}</span>
               </div>
               
               <div v-if="isStreaming" class="flex justify-between items-center">
@@ -225,7 +213,7 @@
             </div>
             
             <div class="flex-1 overflow-y-auto p-4 space-y-3" ref="chatContainer">
-              <div v-for="message in chatMessages" :key="message.id" class="flex space-x-3">
+              <div v-for="message in livestreamStore.chatMessages" :key="message.id" class="flex space-x-3">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold chat-avatar">
                   {{ message.username?.charAt(0).toUpperCase() }}
                 </div>
@@ -325,9 +313,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onUnmounted } from 'vue';
+import { ref, onMounted, nextTick, onUnmounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import { livestreamStore } from '@/stores/livestreamStore';
 
 const { t } = useI18n();
@@ -353,7 +341,7 @@ const streamQuality = ref('720p');
 // Chat and stats
 const viewerCount = ref(0);
 const likes = ref(0);
-const chatMessages = ref([]);
+// Use livestreamStore.chatMessages instead of local array
 const newMessage = ref('');
 const chatContainer = ref(null);
 
@@ -839,6 +827,9 @@ const toggleStream = async () => {
     isLoading.value = true;
     
     try {
+      // Clear chat messages from previous stream
+      livestreamStore.clearChatMessages();
+      
       const stream = await getMediaStream();
       if (stream) {
         // Create livestream in database
@@ -859,15 +850,15 @@ const toggleStream = async () => {
           streamDuration.value++;
         }, 1000);
         
-        // Update shared store with data from backend response
+        // Update shared store with data from backend response (no stream URL needed for WebRTC)
         livestreamStore.startAdminStream({
           title: livestream.title,
           description: livestream.description,
           quality: livestream.quality,
-          streamUrl: livestream.streamUrl || actualStreamUrl.value || ''
+          streamUrl: '' // Empty for WebRTC streaming
         });
         
-        // Broadcast stream start with actual URL from database
+        // Broadcast stream start without stream URL (customers use WebRTC)
         livestreamStore.broadcastStreamStatus({
           type: 'stream_started',
           streamData: {
@@ -876,7 +867,7 @@ const toggleStream = async () => {
             startTime: livestream.startTime || new Date(),
             viewerCount: livestream.viewerCount || 0,
             likes: livestream.likes || 0,
-            streamUrl: livestream.streamUrl || actualStreamUrl.value || '',
+            streamUrl: '', // Empty - customers get video via WebRTC
             quality: livestream.quality
           }
         });
@@ -951,12 +942,7 @@ const sendAdminMessage = async () => {
     isAdmin: true
   };
   
-  chatMessages.value.push(message);
-  
-  // Send to backend
-  await addChatMessage('Admin', newMessage.value, true);
-  
-  // Also add to shared store for customers to see
+  // Only send via WebSocket - backend will save to database automatically
   livestreamStore.addChatMessage(message);
   newMessage.value = '';
   
@@ -1005,42 +991,6 @@ const simulateLiveData = () => {
         likes.value++;
         livestreamStore.updateLikes(likes.value);
       }
-      
-      // Add sample chat messages from customers
-      const sampleMessages = [
-        { username: 'BeautyLover23', message: 'This product looks amazing!' },
-        { username: 'SkincareFan', message: 'Can you show the ingredients?' },
-        { username: 'MakeupGuru', message: 'Love your tutorials!' },
-        { username: 'Customer01', message: 'How much does this cost?' },
-        { username: 'WrenCosFan', message: 'When is the next stream?' },
-      ];
-      
-      if (Math.random() > 0.7) {
-        const randomMessage = sampleMessages[Math.floor(Math.random() * sampleMessages.length)];
-        const message = {
-          id: Date.now() + Math.random(),
-          username: randomMessage.username,
-          message: randomMessage.message,
-          timestamp: new Date(),
-          isAdmin: false
-        };
-        
-        chatMessages.value.push(message);
-        // Also add to shared store
-        livestreamStore.addChatMessage(message);
-        
-        // Keep only last 30 messages for performance
-        if (chatMessages.value.length > 30) {
-          chatMessages.value = chatMessages.value.slice(-30);
-        }
-        
-        // Auto scroll to bottom
-        nextTick(() => {
-          if (chatContainer.value) {
-            chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
-          }
-        });
-      }
     }
   }, 5000);
 };
@@ -1054,6 +1004,28 @@ onMounted(async () => {
   // Connect to WebSocket as admin - WebRTC will auto-initialize after registration
   const token = localStorage.getItem('token');
   livestreamStore.connectWebSocket('admin', token);
+  
+  // Add browser navigation protection
+  window.addEventListener('beforeunload', handleBeforeUnload);
+});
+
+// Handle browser navigation/close while streaming
+const handleBeforeUnload = (event) => {
+  if (isStreaming.value) {
+    event.preventDefault();
+    event.returnValue = 'Please click the "Stop Stream" button to end your livestream before navigating away from this page.';
+    return event.returnValue;
+  }
+};
+
+// Handle Vue Router navigation while streaming
+onBeforeRouteLeave((to, from, next) => {
+  if (isStreaming.value) {
+    alert('Please click the "Stop Stream" button to end your livestream before navigating to another page.');
+    next(false); // Cancel navigation
+  } else {
+    next(); // Allow navigation
+  }
 });
 
 // Utility function to format recording duration
@@ -1071,6 +1043,10 @@ onUnmounted(() => {
   if (recordingTimer.value) {
     clearInterval(recordingTimer.value);
   }
+  
+  // Remove browser navigation protection
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+  
   stopMediaStream();
   
   // Disconnect WebSocket

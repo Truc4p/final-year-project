@@ -115,6 +115,9 @@ export const livestreamStore = reactive({
     
     switch (data.type) {
       case 'stream_started':
+        // Clear chat messages for new stream
+        this.clearChatMessages();
+        
         this.isAdminStreaming = true;
         this.adminStreamData = {
           ...this.adminStreamData,
@@ -122,6 +125,12 @@ export const livestreamStore = reactive({
           startTime: new Date(data.streamData.startTime)
         };
         console.log('Stream started via WebSocket:', this.adminStreamData);
+        
+        // For customers: reinitialize WebRTC to ensure fresh connection
+        if (this.connectionType === 'customer' && this.webrtcInitialized) {
+          console.log('🔄 Reinitializing WebRTC for new stream');
+          this.initializeWebRTC('customer');
+        }
         break;
         
       case 'stream_stopped':
@@ -147,6 +156,16 @@ export const livestreamStore = reactive({
           timestamp: new Date(data.timestamp),
           isAdmin: data.isAdmin || false
         });
+        break;
+        
+      case 'chat_history':
+        // Replace existing messages with history to prevent duplicates
+        console.log('📜 Received chat history:', data.messages.length, 'messages');
+        this.chatMessages = data.messages.map(msg => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp),
+          fromWebSocket: true
+        }));
         break;
         
       case 'registered':
@@ -282,25 +301,17 @@ export const livestreamStore = reactive({
   },
   
   addChatMessage(message) {
-    // Add message locally
-    this.chatMessages.push(message)
-    
-    // Keep only last 50 messages for performance
-    if (this.chatMessages.length > 50) {
-      this.chatMessages = this.chatMessages.slice(-50)
-    }
-    
-    // Broadcast chat message via WebSocket (only if not already received from WebSocket)
-    if (!message.fromWebSocket) {
-      this.sendWebSocketMessage({
-        type: 'chat_message',
-        id: message.id,
-        username: message.username,
-        message: message.message,
-        timestamp: message.timestamp.toISOString(),
-        isAdmin: message.isAdmin || false
-      });
-    }
+    // Only send via WebSocket, don't add locally
+    // The WebSocket broadcast will add it back via addChatMessageFromWebSocket
+    // This prevents duplicate messages for the sender
+    this.sendWebSocketMessage({
+      type: 'chat_message',
+      id: message.id,
+      username: message.username,
+      message: message.message,
+      timestamp: message.timestamp.toISOString(),
+      isAdmin: message.isAdmin || false
+    });
   },
   
   // Add chat message from WebSocket (to avoid infinite loops)

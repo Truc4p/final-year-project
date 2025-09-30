@@ -238,18 +238,14 @@ const isLive = computed(() => livestreamStore.isAdminStreaming);
 const streamUrl = computed(() => {
   if (!livestreamStore.isAdminStreaming) return '';
   
-  // Check if there's a shared MediaStream - we'll handle it in the watcher
+  // For WebRTC streaming, we don't use URLs - return placeholder
   if (livestreamStore.sharedMediaStream) {
     return 'mediastream://active'; // Placeholder to indicate stream is active
   }
   
-  // Fallback to stored stream URL
-  const url = livestreamStore.adminStreamData.streamUrl;
-  // Only return valid video URLs (http/https or blob URLs)
-  if (url && (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:'))) {
-    return url;
-  }
-  return '';
+  // Since we're using WebRTC, don't fall back to blob URLs
+  // They don't work cross-browser which is why we implemented WebRTC
+  return 'webrtc://waiting'; // Placeholder indicating WebRTC connection expected
 });
 const currentStream = computed(() => livestreamStore.isAdminStreaming ? livestreamStore.adminStreamData : null);
 const viewerCount = computed(() => livestreamStore.adminStreamData.viewerCount);
@@ -406,7 +402,7 @@ const sendMessage = () => {
     isAdmin: false
   };
   
-  // Add to shared store so admin can see it
+  // Send via WebSocket - will be broadcast back to all clients including us
   livestreamStore.addChatMessage(message);
   newMessage.value = '';
   
@@ -476,8 +472,14 @@ const onVideoError = (event) => {
     console.error('Specific video error:', errorMessage);
     console.error('Stream URL:', streamUrl.value);
     
-    // Optionally, show user-friendly error message
-    if (error.code === error.MEDIA_ERR_SRC_NOT_SUPPORTED && streamUrl.value) {
+    // For WebRTC streaming, blob URL errors are expected - we don't use URLs
+    if (error.code === error.MEDIA_ERR_SRC_NOT_SUPPORTED && streamUrl.value.startsWith('webrtc://')) {
+      console.log('ℹ️ Waiting for WebRTC stream connection...');
+      return; // Don't show error for WebRTC waiting state
+    }
+    
+    // Optionally, show user-friendly error message for other errors
+    if (error.code === error.MEDIA_ERR_SRC_NOT_SUPPORTED) {
       console.warn('Stream URL appears to be invalid or the video format is not supported by the browser');
     }
   }
@@ -568,10 +570,12 @@ const applyStreamToVideo = (sharedStream, remoteStream) => {
   } else {
     console.log('🎥 Customer: Clearing stream from video element');
     videoPlayer.value.srcObject = null;
-    // If no stream, try to use the streamUrl as fallback
-    if (streamUrl.value && streamUrl.value !== 'mediastream://active') {
-      videoPlayer.value.src = streamUrl.value;
-    }
+    videoPlayer.value.src = '';
+    videoPlayer.value.removeAttribute('src');
+    
+    // Don't fall back to blob URLs - they don't work cross-browser
+    // WebRTC should be the only streaming method
+    console.log('⏳ Waiting for WebRTC stream...');
   }
 };
 
