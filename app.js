@@ -17,6 +17,7 @@ const cashFlowRoutes = require("./routes/cashFlowRoutes");
 const hrRoutes = require("./routes/hrRoutes");
 const liveStreamRoutes = require("./routes/liveStreamRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+const newsletterRoutes = require("./routes/newsletterRoutes");
 
 const connectDB = require("./db");
 const path = require("path"); // Import the path module
@@ -58,6 +59,7 @@ app.use("/cashflow", cashFlowRoutes);
 app.use("/hr", hrRoutes);
 app.use("/livestreams", liveStreamRoutes);
 app.use("/uploads", uploadRoutes);
+app.use("/newsletter", newsletterRoutes);
 
 // Define a route for the root URL
 app.get('/', (req, res) => {
