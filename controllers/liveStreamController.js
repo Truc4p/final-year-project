@@ -1,6 +1,7 @@
 const LiveStream = require('../models/liveStream');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs').promises;
 
 // Configure multer for video uploads
 const storage = multer.diskStorage({
@@ -323,14 +324,46 @@ exports.addChatMessage = async (req, res) => {
 exports.deleteLiveStream = async (req, res) => {
   try {
     const { id } = req.params;
-    const livestream = await LiveStream.findByIdAndDelete(id);
+    
+    // First, find the livestream to get file paths before deletion
+    const livestream = await LiveStream.findById(id);
     
     if (!livestream) {
       return res.status(404).json({ message: 'Livestream not found' });
     }
 
+    // Delete associated files from filesystem
+    const filesToDelete = [];
+    
+    // Add video file to deletion list if it exists
+    if (livestream.videoUrl) {
+      const videoPath = path.join(__dirname, '..', 'uploads', 'livestreams', path.basename(livestream.videoUrl));
+      filesToDelete.push(videoPath);
+    }
+    
+    // Add thumbnail file to deletion list if it exists
+    if (livestream.thumbnailUrl) {
+      const thumbnailPath = path.join(__dirname, '..', 'uploads', 'thumbnails', path.basename(livestream.thumbnailUrl));
+      filesToDelete.push(thumbnailPath);
+    }
+
+    // Delete files from filesystem
+    for (const filePath of filesToDelete) {
+      try {
+        await fs.unlink(filePath);
+        console.log(`✅ Deleted file: ${filePath}`);
+      } catch (fileError) {
+        // Log warning but don't fail the operation if file doesn't exist
+        console.warn(`⚠️ Could not delete file ${filePath}:`, fileError.message);
+      }
+    }
+
+    // Delete the database record
+    await LiveStream.findByIdAndDelete(id);
+
     res.json({
-      message: 'Livestream deleted successfully'
+      message: 'Livestream and associated files deleted successfully',
+      deletedFiles: filesToDelete.map(f => path.basename(f))
     });
   } catch (error) {
     console.error('Error deleting livestream:', error);
