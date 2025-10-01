@@ -9,16 +9,16 @@ router.use(auth);
 router.use(role(['admin']));
 
 // Template management routes
-router.get('/templates', emailTemplateController.getTemplates);
-router.get('/templates/popular', emailTemplateController.getPopularTemplates);
-router.get('/templates/category/:category', emailTemplateController.getTemplatesByCategory);
-router.get('/templates/:id', emailTemplateController.getTemplate);
-router.post('/templates', emailTemplateController.createTemplate);
-router.put('/templates/:id', emailTemplateController.updateTemplate);
-router.delete('/templates/:id', emailTemplateController.deleteTemplate);
+router.get('/', emailTemplateController.getTemplates);
+router.get('/popular', emailTemplateController.getPopularTemplates);
+router.get('/category/:category', emailTemplateController.getTemplatesByCategory);
+router.get('/:id', emailTemplateController.getTemplate);
+router.post('/', emailTemplateController.createTemplate);
+router.put('/:id', emailTemplateController.updateTemplate);
+router.delete('/:id', emailTemplateController.deleteTemplate);
 
 // Template operations
-router.post('/templates/:id/preview', emailTemplateController.previewTemplate);
-router.post('/templates/:id/duplicate', emailTemplateController.duplicateTemplate);
+router.post('/:id/preview', emailTemplateController.previewTemplate);
+router.post('/:id/duplicate', emailTemplateController.duplicateTemplate);
 
 module.exports = router;

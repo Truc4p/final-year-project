@@ -128,8 +128,8 @@ const emailCampaignSchema = new mongoose.Schema({
     }
   },
   
-  // Error tracking
-  errors: [{
+  // Error tracking (renamed from 'errors' to avoid Mongoose reserved word warning)
+  errorLogs: [{
     type: String,
     message: String,
     timestamp: {

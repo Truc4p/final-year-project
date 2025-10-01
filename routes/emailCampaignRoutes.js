@@ -16,6 +16,10 @@ router.post('/campaigns', emailCampaignController.createCampaign);
 router.put('/campaigns/:id', emailCampaignController.updateCampaign);
 router.delete('/campaigns/:id', emailCampaignController.deleteCampaign);
 
+// General analytics routes
+router.get('/analytics', emailCampaignController.getAnalytics);
+router.get('/analytics/export', emailCampaignController.exportAnalytics);
+
 // Campaign analytics and preview
 router.get('/campaigns/:id/analytics', emailCampaignController.getCampaignAnalytics);
 router.get('/campaigns/:id/preview', emailCampaignController.getCampaignPreview);
