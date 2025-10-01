@@ -128,13 +128,19 @@
           <!-- Campaign Performance Chart -->
           <div class="bg-white rounded-lg shadow-sm border p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Campaign Performance Trends</h3>
-            <div class="h-64 flex items-center justify-center text-gray-500">
-              <div class="text-center">
-                <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-                <p>Chart visualization would be displayed here</p>
-                <p class="text-sm">(Integration with Chart.js or similar required)</p>
+            <div class="h-64">
+              <Line 
+                v-if="campaignChartData.datasets.length > 0"
+                :data="campaignChartData" 
+                :options="campaignChartOptions"
+              />
+              <div v-else class="h-full flex items-center justify-center text-gray-500">
+                <div class="text-center">
+                  <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                  <p>No campaign data available</p>
+                </div>
               </div>
             </div>
           </div>
@@ -193,6 +199,54 @@
                   </div>
                   <span class="text-sm font-medium">{{ formatPercentage(analytics.averageUnsubscribeRate) }}</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Analytics Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Engagement Rate Doughnut Chart -->
+          <div class="bg-white rounded-lg shadow-sm border p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Engagement Distribution</h3>
+            <div class="h-64">
+              <Doughnut 
+                v-if="engagementChartData.datasets.length > 0"
+                :data="engagementChartData" 
+                :options="doughnutChartOptions"
+              />
+              <div v-else class="h-full flex items-center justify-center text-gray-500">
+                <p>No engagement data available</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Performing Campaigns -->
+          <div class="bg-white rounded-lg shadow-sm border p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Campaigns by Open Rate</h3>
+            <div class="h-64">
+              <Bar 
+                v-if="topCampaignsChartData.datasets.length > 0"
+                :data="topCampaignsChartData" 
+                :options="barChartOptions"
+              />
+              <div v-else class="h-full flex items-center justify-center text-gray-500">
+                <p>No campaign data available</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subscriber Growth Chart -->
+          <div class="bg-white rounded-lg shadow-sm border p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Subscriber Growth</h3>
+            <div class="h-64">
+              <Line 
+                v-if="subscriberGrowthChartData.datasets.length > 0"
+                :data="subscriberGrowthChartData" 
+                :options="subscriberGrowthChartOptions"
+              />
+              <div v-else class="h-full flex items-center justify-center text-gray-500">
+                <p>No subscriber data available</p>
               </div>
             </div>
           </div>
@@ -309,10 +363,43 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  ArcElement
+} from 'chart.js'
+import { Line, Bar, Doughnut } from 'vue-chartjs'
+import axios from 'axios'
+import { API_URL } from '../../../utils/config.js'
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+)
 
 export default {
   name: 'EmailAnalytics',
+  components: {
+    Line,
+    Bar,
+    Doughnut
+  },
   setup() {
     // State
     const loading = ref(false)
@@ -340,25 +427,114 @@ export default {
       newChange: 0,
       unsubscribedChange: 0
     })
+
+    // Chart Data
+    const campaignChartData = ref({
+      labels: [],
+      datasets: []
+    })
+
+    const engagementChartData = ref({
+      labels: ['Opened', 'Clicked', 'Unsubscribed', 'Not Opened'],
+      datasets: []
+    })
+
+    const topCampaignsChartData = ref({
+      labels: [],
+      datasets: []
+    })
+
+    const subscriberGrowthChartData = ref({
+      labels: [],
+      datasets: []
+    })
+
+    // Chart Options
+    const campaignChartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top'
+        },
+        title: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return value + '%'
+            }
+          }
+        }
+      }
+    }
+
+    const doughnutChartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+
+    const barChartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return value + '%'
+            }
+          }
+        }
+      }
+    }
+
+    const subscriberGrowthChartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
     
     // Methods
     const loadAnalytics = async () => {
       loading.value = true
       try {
-        const token = localStorage.getItem('token')
-        const response = await fetch(`/api/email-campaigns/analytics?days=${dateRange.value}`, {
+        const response = await axios.get(`${API_URL}/email-campaigns/analytics?days=${dateRange.value}`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         })
         
-        if (!response.ok) throw new Error('Failed to load analytics')
-        
-        const data = await response.json()
+        const data = response.data
         Object.assign(analytics, data.analytics)
         recentCampaigns.value = data.recentCampaigns || []
         Object.assign(subscriberStats, data.subscriberStats || {})
+        
+        // Populate chart data
+        populateChartData(data)
       } catch (error) {
         console.error('Error loading analytics:', error)
         alert('Failed to load analytics')
@@ -366,19 +542,102 @@ export default {
         loading.value = false
       }
     }
-    
+
+    const populateChartData = (data) => {
+      // Campaign Performance Trends
+      if (data.campaignTrends && data.campaignTrends.length > 0) {
+        campaignChartData.value = {
+          labels: data.campaignTrends.map(item => item.date),
+          datasets: [
+            {
+              label: 'Open Rate (%)',
+              data: data.campaignTrends.map(item => item.openRate || 0),
+              borderColor: 'rgb(59, 130, 246)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4
+            },
+            {
+              label: 'Click Rate (%)',
+              data: data.campaignTrends.map(item => item.clickRate || 0),
+              borderColor: 'rgb(16, 185, 129)',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4
+            }
+          ]
+        }
+      }
+
+      // Engagement Distribution
+      const totalSent = analytics.totalEmailsSent || 1
+      const opened = Math.round((analytics.averageOpenRate / 100) * totalSent)
+      const clicked = Math.round((analytics.averageClickRate / 100) * totalSent)
+      const unsubscribed = Math.round((analytics.averageUnsubscribeRate / 100) * totalSent)
+      const notOpened = totalSent - opened
+
+      engagementChartData.value = {
+        labels: ['Opened', 'Clicked', 'Unsubscribed', 'Not Opened'],
+        datasets: [{
+          data: [opened, clicked, unsubscribed, notOpened],
+          backgroundColor: [
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
+            'rgba(156, 163, 175, 0.8)'
+          ],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      }
+
+      // Top Campaigns by Open Rate
+      if (data.recentCampaigns && data.recentCampaigns.length > 0) {
+        const topCampaigns = data.recentCampaigns
+          .slice(0, 5)
+          .sort((a, b) => (b.analytics?.openRate || 0) - (a.analytics?.openRate || 0))
+
+        topCampaignsChartData.value = {
+          labels: topCampaigns.map(campaign => campaign.subject?.substring(0, 30) + '...' || 'Untitled'),
+          datasets: [{
+            label: 'Open Rate (%)',
+            data: topCampaigns.map(campaign => campaign.analytics?.openRate || 0),
+            backgroundColor: [
+              'rgba(59, 130, 246, 0.8)',
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(245, 158, 11, 0.8)',
+              'rgba(239, 68, 68, 0.8)',
+              'rgba(139, 92, 246, 0.8)'
+            ],
+            borderWidth: 1
+          }]
+        }
+      }
+
+      // Subscriber Growth
+      if (data.subscriberGrowth && data.subscriberGrowth.length > 0) {
+        subscriberGrowthChartData.value = {
+          labels: data.subscriberGrowth.map(item => item.date),
+          datasets: [{
+            label: 'Subscribers',
+            data: data.subscriberGrowth.map(item => item.count || 0),
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        }
+      }
+    }
+
     const exportAnalytics = async () => {
       try {
-        const token = localStorage.getItem('token')
-        const response = await fetch(`/api/email-campaigns/analytics/export?days=${dateRange.value}`, {
+        const response = await axios.get(`${API_URL}/email-campaigns/analytics/export?days=${dateRange.value}`, {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          responseType: 'blob'
         })
         
-        if (!response.ok) throw new Error('Failed to export analytics')
-        
-        const blob = await response.blob()
+        const blob = response.data
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
@@ -454,6 +713,18 @@ export default {
       analytics,
       recentCampaigns,
       subscriberStats,
+      
+      // Chart Data
+      campaignChartData,
+      engagementChartData,
+      topCampaignsChartData,
+      subscriberGrowthChartData,
+      
+      // Chart Options
+      campaignChartOptions,
+      doughnutChartOptions,
+      barChartOptions,
+      subscriberGrowthChartOptions,
       
       // Methods
       loadAnalytics,

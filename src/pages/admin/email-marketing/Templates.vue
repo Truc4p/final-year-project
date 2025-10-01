@@ -127,7 +127,7 @@
             <!-- Template Stats -->
             <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
               <span>Used {{ template.usageCount || 0 }} times</span>
-              <span>{{ new Date(template.createdAt).toLocaleDateString() }}</span>
+              <span>{{ formatDate(template.createdAt) }}</span>
             </div>
 
             <!-- Action Buttons -->
@@ -390,6 +390,8 @@
 <script>
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
+import { API_URL } from '../../../utils/config.js'
 
 export default {
   name: 'EmailTemplates',
@@ -428,58 +430,50 @@ export default {
     })
     
     // Methods
-    const loadTemplates = async (page = 1) => {
+    const loadTemplates = async () => {
       loading.value = true
       try {
-        const token = localStorage.getItem('token')
         const params = new URLSearchParams({
-          page: page.toString(),
-          limit: '12',
-          ...Object.fromEntries(
-            Object.entries(filters).filter(([_, value]) => value !== '')
-          )
+          page: currentPage.value,
+          limit: 10,
+          ...filters
         })
         
-        const response = await fetch(`/api/email-templates?${params}`, {
+        const response = await axios.get(`${API_URL}/email-templates?${params}`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         })
         
-        if (!response.ok) throw new Error('Failed to load templates')
-        
-        const data = await response.json()
-        templates.value = data.templates
-        totalPages.value = data.totalPages
-        currentPage.value = data.currentPage
+        templates.value = response.data.data
+        totalPages.value = Math.ceil(response.data.total / 10)
       } catch (error) {
-        console.error('Error loading templates:', error)
-        alert('Failed to load templates')
+        console.error('Failed to load templates:', error)
       } finally {
         loading.value = false
       }
     }
-    
+
     const saveTemplate = async () => {
       saving.value = true
       try {
         const token = localStorage.getItem('token')
-        const method = showEditModal.value ? 'PUT' : 'POST'
-        const url = showEditModal.value 
-          ? `/api/email-templates/${templateForm.id}` 
-          : '/api/email-templates'
         
-        const response = await fetch(url, {
-          method,
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(templateForm)
-        })
-        
-        if (!response.ok) throw new Error('Failed to save template')
+        if (showEditModal.value) {
+          // Update existing template
+          await axios.put(`${API_URL}/email-templates/${templateForm.id}`, templateForm, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+        } else {
+          // Create new template
+          await axios.post(`${API_URL}/email-templates`, templateForm, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+        }
         
         await loadTemplates()
         closeModals()
@@ -494,24 +488,18 @@ export default {
     const previewTemplate = async (template) => {
       try {
         const token = localStorage.getItem('token')
-        const response = await fetch(`/api/email-templates/${template._id}/preview`, {
-          method: 'POST',
+        const response = await axios.post(`${API_URL}/email-templates/${template._id}/preview`, {
+          variables: template.variables.reduce((acc, variable) => {
+            acc[variable.name] = variable.defaultValue || `[${variable.label}]`
+            return acc
+          }, {})
+        }, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            variables: template.variables.reduce((acc, variable) => {
-              acc[variable.name] = variable.defaultValue || `[${variable.label}]`
-              return acc
-            }, {})
-          })
+            'Authorization': `Bearer ${token}`
+          }
         })
         
-        if (!response.ok) throw new Error('Failed to generate preview')
-        
-        const data = await response.json()
-        previewContent.value = data.htmlContent
+        previewContent.value = response.data.htmlContent
         showPreviewModal.value = true
       } catch (error) {
         console.error('Error previewing template:', error)
@@ -522,15 +510,11 @@ export default {
     const duplicateTemplate = async (template) => {
       try {
         const token = localStorage.getItem('token')
-        const response = await fetch(`/api/email-templates/${template._id}/duplicate`, {
-          method: 'POST',
+        await axios.post(`${API_URL}/email-templates/${template._id}/duplicate`, {}, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${token}`
           }
         })
-        
-        if (!response.ok) throw new Error('Failed to duplicate template')
         
         await loadTemplates()
       } catch (error) {
@@ -557,14 +541,11 @@ export default {
       
       try {
         const token = localStorage.getItem('token')
-        const response = await fetch(`/api/email-templates/${template._id}`, {
-          method: 'DELETE',
+        await axios.delete(`${API_URL}/email-templates/${template._id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         })
-        
-        if (!response.ok) throw new Error('Failed to delete template')
         
         await loadTemplates()
       } catch (error) {
@@ -618,18 +599,56 @@ export default {
     }
     
     const getCategoryLabel = (category) => {
-      const labels = {
-        newsletter: 'Newsletter',
-        promotion: 'Promotion',
-        welcome: 'Welcome',
-        product_launch: 'Product Launch',
-        announcement: 'Announcement',
-        abandoned_cart: 'Abandoned Cart'
+      const categoryMap = {
+        'newsletter': 'Newsletter',
+        'promotional': 'Promotional',
+        'transactional': 'Transactional',
+        'welcome': 'Welcome',
+        'abandoned-cart': 'Abandoned Cart',
+        'other': 'Other'
       }
-      return labels[category] || category
+      return categoryMap[category] || category
     }
-    
-    // Close dropdown when clicking outside
+
+    const formatDate = (dateString) => {
+      if (!dateString) return 'No date'
+      try {
+        const date = new Date(dateString)
+        if (isNaN(date.getTime())) return 'Invalid date'
+        return date.toLocaleDateString()
+      } catch (error) {
+        return 'Invalid date'
+      }
+    }
+
+    return {
+      templates,
+      loading,
+      saving,
+      totalPages,
+      currentPage,
+      activeDropdown,
+      showCreateModal,
+      showEditModal,
+      showPreviewModal,
+      previewContent,
+      templateForm,
+      filters,
+      loadTemplates,
+      saveTemplate,
+      previewTemplate,
+      duplicateTemplate,
+      editTemplate,
+      deleteTemplate,
+      useTemplate,
+      addVariable,
+      removeVariable,
+      toggleDropdown,
+      closeModals,
+      closePreview,
+      getCategoryLabel,
+      formatDate
+    }    // Close dropdown when clicking outside
     const handleClickOutside = () => {
       activeDropdown.value = null
     }
