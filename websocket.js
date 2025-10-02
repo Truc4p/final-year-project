@@ -17,6 +17,20 @@ class WebSocketManager {
     this.webrtcConnections = new Map(); // connectionId -> { type: 'admin'|'customer', ws, peerId }
     this.activeBroadcaster = null; // Currently streaming admin
     
+    // In-memory stream state for real-time updates
+    this.currentStreamState = {
+      isActive: false,
+      streamId: null,
+      viewerCount: 0,
+      likes: 0,
+      likedBy: new Set(), // Track user IDs/session IDs who have liked
+      startTime: null,
+      title: '',
+      description: '',
+      streamUrl: '',
+      quality: '720p'
+    };
+    
     this.wss.on('connection', this.handleConnection.bind(this));
     console.log('🔗 WebSocket server running on port 8080');
   }
@@ -98,6 +112,10 @@ class WebSocketManager {
         
       case 'stream_update':
         await this.broadcastStreamUpdate(data);
+        break;
+        
+      case 'toggle_like':
+        await this.handleToggleLike(ws, data);
         break;
         
       case 'chat_message':
@@ -341,6 +359,27 @@ class WebSocketManager {
   async broadcastStreamStatus(data) {
     console.log(`📡 Broadcasting stream status: ${data.type}`);
     
+    // Update in-memory state
+    if (data.type === 'stream_started' && data.streamData) {
+      this.currentStreamState = {
+        isActive: true,
+        streamId: data.streamData.streamId || null,
+        viewerCount: data.streamData.viewerCount || 0,
+        likes: data.streamData.likes || 0,
+        likedBy: new Set(data.streamData.likedBy || []), // Initialize from database or empty
+        startTime: data.streamData.startTime || new Date(),
+        title: data.streamData.title || '',
+        description: data.streamData.description || '',
+        streamUrl: data.streamData.streamUrl || '',
+        quality: data.streamData.quality || '720p'
+      };
+      console.log('💾 Updated in-memory stream state:', this.currentStreamState);
+    } else if (data.type === 'stream_stopped') {
+      this.currentStreamState.isActive = false;
+      this.currentStreamState.likedBy.clear(); // Clear liked users when stream stops
+      console.log('💾 Stream stopped, marked as inactive in memory');
+    }
+    
     // Broadcast to all customer connections
     for (const connection of this.customerConnections.values()) {
       if (connection.ws.readyState === WebSocket.OPEN) {
@@ -360,6 +399,15 @@ class WebSocketManager {
   async broadcastStreamUpdate(data) {
     console.log(`📡 Broadcasting stream update:`, data);
     
+    // Update in-memory state
+    if (data.viewerCount !== undefined) {
+      this.currentStreamState.viewerCount = data.viewerCount;
+    }
+    if (data.likes !== undefined) {
+      this.currentStreamState.likes = data.likes;
+      console.log('💾 Updated likes in memory:', this.currentStreamState.likes);
+    }
+    
     // Broadcast to all connections
     for (const connection of this.customerConnections.values()) {
       if (connection.ws.readyState === WebSocket.OPEN) {
@@ -374,10 +422,80 @@ class WebSocketManager {
     }
   }
 
+  // Handle like toggle (ensure each user can only like once)
+  async handleToggleLike(ws, data) {
+    const { userId, sessionId } = data;
+    const identifier = userId || sessionId; // Use userId if authenticated, otherwise sessionId
+    
+    if (!identifier) {
+      console.error('❌ No identifier provided for like toggle');
+      return;
+    }
+    
+    if (!this.currentStreamState.isActive) {
+      console.log('⚠️ No active stream to like');
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'No active stream'
+      }));
+      return;
+    }
+    
+    // Check if user has already liked
+    const hasLiked = this.currentStreamState.likedBy.has(identifier);
+    
+    if (hasLiked) {
+      // Unlike - remove from likedBy set
+      this.currentStreamState.likedBy.delete(identifier);
+      this.currentStreamState.likes = Math.max(0, this.currentStreamState.likes - 1);
+      console.log(`👎 User ${identifier} unliked. New like count: ${this.currentStreamState.likes}`);
+    } else {
+      // Like - add to likedBy set
+      this.currentStreamState.likedBy.add(identifier);
+      this.currentStreamState.likes++;
+      console.log(`👍 User ${identifier} liked. New like count: ${this.currentStreamState.likes}`);
+    }
+    
+    // Update database if we have a streamId
+    if (this.currentStreamState.streamId) {
+      try {
+        const LiveStream = require('./models/liveStream');
+        await LiveStream.findByIdAndUpdate(this.currentStreamState.streamId, {
+          likes: this.currentStreamState.likes,
+          likedBy: Array.from(this.currentStreamState.likedBy)
+        });
+      } catch (error) {
+        console.error('❌ Error updating likes in database:', error);
+      }
+    }
+    
+    // Broadcast updated like count and liked status to all clients
+    const updateData = {
+      type: 'stream_update',
+      likes: this.currentStreamState.likes,
+      likedBy: Array.from(this.currentStreamState.likedBy) // Send as array for client checking
+    };
+    
+    for (const connection of this.customerConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(updateData));
+      }
+    }
+    
+    for (const connection of this.adminConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(updateData));
+      }
+    }
+  }
+
   // Update and broadcast viewer count
   async updateViewerCount() {
     const viewerCount = this.customerConnections.size;
     console.log(`👥 Current viewer count: ${viewerCount}`);
+    
+    // Update in-memory state
+    this.currentStreamState.viewerCount = viewerCount;
     
     // Broadcast viewer count update to all connections
     const updateData = {
@@ -444,29 +562,20 @@ class WebSocketManager {
   // Send current stream status to a new connection
   async sendCurrentStreamStatus(ws) {
     try {
-      // Check if there's an active livestream in the database
-      const LiveStream = require('./models/liveStream');
-      const activeStream = await LiveStream.findOne({ 
-        isActive: true 
-      }).sort({ createdAt: -1 });
-
-      if (activeStream) {
-        console.log('📡 Sending current stream status to new connection');
-        console.log('🔍 Active stream from database:', {
-          id: activeStream._id,
-          title: activeStream.title,
-          streamUrl: activeStream.streamUrl,
-          isActive: activeStream.isActive
-        });
+      // Check if there's an active stream in memory first (real-time state)
+      if (this.currentStreamState.isActive) {
+        console.log('📡 Sending current stream status from memory to new connection');
+        console.log('🔍 Active stream from memory:', this.currentStreamState);
         
         const streamData = {
-          title: activeStream.title,
-          description: activeStream.description,
-          startTime: activeStream.createdAt,
-          viewerCount: activeStream.viewerCount || 0,
-          likes: activeStream.likes || 0,
-          streamUrl: activeStream.streamUrl || '', // Use stream URL from database
-          quality: activeStream.quality || '720p'
+          title: this.currentStreamState.title,
+          description: this.currentStreamState.description,
+          startTime: this.currentStreamState.startTime,
+          viewerCount: this.currentStreamState.viewerCount,
+          likes: this.currentStreamState.likes,
+          likedBy: Array.from(this.currentStreamState.likedBy), // Send as array
+          streamUrl: this.currentStreamState.streamUrl,
+          quality: this.currentStreamState.quality
         };
 
         console.log('📡 Sending stream data via WebSocket:', streamData);
@@ -477,9 +586,9 @@ class WebSocketManager {
         }));
         
         // Send chat history to new connection
-        await this.sendChatHistory(ws, activeStream);
+        await this.sendChatHistory(ws);
       } else {
-        console.log('📡 No active stream found in database');
+        console.log('📡 No active stream in memory');
       }
     } catch (error) {
       console.error('❌ Error sending current stream status:', error);

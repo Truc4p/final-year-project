@@ -39,6 +39,10 @@ const liveStreamSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  likedBy: [{
+    type: String, // Store user IDs or session IDs
+    index: true
+  }],
   startTime: {
     type: Date,
     default: null
