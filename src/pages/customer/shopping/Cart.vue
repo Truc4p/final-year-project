@@ -225,25 +225,14 @@ onMounted(() => {
           <div class="bg-white rounded-lg shadow-sm p-4">
             <h2 class="font-semibold text-lg mb-4">{{ t('orderSummary') }}</h2>
 
-            <div class="space-y-3 border-b border-neutral-200 pb-4">
-              <div class="flex justify-between">
-                <span class="text-neutral-600">{{ t('subtotal') }}</span>
-                <span class="font-medium">${{ totalCost.toFixed(2) }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-neutral-600">{{ t('shipping') }}</span>
-                <span class="font-medium">{{ t('calculatedAtCheckout') }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-neutral-600">{{ t('tax') }}</span>
-                <span class="font-medium">{{ t('calculatedAtCheckout') }}</span>
-              </div>
-            </div>
-
-            <div class="flex justify-between pt-4 text-lg font-bold">
-              <span>{{ t('total') }}</span>
+            <div class="flex justify-between text-lg font-bold">
+              <span>{{ t('subtotal') }}</span>
               <span>${{ totalCost.toFixed(2) }}</span>
             </div>
+            
+            <p class="text-sm text-neutral-500 mt-2">
+              {{ t('shippingAndTaxCalculatedAtCheckout') || 'Shipping and tax calculated at checkout' }}
+            </p>
 
             <div class="mt-6">
               <button @click="handleSubmitItem" class="w-full btn btn-primary py-3 flex justify-center items-center"

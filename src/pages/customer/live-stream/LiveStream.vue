@@ -250,7 +250,39 @@ const streamUrl = computed(() => {
 const currentStream = computed(() => livestreamStore.isAdminStreaming ? livestreamStore.adminStreamData : null);
 const viewerCount = computed(() => livestreamStore.adminStreamData.viewerCount);
 const likes = computed(() => livestreamStore.adminStreamData.likes);
-const isLiked = ref(false);
+
+// Generate or retrieve user session ID
+const getUserSessionId = () => {
+  let sessionId = localStorage.getItem('livestream_session_id');
+  if (!sessionId) {
+    sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem('livestream_session_id', sessionId);
+  }
+  return sessionId;
+};
+
+// Get user ID from token if authenticated
+const getUserId = () => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.id || payload.user?.id;
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+};
+
+const userId = ref(getUserId());
+const sessionId = ref(getUserSessionId());
+
+// Check if current user has liked
+const isLiked = computed(() => {
+  return livestreamStore.hasUserLiked(userId.value, sessionId.value);
+});
+
 const chatMessages = computed(() => livestreamStore.chatMessages);
 const newMessage = ref('');
 const chatContainer = ref(null);
@@ -372,9 +404,8 @@ const formatDate = (date) => {
 };
 
 const toggleLike = () => {
-  isLiked.value = !isLiked.value;
-  const newLikes = isLiked.value ? likes.value + 1 : likes.value - 1;
-  livestreamStore.updateLikes(newLikes);
+  // Send toggle request to WebSocket server
+  livestreamStore.toggleLike(userId.value, sessionId.value);
 };
 
 const shareStream = () => {

@@ -5,7 +5,7 @@
       <div class="mb-8">
         <div class="flex justify-between items-center">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900">Email Marketing Analytics</h1>
+            <h1 class="text-2xl font-bold text-primary-700">Email Marketing Analytics</h1>
             <p class="text-gray-600 mt-2">Track performance and engagement across all your email campaigns</p>
           </div>
           <div class="flex space-x-3">

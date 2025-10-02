@@ -17,6 +17,7 @@ export const livestreamStore = reactive({
     startTime: null,
     viewerCount: 0,
     likes: 0,
+    likedBy: [], // Array of user IDs/session IDs who have liked
     streamUrl: '', // This will be a blob URL or MediaStream reference
     quality: '720p'
   },
@@ -119,16 +120,25 @@ export const livestreamStore = reactive({
         this.clearChatMessages();
         
         this.isAdminStreaming = true;
-        this.adminStreamData = {
-          ...this.adminStreamData,
-          ...data.streamData,
+        // Update properties individually to maintain reactivity
+        Object.assign(this.adminStreamData, data.streamData, {
           startTime: new Date(data.streamData.startTime)
-        };
+        });
         console.log('Stream started via WebSocket:', this.adminStreamData);
         
         // For customers: reinitialize WebRTC to ensure fresh connection
         if (this.connectionType === 'customer' && this.webrtcInitialized) {
           console.log('🔄 Reinitializing WebRTC for new stream');
+          // Clean up existing connections first
+          for (const [peerId, peerConnection] of this.webrtcPeerConnections) {
+            console.log(`🧹 Cleaning up old peer connection: ${peerId}`);
+            peerConnection.close();
+          }
+          this.webrtcPeerConnections.clear();
+          this.remoteMediaStreams.clear();
+          this.sharedMediaStream = null;
+          
+          // Re-initialize WebRTC
           this.initializeWebRTC('customer');
         }
         break;
@@ -145,6 +155,9 @@ export const livestreamStore = reactive({
         }
         if (data.likes !== undefined) {
           this.adminStreamData.likes = data.likes;
+        }
+        if (data.likedBy !== undefined) {
+          this.adminStreamData.likedBy = data.likedBy;
         }
         break;
         
@@ -249,11 +262,10 @@ export const livestreamStore = reactive({
   startAdminStream(streamData) {
     console.log('🎥 Admin stream started locally:', streamData);
     this.isAdminStreaming = true;
-    this.adminStreamData = {
-      ...this.adminStreamData,
-      ...streamData,
+    // Update properties individually to maintain reactivity
+    Object.assign(this.adminStreamData, streamData, {
       startTime: new Date()
-    };
+    });
   },
 
   // Set shared media stream for live streaming
@@ -290,14 +302,20 @@ export const livestreamStore = reactive({
     });
   },
   
-  updateLikes(likes) {
-    this.adminStreamData.likes = likes
-    
-    // Broadcast likes update via WebSocket
+  toggleLike(userId, sessionId) {
+    // Send toggle like request to WebSocket server
+    // Server will handle the logic and broadcast the update
     this.sendWebSocketMessage({
-      type: 'stream_update',
-      likes: likes
+      type: 'toggle_like',
+      userId: userId,
+      sessionId: sessionId
     });
+  },
+  
+  // Check if current user has liked
+  hasUserLiked(userId, sessionId) {
+    const identifier = userId || sessionId;
+    return this.adminStreamData.likedBy.includes(identifier);
   },
   
   addChatMessage(message) {
@@ -481,7 +499,26 @@ export const livestreamStore = reactive({
   async handleWebRTCOffer(fromPeerId, offer) {
     console.log(`📥 Handling WebRTC offer from: ${fromPeerId}`);
     
-    const peerConnection = this.createPeerConnection(fromPeerId);
+    // Check if peer connection already exists and is in wrong state
+    let peerConnection = this.webrtcPeerConnections.get(fromPeerId);
+    
+    // If connection exists and is not in a state to receive offers, recreate it
+    if (peerConnection && peerConnection.signalingState !== 'stable') {
+      console.log(`🔄 Peer connection in ${peerConnection.signalingState} state, cleaning up...`);
+      this.cleanupPeerConnection(fromPeerId);
+      peerConnection = null;
+    }
+    
+    // If connection is stable but already has remote description, it's an existing connection
+    if (peerConnection && peerConnection.signalingState === 'stable' && peerConnection.currentRemoteDescription) {
+      console.log(`⚠️ Ignoring duplicate offer - connection already established`);
+      return;
+    }
+    
+    // Create or get peer connection
+    if (!peerConnection) {
+      peerConnection = this.createPeerConnection(fromPeerId);
+    }
     
     try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
@@ -496,6 +533,8 @@ export const livestreamStore = reactive({
       });
     } catch (error) {
       console.error('❌ Error handling offer:', error);
+      // Clean up failed connection
+      this.cleanupPeerConnection(fromPeerId);
     }
   },
 

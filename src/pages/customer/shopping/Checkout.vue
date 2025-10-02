@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
@@ -9,6 +9,21 @@ import ChatWidget from '../../../components/ChatWidget.vue';
 const router = useRouter();
 const route = useRoute();
 const t = useI18n().t;
+
+// Tax rate configuration (e.g., 0.10 = 10%, 0.08 = 8%)
+const TAX_RATE = 0.10; // 10% tax
+
+// Store/Business Address Configuration
+const STORE_ADDRESS = '123 Business Street, City, Country'; // Update with your actual store address
+const STORE_COORDINATES = { lat: 10.8231, lng: 106.6297 }; // Update with your actual coordinates (e.g., Ho Chi Minh City)
+
+// Shipping fee configuration
+const SHIPPING_CONFIG = {
+    baseFee: 5.00,           // Base shipping fee
+    perKmRate: 0.50,         // Cost per kilometer
+    freeShippingThreshold: 100, // Free shipping if order total exceeds this
+    maxDistance: 50          // Maximum delivery distance in km
+};
 
 const user = ref({
     phone: '',
@@ -20,6 +35,10 @@ const customerDetails = ref({
     paymentMethod: 'cash',
 });
 
+const shippingFee = ref(0);
+const calculatingShipping = ref(false);
+const shippingError = ref('');
+
 // Parse the cart items from the query parameters
 const cartItems = ref([]);
 if (route.query.items) {
@@ -30,6 +49,19 @@ if (route.query.items) {
     }
 }
 
+// Computed properties for price calculations
+const subtotal = computed(() => {
+    return cartItems.value.reduce((total, item) => total + item.price * item.quantity, 0);
+});
+
+const taxAmount = computed(() => {
+    return subtotal.value * TAX_RATE;
+});
+
+const totalPrice = computed(() => {
+    return subtotal.value + taxAmount.value + shippingFee.value;
+});
+
 // Get userId from localStorage
 const userId = localStorage.getItem('userId');
 if (!userId) {
@@ -39,6 +71,145 @@ if (!userId) {
 } else {
     console.log('userId:', userId); // Add this line to check the value of userId
 }
+
+// ========== SHIPPING CALCULATION FUNCTIONS ==========
+
+/**
+ * METHOD 1: Calculate distance using Haversine formula (no API needed)
+ * This calculates the straight-line distance between two coordinates
+ */
+const calculateDistanceFromCoordinates = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in kilometers
+    return distance;
+};
+
+/**
+ * METHOD 2: Calculate distance using Google Maps Distance Matrix API
+ * This provides actual driving distance (more accurate for shipping)
+ * Note: Requires Google Maps API key
+ */
+const calculateDistanceWithGoogleMaps = async (destinationAddress) => {
+    try {
+        // You need to add your Google Maps API key here
+        const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'; // Replace with your actual API key
+        
+        const origin = encodeURIComponent(STORE_ADDRESS);
+        const destination = encodeURIComponent(destinationAddress);
+        
+        const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin}&destinations=${destination}&key=${GOOGLE_MAPS_API_KEY}`;
+        
+        const response = await axios.get(url);
+        
+        if (response.data.rows[0].elements[0].status === 'OK') {
+            const distanceInMeters = response.data.rows[0].elements[0].distance.value;
+            const distanceInKm = distanceInMeters / 1000;
+            return distanceInKm;
+        } else {
+            throw new Error('Unable to calculate distance');
+        }
+    } catch (error) {
+        console.error('Error calculating distance with Google Maps:', error);
+        throw error;
+    }
+};
+
+/**
+ * METHOD 3: Simple geocoding with Nominatim (OpenStreetMap - Free, no API key needed)
+ * This is a free alternative to Google Maps
+ */
+const geocodeAddressWithNominatim = async (address) => {
+    try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+        const response = await axios.get(url, {
+            headers: {
+                'User-Agent': 'WrencosWebApp/1.0' // Required by Nominatim
+            }
+        });
+        
+        if (response.data && response.data.length > 0) {
+            return {
+                lat: parseFloat(response.data[0].lat),
+                lng: parseFloat(response.data[0].lon)
+            };
+        } else {
+            throw new Error('Address not found');
+        }
+    } catch (error) {
+        console.error('Error geocoding address:', error);
+        throw error;
+    }
+};
+
+/**
+ * Calculate shipping fee based on distance
+ */
+const calculateShippingFee = (distanceInKm) => {
+    // Check if order qualifies for free shipping
+    if (subtotal.value >= SHIPPING_CONFIG.freeShippingThreshold) {
+        return 0;
+    }
+    
+    // Check if distance exceeds maximum
+    if (distanceInKm > SHIPPING_CONFIG.maxDistance) {
+        throw new Error(`Delivery distance (${distanceInKm.toFixed(1)}km) exceeds maximum delivery range (${SHIPPING_CONFIG.maxDistance}km)`);
+    }
+    
+    // Calculate fee: base fee + (distance * per km rate)
+    const fee = SHIPPING_CONFIG.baseFee + (distanceInKm * SHIPPING_CONFIG.perKmRate);
+    return Math.max(fee, SHIPPING_CONFIG.baseFee); // Ensure minimum base fee
+};
+
+/**
+ * Main function to calculate and update shipping fee
+ * Uses free Nominatim API for geocoding
+ */
+const updateShippingFee = async () => {
+    if (!user.value.address || user.value.address.trim() === '') {
+        shippingFee.value = 0;
+        shippingError.value = '';
+        return;
+    }
+    
+    calculatingShipping.value = true;
+    shippingError.value = '';
+    
+    try {
+        // Option 1: Use Nominatim (Free, no API key needed)
+        const customerCoords = await geocodeAddressWithNominatim(user.value.address);
+        const distance = calculateDistanceFromCoordinates(
+            STORE_COORDINATES.lat,
+            STORE_COORDINATES.lng,
+            customerCoords.lat,
+            customerCoords.lng
+        );
+        
+        // Option 2: If you have Google Maps API key, uncomment this instead:
+        // const distance = await calculateDistanceWithGoogleMaps(user.value.address);
+        
+        console.log(`Distance calculated: ${distance.toFixed(2)} km`);
+        shippingFee.value = calculateShippingFee(distance);
+        
+        if (shippingFee.value === 0 && subtotal.value >= SHIPPING_CONFIG.freeShippingThreshold) {
+            shippingError.value = 'Free shipping applied!';
+        }
+    } catch (error) {
+        console.error('Error calculating shipping:', error);
+        shippingError.value = error.message || 'Unable to calculate shipping fee. Please check your address.';
+        shippingFee.value = SHIPPING_CONFIG.baseFee; // Use base fee as fallback
+    } finally {
+        calculatingShipping.value = false;
+    }
+};
+
+// ========== END SHIPPING CALCULATION FUNCTIONS ==========
 
 const updateUser = async () => {
     try {
@@ -93,8 +264,6 @@ const getCustomer = async () => {
 
 const placeOrder = async () => {
     try {
-        const totalPrice = cartItems.value.reduce((total, item) => total + item.price * item.quantity, 0);
-
         // Transform cart items to the payload expected by the backend
         const productsPayload = cartItems.value.map((item) => ({
             productId: item._id || item.productId,
@@ -108,7 +277,11 @@ const placeOrder = async () => {
             paymentMethod: customerDetails.value.paymentMethod,
             orderDate: new Date(),
             status: 'processing',
-            totalPrice: totalPrice,
+            totalPrice: totalPrice.value,
+            subtotal: subtotal.value,
+            tax: taxAmount.value,
+            taxRate: TAX_RATE,
+            shippingFee: shippingFee.value,
         };
 
         console.log('Order data:', orderData); // Log order data
@@ -221,7 +394,31 @@ onMounted(async () => {
                                     rows="3"
                                     class="w-full px-4 py-3 border border-secondary-200 rounded-xl focus:ring-2 transition-colors duration-200"
                                     placeholder="Enter your full delivery address"
+                                    @blur="updateShippingFee"
                                 ></textarea>
+                                
+                                <!-- Calculate Shipping Button -->
+                                <button 
+                                    type="button"
+                                    @click="updateShippingFee"
+                                    :disabled="!user.address || calculatingShipping"
+                                    class="mt-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors duration-200 flex items-center gap-2"
+                                >
+                                    <svg v-if="calculatingShipping" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    {{ calculatingShipping ? 'Calculating...' : 'Calculate Shipping Fee' }}
+                                </button>
+                                
+                                <!-- Shipping Error/Success Message -->
+                                <p v-if="shippingError" :class="shippingFee === 0 && subtotal >= SHIPPING_CONFIG.freeShippingThreshold ? 'text-green-600' : 'text-red-600'" class="text-sm mt-2">
+                                    {{ shippingError }}
+                                </p>
                             </div>
 
                             <div>
@@ -272,11 +469,34 @@ onMounted(async () => {
                             </div>
                         </div>
 
-                        <!-- Total -->
-                        <div class="border-t border-secondary-200 pt-4 mb-6">
-                            <div class="flex justify-between items-center text-lg font-bold text-secondary-900">
+                        <!-- Price Breakdown -->
+                        <div class="border-t border-secondary-200 pt-4 mb-6 space-y-2">
+                            <div class="flex justify-between items-center text-sm text-secondary-600">
+                                <span>{{ t('subtotal') || 'Subtotal' }}</span>
+                                <span>${{ subtotal.toFixed(2) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm text-secondary-600">
+                                <span>{{ t('tax') || 'Tax' }} ({{ (TAX_RATE * 100).toFixed(0) }}%)</span>
+                                <span>${{ taxAmount.toFixed(2) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm text-secondary-600">
+                                <span class="flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                                    </svg>
+                                    {{ t('shipping') || 'Shipping' }}
+                                </span>
+                                <span>
+                                    <span v-if="calculatingShipping" class="text-xs italic">Calculating...</span>
+                                    <span v-else-if="shippingFee === 0 && subtotal >= SHIPPING_CONFIG.freeShippingThreshold" class="text-green-600 font-medium">FREE</span>
+                                    <span v-else-if="shippingFee > 0">${{ shippingFee.toFixed(2) }}</span>
+                                    <span v-else class="text-xs italic">Enter address</span>
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center text-lg font-bold text-secondary-900 pt-2 border-t border-secondary-200">
                                 <span>{{ t('total') || 'Total' }}</span>
-                                <span>${{ cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2) }}</span>
+                                <span>${{ totalPrice.toFixed(2) }}</span>
                             </div>
                         </div>
 

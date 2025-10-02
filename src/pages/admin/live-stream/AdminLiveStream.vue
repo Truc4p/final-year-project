@@ -948,11 +948,13 @@ const toggleStream = async () => {
         livestreamStore.broadcastStreamStatus({
           type: 'stream_started',
           streamData: {
+            streamId: livestream._id, // Include stream ID for tracking likes
             title: livestream.title,
             description: livestream.description,
             startTime: livestream.startTime || new Date(),
             viewerCount: livestream.viewerCount || 0,
             likes: livestream.likes || 0,
+            likedBy: livestream.likedBy || [], // Include likedBy array
             streamUrl: '', // Empty - customers get video via WebRTC
             quality: livestream.quality
           }

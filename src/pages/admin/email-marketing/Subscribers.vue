@@ -2,7 +2,7 @@
   <div class="subscribers-management">
     <!-- Header -->
     <div class="page-header">
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center p-10">
         <div>
           <h1 class="text-2xl font-bold text-gray-900">Newsletter Subscribers</h1>
           <p class="text-gray-600 mt-1">Manage your newsletter subscriber list</p>
@@ -25,7 +25,7 @@
     </div>
 
     <!-- Segments Panel -->
-    <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
+    <div class="bg-white rounded-lg shadow-sm border p-6 m-6">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-semibold text-gray-900">Subscriber Segments</h2>
         <div class="flex gap-2">
@@ -84,7 +84,7 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
+    <div class="bg-white rounded-lg shadow-sm border p-6 m-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
@@ -154,7 +154,7 @@
     </div>
 
     <!-- Subscribers Table -->
-    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm border overflow-hidden m-6">
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">

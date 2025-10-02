@@ -1,7 +1,7 @@
 <template>
   <div class="campaign-creation">
     <!-- Header -->
-    <div class="page-header flex justify-between items-center mb-6">
+    <div class="page-header flex justify-between items-center m-10">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">
           {{ isEditing ? 'Edit Campaign' : 'Create New Campaign' }}
@@ -24,7 +24,7 @@
     <!-- Campaign Form -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Main Content -->
-      <div class="lg:col-span-2 space-y-6">
+      <div class="lg:col-span-2 space-y-6 m-5 mr-0">
         <!-- Basic Information -->
         <div class="bg-white rounded-lg shadow-sm border p-6">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Campaign Details</h3>
@@ -162,7 +162,7 @@
       </div>
 
       <!-- Sidebar -->
-      <div class="space-y-6">
+      <div class="space-y-6 m-5 ml-0">
         <!-- Target Audience -->
         <div class="bg-white rounded-lg shadow-sm border p-6">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Target Audience</h3>
