@@ -1,1 +1,1 @@
-# Final Project - Combined Repository
+# Final Project - Combined Repository (Frontend + Backend + History)
