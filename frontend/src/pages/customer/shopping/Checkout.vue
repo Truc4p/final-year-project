@@ -13,6 +13,11 @@ const t = useI18n().t;
 // Tax rate configuration (e.g., 0.10 = 10%, 0.08 = 8%)
 const TAX_RATE = 0.10; // 10% tax
 
+// Shipping configuration
+const FREE_SHIPPING_THRESHOLD = 100; // Free shipping for orders >= $100
+const SHIPPING_FEE_MAJOR_CITIES = 5; // $5 for Ho Chi Minh City & Danang
+const SHIPPING_FEE_OTHER = 7; // $7 for other provinces
+
 const user = ref({
     phone: '',
     email: '',
@@ -20,7 +25,24 @@ const user = ref({
 });
 
 const customerDetails = ref({
-    paymentMethod: 'cash',
+    paymentMethod: 'cod', // Default to Cash on Delivery
+});
+
+// Computed property to detect shipping location from address
+const shippingLocation = computed(() => {
+    const address = user.value.address?.toLowerCase() || '';
+    // Check if address contains Ho Chi Minh City or Danang
+    if (address.includes('ho chi minh') || 
+        address.includes('hồ chí minh') || 
+        address.includes('hcm') || 
+        address.includes('saigon') || 
+        address.includes('sài gòn') ||
+        address.includes('danang') || 
+        address.includes('da nang') ||
+        address.includes('đà nẵng')) {
+        return 'major';
+    }
+    return 'other';
 });
 
 // Parse the cart items from the query parameters
@@ -38,12 +60,26 @@ const subtotal = computed(() => {
     return cartItems.value.reduce((total, item) => total + item.price * item.quantity, 0);
 });
 
+const shippingFee = computed(() => {
+    // Free shipping for orders >= $100
+    if (subtotal.value >= FREE_SHIPPING_THRESHOLD) {
+        return 0;
+    }
+    
+    // Calculate shipping based on detected location from address
+    if (shippingLocation.value === 'major') {
+        return SHIPPING_FEE_MAJOR_CITIES;
+    } else {
+        return SHIPPING_FEE_OTHER;
+    }
+});
+
 const taxAmount = computed(() => {
     return subtotal.value * TAX_RATE;
 });
 
 const totalPrice = computed(() => {
-    return subtotal.value + taxAmount.value;
+    return subtotal.value + taxAmount.value + shippingFee.value;
 });
 
 // Get userId from localStorage
@@ -126,6 +162,8 @@ const placeOrder = async () => {
             subtotal: subtotal.value,
             tax: taxAmount.value,
             taxRate: TAX_RATE,
+            shippingFee: shippingFee.value,
+            shippingLocation: shippingLocation.value,
         };
 
         console.log('Order data:', orderData); // Log order data
@@ -239,6 +277,12 @@ onMounted(async () => {
                                     class="w-full px-4 py-3 border border-secondary-200 rounded-xl focus:ring-2 transition-colors duration-200"
                                     placeholder="Enter your full delivery address"
                                 ></textarea>
+                                <div class="mt-3 p-3 bg-primary-50 border border-primary-200 rounded-lg">
+                                    <p class="text-xs text-primary-800 leading-relaxed">
+                                        <strong class="font-semibold">Standard Delivery</strong><br/>
+                                        Free shipping on orders from $100. Shipping fee: $5 (within Ho Chi Minh City & Danang); $7 (other provinces). Estimated delivery time: 2–5 days, excluding Sundays and public holidays.
+                                    </p>
+                                </div>
                             </div>
 
                             <div>
@@ -249,9 +293,8 @@ onMounted(async () => {
                                     v-model="customerDetails.paymentMethod" 
                                     class="w-full px-4 py-3 border border-secondary-200 rounded-xl focus:ring-2 transition-colors duration-200"
                                 >
-                                    <option value="cash">{{ t('cash') || 'Cash on Delivery' }}</option>
-                                    <option value="credit_card">{{ t('creditCard') || 'Credit Card' }}</option>
-                                    <option value="zalopay">{{ t('zalopay') || 'ZaloPay' }}</option>
+                                    <option value="cod">{{ t('cod') || 'Cash on Delivery' }}</option>
+                                    <option value="onlinePayment">{{ t('onlinePayment') || 'Online Payment' }}</option>
                                 </select>
                             </div>
                         </form>
@@ -298,6 +341,15 @@ onMounted(async () => {
                             <div class="flex justify-between items-center text-sm text-secondary-600">
                                 <span>{{ t('tax') || 'Tax' }} ({{ (TAX_RATE * 100).toFixed(0) }}%)</span>
                                 <span>${{ taxAmount.toFixed(2) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm text-secondary-600">
+                                <span>
+                                    {{ t('shipping') || 'Shipping' }}
+                                    <span v-if="shippingFee === 0" class="font-medium ml-1">({{ t('free') || 'FREE' }})</span>
+                                </span>
+                                <span :class="{ 'font-medium': shippingFee === 0 }">
+                                    {{ shippingFee === 0 ? '$0.00' : `$${shippingFee.toFixed(2)}` }}
+                                </span>
                             </div>
                             <div class="flex justify-between items-center text-lg font-bold text-secondary-900 pt-2 border-t border-secondary-200">
                                 <span>{{ t('total') || 'Total' }}</span>

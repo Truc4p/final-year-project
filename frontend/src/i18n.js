@@ -86,8 +86,8 @@ const messages = {
     orderDate: 'Order Date',
     orderUser: 'Order User',
     paymentMethod: 'Payment Method',
-    cash: 'Cash',
-    creditCard: 'Credit Card',
+    cod: 'Cash on Delivery',
+    onlinePayment: 'Online Payment',
     orderProducts: 'Order Products',
     productId: 'Product ID',
     quantity: 'Quantity',
@@ -155,6 +155,7 @@ const messages = {
     creating: 'Creating...',
     description: 'Description',
     productsAvailable: 'Products Available',
+    shippingAndTaxCalculatedAtCheckout: 'Shipping and tax calculated at checkout',
     
     // Live Stream translations
     watchOurLatestLiveStreams: 'Watch our latest live streams and discover new products',
@@ -299,8 +300,8 @@ const messages = {
     orderDate: 'Ngày đặt hàng',
     orderUser: 'Người đặt hàng',
     paymentMethod: 'Phương thức thanh toán',
-    cash: 'Tiền mặt',
-    creditCard: 'Thẻ tín dụng',
+    cod: 'Thanh toán khi nhận hàng',
+    onlinePayment: 'Thanh toán trực tuyến',
     orderProducts: 'Sản phẩm đặt hàng',
     productId: 'ID sản phẩm',
     quantity: 'Số lượng',
@@ -368,6 +369,7 @@ const messages = {
     creating: 'Đang tạo...',
     description: 'Mô tả',
     productsAvailable: 'Sản phẩm có sẵn',
+    shippingAndTaxCalculatedAtCheckout: 'Vận chuyển và thuế được tính khi thanh toán',
     
     // Live Stream translations
     watchOurLatestLiveStreams: 'Xem các buổi phát trực tiếp mới nhất và khám phá sản phẩm mới',

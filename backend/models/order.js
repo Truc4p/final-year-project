@@ -31,7 +31,7 @@ const OrderSchema = new Schema({
 
   paymentMethod: {
     type: String,
-    enum: ["cash", "credit_card", "zalopay"],
+    enum: ["cod", "onlinePayment"],
     required: true,
   },
   

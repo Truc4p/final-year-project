@@ -59,11 +59,11 @@
               
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                  <div class="flex items-center space-x-2">
+                  <div v-if="isLive" class="flex items-center space-x-2">
                     <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                     <span class="text-sm font-medium text-red-600">{{ viewerCount }} {{ t('viewers') }}</span>
                   </div>
-                  <div class="text-sm text-gray-500">
+                  <div v-if="isLive" class="text-sm text-gray-500">
                     {{ t('startedAt') }}: {{ formatTime(currentStream?.startTime) }}
                   </div>
                 </div>
@@ -575,6 +575,13 @@ const applyStreamToVideo = (sharedStream, remoteStream) => {
   const streamToUse = remoteStream || sharedStream;
   
   if (streamToUse) {
+    // Check if this is the same stream already playing
+    const currentStream = videoPlayer.value.srcObject;
+    if (currentStream && currentStream.id === streamToUse.id) {
+      console.log('ℹ️ Same stream already playing, skipping update');
+      return;
+    }
+    
     console.log('🎥 Customer: Setting stream to video element:', remoteStream ? 'WebRTC Remote Stream' : 'Shared MediaStream');
     
     // Clear any existing src to avoid conflicts
@@ -590,20 +597,20 @@ const applyStreamToVideo = (sharedStream, remoteStream) => {
       
       // Try to play again without autoplay restrictions
       setTimeout(() => {
-        if (videoPlayer.value) {
+        if (videoPlayer.value && videoPlayer.value.srcObject) {
           videoPlayer.value.play().catch(err => console.error('❌ Retry failed:', err));
         }
       }, 100);
     });
-  } else {
-    console.log('🎥 Customer: Clearing stream from video element');
+  } else if (!isLive.value) {
+    // Only clear if there's actually no active stream
+    console.log('🎥 Customer: No active stream - clearing video element');
     videoPlayer.value.srcObject = null;
     videoPlayer.value.src = '';
     videoPlayer.value.removeAttribute('src');
-    
-    // Don't fall back to blob URLs - they don't work cross-browser
-    // WebRTC should be the only streaming method
-    console.log('⏳ Waiting for WebRTC stream...');
+  } else {
+    // Stream is active but not received yet - don't clear, just wait
+    console.log('⏳ Stream active but not received yet - waiting for WebRTC stream...');
   }
 };
 

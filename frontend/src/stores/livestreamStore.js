@@ -116,8 +116,11 @@ export const livestreamStore = reactive({
     
     switch (data.type) {
       case 'stream_started':
-        // Clear chat messages for new stream
-        this.clearChatMessages();
+        // Don't clear chat if we're just joining an existing stream (page refresh)
+        const isNewStream = this.isAdminStreaming === false;
+        if (isNewStream) {
+          this.clearChatMessages();
+        }
         
         this.isAdminStreaming = true;
         // Update properties individually to maintain reactivity
@@ -126,8 +129,11 @@ export const livestreamStore = reactive({
         });
         console.log('Stream started via WebSocket:', this.adminStreamData);
         
-        // For customers: reinitialize WebRTC to ensure fresh connection
-        if (this.connectionType === 'customer' && this.webrtcInitialized) {
+        // For customers: only reinitialize WebRTC if:
+        // 1. It's truly a new stream (not just page refresh receiving stream_started)
+        // 2. We have active connections (meaning we were watching a previous stream)
+        const hasActiveConnections = this.webrtcPeerConnections.size > 0;
+        if (this.connectionType === 'customer' && this.webrtcInitialized && isNewStream && hasActiveConnections) {
           console.log('🔄 Reinitializing WebRTC for new stream');
           // Clean up existing connections first
           for (const [peerId, peerConnection] of this.webrtcPeerConnections) {
@@ -139,7 +145,11 @@ export const livestreamStore = reactive({
           this.sharedMediaStream = null;
           
           // Re-initialize WebRTC
+          this.webrtcInitialized = false;
           this.initializeWebRTC('customer');
+          this.webrtcInitialized = true;
+        } else if (this.connectionType === 'customer' && !this.webrtcInitialized) {
+          console.log('ℹ️ Stream active but WebRTC not yet initialized - will connect via registered event');
         }
         break;
         
@@ -499,23 +509,35 @@ export const livestreamStore = reactive({
   async handleWebRTCOffer(fromPeerId, offer) {
     console.log(`📥 Handling WebRTC offer from: ${fromPeerId}`);
     
-    // Check if peer connection already exists and is in wrong state
+    // Check if peer connection already exists
     let peerConnection = this.webrtcPeerConnections.get(fromPeerId);
     
-    // If connection exists and is not in a state to receive offers, recreate it
-    if (peerConnection && peerConnection.signalingState !== 'stable') {
-      console.log(`🔄 Peer connection in ${peerConnection.signalingState} state, cleaning up...`);
-      this.cleanupPeerConnection(fromPeerId);
-      peerConnection = null;
+    // If connection exists, check its state
+    if (peerConnection) {
+      const state = peerConnection.signalingState;
+      console.log(`� Existing connection state: ${state}`);
+      
+      // If we're already connected or connecting, ignore duplicate offers
+      if (state === 'stable' && peerConnection.currentRemoteDescription) {
+        console.log(`⚠️ Ignoring duplicate offer - connection already established`);
+        return;
+      }
+      
+      // If connection is in have-local-offer or have-remote-offer state, it's processing
+      if (state === 'have-local-offer' || state === 'have-remote-offer') {
+        console.log(`⚠️ Ignoring duplicate offer - connection negotiation in progress (${state})`);
+        return;
+      }
+      
+      // Only clean up if in a failed or closed state
+      if (state === 'closed' || peerConnection.connectionState === 'failed') {
+        console.log(`🔄 Cleaning up ${state} connection and recreating...`);
+        this.cleanupPeerConnection(fromPeerId);
+        peerConnection = null;
+      }
     }
     
-    // If connection is stable but already has remote description, it's an existing connection
-    if (peerConnection && peerConnection.signalingState === 'stable' && peerConnection.currentRemoteDescription) {
-      console.log(`⚠️ Ignoring duplicate offer - connection already established`);
-      return;
-    }
-    
-    // Create or get peer connection
+    // Create peer connection if needed
     if (!peerConnection) {
       peerConnection = this.createPeerConnection(fromPeerId);
     }
@@ -531,6 +553,8 @@ export const livestreamStore = reactive({
         to: fromPeerId,
         answer: answer
       });
+      
+      console.log(`✅ Successfully processed offer from ${fromPeerId}`);
     } catch (error) {
       console.error('❌ Error handling offer:', error);
       // Clean up failed connection
