@@ -6,21 +6,21 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
 //const morgan = require("morgan"); // Import morgan
 
-const productRoutes = require("./routes/productRoutes");
-const categoryRoutes = require("./routes/categoryRoutes");
-const authRoutes = require("./routes/authRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-const userRoutes = require("./routes/userRoutes");
-const analyticsRoutes = require("./routes/analyticsRoutes");
-const chatRoutes = require("./routes/chatRoutes");
-const cashFlowRoutes = require("./routes/cashFlowRoutes");
-const hrRoutes = require("./routes/hrRoutes");
-const liveStreamRoutes = require("./routes/liveStreamRoutes");
-const uploadRoutes = require("./routes/uploadRoutes");
-const newsletterRoutes = require("./routes/newsletterRoutes");
-const emailCampaignRoutes = require("./routes/emailCampaignRoutes");
-const emailTemplateRoutes = require("./routes/emailTemplateRoutes");
-const emailSegmentRoutes = require("./routes/emailSegmentRoutes");
+const productRoutes = require("./routes/ecommerce/productRoutes");
+const categoryRoutes = require("./routes/ecommerce/categoryRoutes");
+const authRoutes = require("./routes/auth/authRoutes");
+const orderRoutes = require("./routes/ecommerce/orderRoutes");
+const userRoutes = require("./routes/auth/userRoutes");
+const analyticsRoutes = require("./routes/analytics/analyticsRoutes");
+const chatRoutes = require("./routes/communication/chatRoutes");
+const cashFlowRoutes = require("./routes/finance/cashFlowRoutes");
+const hrRoutes = require("./routes/hr/hrRoutes");
+const liveStreamRoutes = require("./routes/livestream/liveStreamRoutes");
+const uploadRoutes = require("./routes/core/uploadRoutes");
+const newsletterRoutes = require("./routes/marketing/newsletterRoutes");
+const emailCampaignRoutes = require("./routes/marketing/emailCampaignRoutes");
+const emailTemplateRoutes = require("./routes/marketing/emailTemplateRoutes");
+const emailSegmentRoutes = require("./routes/marketing/emailSegmentRoutes");
 
 const connectDB = require("./db");
 const path = require("path"); // Import the path module
@@ -87,7 +87,7 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ["./routes/*.js"], // Path to the API docs
+  apis: ["./routes/**/*.js"], // Path to the API docs
 };
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

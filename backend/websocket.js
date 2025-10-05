@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const jwt = require('jsonwebtoken');
-const ChatConversation = require('./models/chatConversation');
+const ChatConversation = require('./models/communication/chatConversation');
 
 class WebSocketManager {
   constructor(server) {
@@ -459,7 +459,7 @@ class WebSocketManager {
     // Update database if we have a streamId
     if (this.currentStreamState.streamId) {
       try {
-        const LiveStream = require('./models/liveStream');
+        const LiveStream = require('./models/livestream/liveStream');
         await LiveStream.findByIdAndUpdate(this.currentStreamState.streamId, {
           likes: this.currentStreamState.likes,
           likedBy: Array.from(this.currentStreamState.likedBy)
@@ -524,7 +524,7 @@ class WebSocketManager {
     
     try {
       // Save message to database if there's an active stream
-      const LiveStream = require('./models/liveStream');
+      const LiveStream = require('./models/livestream/liveStream');
       const activeStream = await LiveStream.findOne({ isActive: true }).sort({ createdAt: -1 });
       
       if (activeStream) {
@@ -598,7 +598,7 @@ class WebSocketManager {
   // Send chat history to new connection
   async sendChatHistory(ws) {
     try {
-      const LiveStream = require('./models/liveStream');
+      const LiveStream = require('./models/livestream/liveStream');
       const activeStream = await LiveStream.findOne({ isActive: true }).sort({ createdAt: -1 });
       
       if (activeStream && activeStream.chatMessages && activeStream.chatMessages.length > 0) {
