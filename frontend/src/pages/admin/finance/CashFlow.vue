@@ -1798,8 +1798,8 @@ onMounted(async () => {
 
 .form-select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-color: #A44A6B;
+  box-shadow: 0 0 0 2px rgba(215, 59, 246, 0.2);
 }
 
 .page-background {

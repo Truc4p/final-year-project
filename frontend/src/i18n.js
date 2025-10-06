@@ -214,7 +214,14 @@ const messages = {
     streamHistory: 'Stream History',
     delete: 'Delete',
     confirmDeleteStream: 'Are you sure you want to delete this stream?',
-    mediaAccessError: 'Error accessing camera/microphone. Please check permissions.'
+    mediaAccessError: 'Error accessing camera/microphone. Please check permissions.',
+    pinnedProducts: 'Pinned Products',
+    selectProduct: 'Select Product',
+    pin: 'Pin',
+    unpin: 'Unpin',
+    noPinnedProducts: 'No products pinned yet',
+    moveUp: 'Move Up',
+    moveDown: 'Move Down'
   },
   vi: {
     welcomeMessage: 'Chào mừng bạn đến với trang web của chúng tôi!',
@@ -427,7 +434,14 @@ const messages = {
     streamHistory: 'Lịch sử phát sóng',
     delete: 'Xóa',
     confirmDeleteStream: 'Bạn có chắc muốn xóa buổi phát này không?',
-    mediaAccessError: 'Lỗi truy cập camera/microphone. Vui lòng kiểm tra quyền truy cập.'
+    mediaAccessError: 'Lỗi truy cập camera/microphone. Vui lòng kiểm tra quyền truy cập.',
+    pinnedProducts: 'Sản phẩm được ghim',
+    selectProduct: 'Chọn sản phẩm',
+    pin: 'Ghim',
+    unpin: 'Bỏ ghim',
+    noPinnedProducts: 'Không có sản phẩm được ghim',
+    moveUp: 'Di chuyển lên',
+    moveDown: 'Di chuyển xuống'
   }
 };
 

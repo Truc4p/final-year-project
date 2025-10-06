@@ -1457,7 +1457,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
 
 .form-input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
 }
 
 .btn {

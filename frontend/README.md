@@ -78,18 +78,7 @@ const categories = ref([
 </template>
 
 <style scoped>
-.btn-primary {
-  @apply bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-500;
-}
-.btn-edit {
-  @apply bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500 mx-1;
-}
-.btn-delete {
-  @apply bg-red-400 text-white px-2 py-1 rounded hover:bg-red-500 mx-1;
-}
-.btn-details {
-  @apply bg-green-400 text-white px-2 py-1 rounded hover:bg-green-500 mx-1;
-}
+
 </style>
 ```
 

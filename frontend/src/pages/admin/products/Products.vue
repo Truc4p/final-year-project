@@ -259,9 +259,6 @@ const onImageError = (event) => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.card {
-  animation: fadeIn 0.3s ease-out;
-}
 
 tr:hover .btn-action {
   transform: scale(1.05);

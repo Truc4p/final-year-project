@@ -350,21 +350,6 @@ const handleSubmit = async () => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.card {
-  animation: fadeIn 0.3s ease-out;
-}
-
-/* Enhanced form focus states */
-.form-control:focus {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-soft), 0 0 0 3px rgba(20, 184, 166, 0.1);
-}
-
-/* Button hover effects */
-.btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-
 /* Loading state for form */
 .form-control:disabled {
   background-color: var(--secondary-100);

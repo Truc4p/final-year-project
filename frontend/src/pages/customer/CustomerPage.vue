@@ -270,7 +270,7 @@ onMounted(() => {
 .loading-spinner {
   width: 3rem;
   height: 3rem;
-  color: #3b82f6;
+  color: #A44A6B;
   animation: spin 1s linear infinite;
 }
 

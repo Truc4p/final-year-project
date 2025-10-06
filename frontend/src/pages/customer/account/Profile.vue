@@ -438,7 +438,7 @@ onMounted(async () => {
 .loading-spinner {
   width: 3rem;
   height: 3rem;
-  color: #3b82f6;
+  color: #A44A6B;
   animation: spin 1s linear infinite;
 }
 
@@ -486,7 +486,7 @@ onMounted(async () => {
 }
 
 .form-group input:focus {
-  @apply ring-2 ring-primary-500 border-primary-500;
+  @apply ring-1 ring-primary-500 border-primary-500;
 }
 
 /* Button hover effects */
