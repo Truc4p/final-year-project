@@ -100,7 +100,7 @@
                 :srcdoc="template.htmlContent"
                 class="w-full h-full transform scale-50 origin-top-left"
                 style="width: 200%; height: 200%;"
-                sandbox="allow-same-origin"
+                sandbox="allow-same-origin allow-scripts"
               ></iframe>
             </div>
             
@@ -378,7 +378,7 @@
             <iframe
               :srcdoc="previewContent"
               class="w-full h-96"
-              sandbox="allow-same-origin"
+              sandbox="allow-same-origin allow-scripts"
             ></iframe>
           </div>
         </div>
