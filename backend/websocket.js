@@ -147,6 +147,10 @@ class WebSocketManager {
         await this.handleWebRTCBroadcastStop(ws, data);
         break;
         
+      case 'pinned_products_updated':
+        await this.broadcastPinnedProductsUpdate(data);
+        break;
+        
       default:
         console.log('❓ Unknown message type:', type);
     }
@@ -771,6 +775,25 @@ class WebSocketManager {
         type: 'webrtc_new_customer',
         customerId: customerId
       }));
+    }
+  }
+
+  // Handle pinned products updates
+  async broadcastPinnedProductsUpdate(data) {
+    console.log(`📌 Broadcasting pinned products update`);
+    
+    // Broadcast to all customer connections
+    for (const connection of this.customerConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(data));
+      }
+    }
+    
+    // Also broadcast to other admin connections for sync
+    for (const connection of this.adminConnections.values()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(data));
+      }
     }
   }
 

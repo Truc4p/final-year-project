@@ -25,7 +25,7 @@
         <!-- Streaming Controls -->
         <div class="lg:col-span-2">
           <!-- Camera Preview/Stream -->
-          <div class="bg-black rounded-lg overflow-hidden shadow-xl mb-6">
+          <div class="bg-black rounded-lg overflow-hidden mb-6">
             <div class="relative aspect-video bg-gray-900 flex items-center justify-center">
               <video 
                 v-if="isStreaming || isPreviewing"
@@ -66,7 +66,7 @@
           </div>
           
           <!-- Stream Controls -->
-          <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <div class="bg-white rounded-lg p-6 mb-6">
             <h3 class="text-xl font-bold mb-4">{{ t('streamControls') }}</h3>
             
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -136,8 +136,96 @@
             </div>
           </div>
           
+          <!-- Pinned Products Management -->
+          <div class="bg-white rounded-lg p-6 mb-6">
+            <h3 class="text-xl font-bold mb-4">{{ t('pinnedProducts') || 'Pinned Products' }}</h3>
+            
+            <!-- Add Product Section -->
+            <div class="mb-4">
+              <div class="flex space-x-2">
+                <select
+                  v-model="selectedProductToPin"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+                >
+                  <option value="">{{ t('selectProduct') || 'Select Product' }}</option>
+                  <option 
+                    v-for="product in availableProducts" 
+                    :key="product._id" 
+                    :value="product._id"
+                  >
+                    {{ product.name }} - ${{ product.price }}
+                  </option>
+                </select>
+                <button
+                  @click="pinSelectedProduct"
+                  :disabled="!selectedProductToPin || !currentStreamId"
+                  class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                >
+                  {{ t('pin') || 'Pin' }}
+                </button>
+              </div>
+            </div>
+            
+            <!-- Pinned Products List -->
+            <div class="space-y-3 max-h-64 overflow-y-auto">
+              <div 
+                v-for="(pinnedProduct, index) in livestreamStore.pinnedProducts" 
+                :key="pinnedProduct._id"
+                class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+              >
+                <img 
+                  :src="getProductImageUrl(pinnedProduct.productId?.image)" 
+                  :alt="pinnedProduct.productId?.name"
+                  class="w-12 h-12 rounded-lg object-cover"
+                  @error="(e) => e.target.src = '/images/fallback-image.jpg'"
+                />
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-medium text-sm text-gray-900 truncate">
+                    {{ pinnedProduct.productId?.name }}
+                  </h4>
+                  <p class="text-sm text-gray-500">${{ pinnedProduct.productId?.price }}</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <button
+                    @click="movePinnedProduct(index, -1)"
+                    :disabled="index === 0"
+                    class="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                    :title="t('moveUp') || 'Move Up'"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                    </svg>
+                  </button>
+                  <button
+                    @click="movePinnedProduct(index, 1)"
+                    :disabled="index === livestreamStore.pinnedProducts.length - 1"
+                    class="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                    :title="t('moveDown') || 'Move Down'"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    @click="unpinProduct(pinnedProduct.productId._id)"
+                    class="p-1 text-red-400 hover:text-red-600"
+                    :title="t('unpin') || 'Unpin'"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
+              <div v-if="livestreamStore.pinnedProducts.length === 0" class="text-center py-4 text-gray-500 text-sm">
+                {{ t('noPinnedProducts') || 'No products pinned yet' }}
+              </div>
+            </div>
+          </div>
+          
           <!-- Stream Settings -->
-          <div class="bg-white rounded-lg shadow-lg p-6">
+          <div class="bg-white rounded-lg p-6">
             <h3 class="text-xl font-bold mb-4">{{ t('streamSettings') }}</h3>
             
             <div class="space-y-4">
@@ -179,7 +267,7 @@
         <!-- Stream Management Sidebar -->
         <div class="lg:col-span-1">
           <!-- Stream Stats -->
-          <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <div class="bg-white rounded-lg p-6 mb-6">
             <h3 class="text-xl font-bold mb-4">{{ t('streamStats') }}</h3>
             
             <div class="space-y-4">
@@ -206,7 +294,7 @@
           </div>
           
           <!-- Live Chat Monitor -->
-          <div class="bg-white rounded-lg shadow-lg h-96 flex flex-col">
+          <div class="bg-white rounded-lg h-96 flex flex-col">
             <div class="p-4 border-b">
               <h3 class="font-semibold text-lg">{{ t('liveChat') }}</h3>
               <p class="text-sm text-gray-500">{{ t('monitorCustomerMessages') }}</p>
@@ -228,7 +316,7 @@
             </div>
             
             <!-- Admin can respond to chat -->
-            <div class="p-4 border-t">
+            <div class="p-4">
               <div class="flex space-x-2">
                 <input
                   v-model="newMessage"
@@ -256,7 +344,7 @@
       <div class="mt-16">
         <h2 class="text-3xl font-bold mb-8 text-center text-primary-700">{{ t('streamHistory') }}</h2>
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="stream in pastStreams" :key="stream.id" class="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div v-for="stream in pastStreams" :key="stream.id" class="bg-white rounded-lg overflow-hidden">
             <div class="aspect-video bg-gray-200 flex items-center justify-center relative">
               <img 
                 v-if="stream.thumbnailUrl" 
@@ -273,7 +361,7 @@
               </div>
               <!-- Play button overlay -->
               <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer" @click="() => router.push(`/admin/live-stream/watch/${stream.id}`)">
-                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
                   <svg v-if="stream.videoUrl && stream.videoUrl.trim() !== ''" class="w-8 h-8 text-primary-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M8 5v10l8-5-8-5z" />
                   </svg>
@@ -348,6 +436,10 @@ const chatContainer = ref(null);
 // Backend integration
 const currentStreamId = ref(null);
 const apiUrl = 'http://localhost:3000';
+
+// Pinned products management
+const availableProducts = ref([]);
+const selectedProductToPin = ref('');
 
 // Video recording
     const mediaRecorder = ref(null);
@@ -427,6 +519,10 @@ const createLiveStream = async () => {
     
     const data = await response.json();
     currentStreamId.value = data.livestream._id;
+    
+    // Fetch pinned products for this stream
+    await livestreamStore.fetchPinnedProducts(currentStreamId.value);
+    
     return data.livestream;
   } catch (error) {
     console.error('Error creating livestream:', error);
@@ -459,6 +555,9 @@ const stopLiveStream = async () => {
     
     const data = await response.json();
     currentStreamId.value = null;
+    
+    // Clear pinned products when stream stops
+    livestreamStore.clearPinnedProducts();
     
     // Don't refresh past streams immediately - let recording upload complete first
     // fetchPastStreams() will be called after recording upload finishes
@@ -494,6 +593,88 @@ const fetchPastStreams = async () => {
     console.log('Mapped past streams:', pastStreams.value);
   } catch (error) {
     console.error('Error fetching past streams:', error);
+  }
+};
+
+// Fetch available products for pinning
+const fetchAvailableProducts = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${apiUrl}/products`, {
+      headers: {
+        'x-auth-token': token
+      }
+    });
+    
+    if (response.ok) {
+      const products = await response.json();
+      availableProducts.value = products;
+      console.log('Fetched available products:', products.length);
+    }
+  } catch (error) {
+    console.error('Error fetching available products:', error);
+  }
+};
+
+// Get product image URL
+const getProductImageUrl = (imagePath) => {
+  if (!imagePath) return '/images/fallback-image.jpg';
+  return `${apiUrl}/${imagePath}`;
+};
+
+// Pin selected product
+const pinSelectedProduct = async () => {
+  if (!selectedProductToPin.value || !currentStreamId.value) return;
+  
+  try {
+    await livestreamStore.pinProduct(currentStreamId.value, selectedProductToPin.value);
+    selectedProductToPin.value = '';
+    console.log('Product pinned successfully');
+  } catch (error) {
+    console.error('Error pinning product:', error);
+    alert(error.message || 'Failed to pin product');
+  }
+};
+
+// Unpin product
+const unpinProduct = async (productId) => {
+  if (!currentStreamId.value) return;
+  
+  try {
+    await livestreamStore.unpinProduct(currentStreamId.value, productId);
+    console.log('Product unpinned successfully');
+  } catch (error) {
+    console.error('Error unpinning product:', error);
+    alert(error.message || 'Failed to unpin product');
+  }
+};
+
+// Move pinned product up or down
+const movePinnedProduct = async (currentIndex, direction) => {
+  const newIndex = currentIndex + direction;
+  if (newIndex < 0 || newIndex >= livestreamStore.pinnedProducts.length) return;
+  
+  // Create new order array
+  const productOrders = livestreamStore.pinnedProducts.map((product, index) => {
+    let newOrder = index;
+    if (index === currentIndex) {
+      newOrder = newIndex;
+    } else if (index === newIndex) {
+      newOrder = currentIndex;
+    }
+    
+    return {
+      productId: product.productId._id,
+      displayOrder: newOrder
+    };
+  });
+  
+  try {
+    await livestreamStore.updatePinnedProductOrder(currentStreamId.value, productOrders);
+    console.log('Product order updated successfully');
+  } catch (error) {
+    console.error('Error updating product order:', error);
+    alert(error.message || 'Failed to update product order');
   }
 };
 
@@ -1068,6 +1249,9 @@ const deleteStream = async (streamId) => {
 onMounted(async () => {
   // Fetch past streams from backend
   fetchPastStreams();
+  
+  // Fetch available products for pinning
+  fetchAvailableProducts();
   
   // Connect to WebSocket as admin - WebRTC will auto-initialize after registration
   const token = localStorage.getItem('token');

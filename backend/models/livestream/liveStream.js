@@ -87,7 +87,27 @@ const liveStreamSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
-  }
+  },
+  // Pinned products for the livestream
+  pinnedProducts: [{
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      required: true
+    },
+    pinnedAt: {
+      type: Date,
+      default: Date.now
+    },
+    displayOrder: {
+      type: Number,
+      default: 0
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    }
+  }]
 }, {
   timestamps: true
 });

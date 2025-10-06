@@ -24,7 +24,7 @@
         <div class="grid lg:grid-cols-3 gap-8">
           <!-- Main Video Player -->
           <div class="lg:col-span-2">
-            <div class="bg-black rounded-lg overflow-hidden shadow-xl">
+            <div class="rounded-lg overflow-hidden">
               <div class="relative aspect-video bg-gray-100 flex items-center justify-center">
                 <div v-if="!streamUrl" class="text-center text-white">
                   <div class="mb-4">
@@ -53,7 +53,7 @@
             </div>
             
             <!-- Stream Info -->
-            <div class="bg-white rounded-lg shadow-lg mt-6 p-6">
+            <div class="bg-white rounded-lg mt-6 p-6 ">
               <h2 class="text-2xl font-bold mb-4">{{ currentStream?.title || t('liveStreamTitle') }}</h2>
               <p class="text-gray-600 mb-4">{{ currentStream?.description || t('liveStreamDescription') }}</p>
               
@@ -95,8 +95,52 @@
           </div>
 
           <!-- Chat Sidebar -->
-          <div class="lg:col-span-1">
-            <div class="bg-white rounded-lg shadow-lg h-full max-h-96 lg:max-h-[500px] flex flex-col">
+          <div class="lg:col-span-1 space-y-6">
+            <!-- Pinned Products -->
+            <div v-if="livestreamStore.pinnedProducts.length > 0" class="bg-white rounded-lg">
+              <div class="p-4 pb-0">
+                <h3 class="font-semibold text-lg">{{ t('featuredProducts') || 'Featured Products' }}</h3>
+              </div>
+              
+              <div class="p-4 space-y-4 max-h-80 overflow-y-auto">
+                <div 
+                  v-for="pinnedProduct in livestreamStore.pinnedProducts" 
+                  :key="pinnedProduct._id"
+                  class="flex items-start space-x-3 p-3 border border-gray-200 rounded-lg hover:border-primary-500 transition-all duration-200 cursor-pointer group"
+                  @click="navigateToProduct(pinnedProduct.productId)"
+                >
+                  <img 
+                    :src="getProductImageUrl(pinnedProduct.productId?.image)" 
+                    :alt="pinnedProduct.productId?.name"
+                    class="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                    @error="(e) => e.target.src = '/images/fallback-image.jpg'"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-medium text-sm text-gray-900 line-clamp-2 mb-1 group-hover:text-primary-600 transition-colors">
+                      {{ pinnedProduct.productId?.name }}
+                    </h4>
+                    <p class="text-sm text-gray-500 mb-2">
+                      {{ pinnedProduct.productId?.category?.name }}
+                    </p>
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-primary-600">
+                        ${{ pinnedProduct.productId?.price }}
+                      </span>
+                      <button
+                        @click.stop="addToCart(pinnedProduct.productId)"
+                        :disabled="pinnedProduct.productId?.stockQuantity <= 0"
+                        class="px-3 py-1 bg-primary-600 hover:bg-primary-700 text-white text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {{ pinnedProduct.productId?.stockQuantity <= 0 ? (t('outOfStock') || 'Out of Stock') : (t('addToCart') || 'Add to Cart') }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Live Chat -->
+            <div class="bg-white rounded-lg h-full max-h-96 lg:max-h-[500px] flex flex-col ">
               <div class="p-4 border-b">
                 <h3 class="font-semibold text-lg">{{ t('liveChat') }}</h3>
                 <p class="text-sm text-gray-500">{{ chatMessages.length }} {{ t('messages') }}</p>
@@ -117,7 +161,7 @@
                 </div>
               </div>
               
-              <div class="p-4 border-t">
+              <div class="p-4">
                 <div class="flex space-x-2">
                   <input
                     v-model="newMessage"
@@ -146,12 +190,7 @@
       <div class="mb-16">
         <h2 class="text-3xl font-bold mb-8 text-center text-primary-700">{{ t('upcomingStreams') }}</h2>
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="stream in upcomingStreams" :key="stream.id" class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-            <div class="aspect-video flex items-center justify-center stream-placeholder">
-              <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-            </div>
+          <div v-for="stream in upcomingStreams" :key="stream.id" class="bg-white rounded-lg overflow-hidden ">
             <div class="p-6">
               <h3 class="font-semibold text-lg mb-2">{{ stream.title }}</h3>
               <p class="text-gray-600 text-sm mb-4">{{ stream.description }}</p>
@@ -170,7 +209,7 @@
       <div>
         <h2 class="text-3xl font-bold mb-8 text-center text-primary-700">{{ t('pastStreams') }}</h2>
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="stream in pastStreams" :key="stream.id" class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer" @click="watchRecording(stream)">
+          <div v-for="stream in pastStreams" :key="stream.id" class="bg-white rounded-lg overflow-hidden  cursor-pointer" @click="watchRecording(stream)">
             <div class="aspect-video bg-gray-200 flex items-center justify-center relative group">
               <img 
                 v-if="stream.thumbnailUrl" 
@@ -188,12 +227,12 @@
               
               <!-- Play button overlay -->
               <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div v-if="stream.recordingUrl && stream.recordingUrl.trim() !== ''" class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
-                  <svg class="w-8 h-8 text-primary-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                <div v-if="stream.recordingUrl && stream.recordingUrl.trim() !== ''" class="w-16 h-16 border border-white rounded-full flex items-center justify-center transform group-hover:scale-60 transition-transform">
+                  <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M8 5v10l8-5-8-5z" />
                   </svg>
                 </div>
-                <div v-else class="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center shadow-lg">
+                <div v-else class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
                   <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -314,6 +353,70 @@ const pastStreams = ref([]);
 
 // Backend integration
 const apiUrl = 'http://localhost:3000';
+
+// Get product image URL
+const getProductImageUrl = (imagePath) => {
+  if (!imagePath) return '/images/fallback-image.jpg';
+  return `${apiUrl}/${imagePath}`;
+};
+
+// Add product to cart
+const addToCart = (product) => {
+  if (!product || product.stockQuantity <= 0) return;
+  
+  try {
+    // Get existing cart from localStorage
+    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    
+    // Check if product already exists in cart
+    const existingItemIndex = existingCart.findIndex(item => item._id === product._id);
+    
+    if (existingItemIndex > -1) {
+      // Update quantity if product exists
+      const newQuantity = existingCart[existingItemIndex].quantity + 1;
+      if (newQuantity <= product.stockQuantity) {
+        existingCart[existingItemIndex].quantity = newQuantity;
+      } else {
+        alert(t('maxQuantityReached') || 'Maximum quantity reached for this product');
+        return;
+      }
+    } else {
+      // Add new product to cart
+      existingCart.push({
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        category: product.category,
+        stockQuantity: product.stockQuantity,
+        quantity: 1
+      });
+    }
+    
+    // Save updated cart to localStorage
+    localStorage.setItem('cart', JSON.stringify(existingCart));
+    
+    // Dispatch custom event to notify other components about cart update
+    window.dispatchEvent(new CustomEvent('cartUpdated'));
+    
+    // Show success message
+    alert(t('productAddedToCart') || 'Product added to cart successfully!');
+    
+    console.log('Product added to cart:', product.name);
+  } catch (error) {
+    console.error('Error adding product to cart:', error);
+    alert(t('errorAddingToCart') || 'Error adding product to cart');
+  }
+};
+
+// Navigate to product detail page
+const navigateToProduct = (product) => {
+  if (!product || !product._id) return;
+  
+  // Navigate to the product detail page
+  router.push(`/customer/products/${product._id}`);
+  console.log('Navigating to product:', product.name);
+};
 
 const fetchPastStreams = async () => {
   try {
@@ -524,6 +627,20 @@ onMounted(async () => {
   const token = localStorage.getItem('token'); // May be null for anonymous users
   livestreamStore.connectWebSocket('customer', token);
   
+  // Check for active stream and fetch pinned products
+  try {
+    const response = await fetch(`${apiUrl}/livestreams/active`);
+    if (response.ok) {
+      const data = await response.json();
+      if (data.livestream) {
+        await livestreamStore.fetchPinnedProducts(data.livestream._id);
+        console.log('Fetched pinned products for active stream');
+      }
+    }
+  } catch (error) {
+    console.error('Error checking for active stream:', error);
+  }
+  
   // Auto scroll chat to bottom when new messages arrive
   setInterval(() => {
     if (chatContainer.value && livestreamStore.chatMessages.length > 0) {
@@ -673,11 +790,6 @@ onUnmounted(() => {
 
 .send-button:disabled {
   background-color: var(--primary-600);
-}
-
-/* Stream placeholder gradient background */
-.stream-placeholder {
-  background: linear-gradient(135deg, var(--primary-400) 0%, var(--primary-500) 50%, var(--primary-600) 100%);
 }
 
 /* Primary text color */

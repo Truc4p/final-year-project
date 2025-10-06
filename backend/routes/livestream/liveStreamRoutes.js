@@ -49,4 +49,18 @@ router.post('/:id/upload', auth, role('admin'), liveStreamController.uploadVideo
 // Delete livestream (admin only)
 router.delete('/:id', auth, role('admin'), liveStreamController.deleteLiveStream);
 
+// Pinned Products Routes
+
+// Get pinned products for a livestream (public)
+router.get('/:id/pinned-products', liveStreamController.getPinnedProducts);
+
+// Pin a product to livestream (admin only)
+router.post('/:id/pin-product', auth, role('admin'), liveStreamController.pinProduct);
+
+// Unpin a product from livestream (admin only)
+router.delete('/:id/unpin-product/:productId', auth, role('admin'), liveStreamController.unpinProduct);
+
+// Update pinned product order (admin only)
+router.put('/:id/pinned-products/order', auth, role('admin'), liveStreamController.updatePinnedProductOrder);
+
 module.exports = router;

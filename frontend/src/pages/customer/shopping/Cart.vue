@@ -132,7 +132,7 @@ onMounted(() => {
 <template>
   <div class="page-background">
     <div class="w-full px-4 xl:px-8 2xl:px-12">
-      <h1 class="text-2xl font-bold text-primary-600 mb-6">{{ t('yourCart') }}</h1>
+      <h1 class="text-2xl font-bold text-primary-600 mb-6">{{ t('yourCart') }} ({{ totalItems }} items)</h1>
 
       <!-- Loading State -->
       <div v-if="isLoading" class="flex justify-center items-center py-12">
@@ -165,10 +165,6 @@ onMounted(() => {
         <!-- Cart Items List -->
         <div class="lg:col-span-2">
           <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div class="p-4 border-b border-neutral-200 bg-neutral-50">
-              <h2 class="font-semibold text-lg">{{ t('cartItems') }} ({{ totalItems }})</h2>
-            </div>
-
             <ul>
               <li v-for="item in cart" :key="item._id" class="border-b border-neutral-200 last:border-b-0">
                 <div class="p-4 flex flex-col sm:flex-row items-start gap-4">
@@ -246,10 +242,6 @@ onMounted(() => {
                 </svg>
                 {{ t('proceedToCheckout') }}
               </button>
-
-              <router-link to="/customer" class="block text-center mt-4 text-primary-600 hover:text-primary-700">
-                {{ t('continueShopping') }}
-              </router-link>
             </div>
           </div>
         </div>

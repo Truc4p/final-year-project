@@ -28,6 +28,9 @@ export const livestreamStore = reactive({
   // Chat messages shared between admin and customers
   chatMessages: [],
   
+  // Pinned products for the current livestream
+  pinnedProducts: [],
+  
   // WebRTC properties
   webrtcPeerConnections: new Map(), // Map of peer connections
   localMediaStream: null,
@@ -189,6 +192,11 @@ export const livestreamStore = reactive({
           timestamp: new Date(msg.timestamp),
           fromWebSocket: true
         }));
+        break;
+        
+      case 'pinned_products_updated':
+        console.log('📌 Pinned products updated:', data.pinnedProducts);
+        this.pinnedProducts = data.pinnedProducts || [];
         break;
         
       case 'registered':
@@ -357,6 +365,116 @@ export const livestreamStore = reactive({
   
   clearChatMessages() {
     this.chatMessages = []
+  },
+  
+  // Pinned Products Methods
+  async fetchPinnedProducts(streamId) {
+    try {
+      const response = await fetch(`http://localhost:3000/livestreams/${streamId}/pinned-products`);
+      if (response.ok) {
+        const data = await response.json();
+        this.pinnedProducts = data.pinnedProducts || [];
+        console.log('📌 Fetched pinned products:', this.pinnedProducts);
+      }
+    } catch (error) {
+      console.error('Error fetching pinned products:', error);
+    }
+  },
+  
+  async pinProduct(streamId, productId, displayOrder = 0) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/livestreams/${streamId}/pin-product`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ productId, displayOrder })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        this.pinnedProducts = data.pinnedProducts || [];
+        
+        // Broadcast update via WebSocket
+        this.broadcastPinnedProductsUpdate();
+        return true;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to pin product');
+      }
+    } catch (error) {
+      console.error('Error pinning product:', error);
+      throw error;
+    }
+  },
+  
+  async unpinProduct(streamId, productId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/livestreams/${streamId}/unpin-product/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        this.pinnedProducts = data.pinnedProducts || [];
+        
+        // Broadcast update via WebSocket
+        this.broadcastPinnedProductsUpdate();
+        return true;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to unpin product');
+      }
+    } catch (error) {
+      console.error('Error unpinning product:', error);
+      throw error;
+    }
+  },
+  
+  async updatePinnedProductOrder(streamId, productOrders) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/livestreams/${streamId}/pinned-products/order`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ productOrders })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        this.pinnedProducts = data.pinnedProducts || [];
+        
+        // Broadcast update via WebSocket
+        this.broadcastPinnedProductsUpdate();
+        return true;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update product order');
+      }
+    } catch (error) {
+      console.error('Error updating pinned product order:', error);
+      throw error;
+    }
+  },
+  
+  broadcastPinnedProductsUpdate() {
+    this.sendWebSocketMessage({
+      type: 'pinned_products_updated',
+      pinnedProducts: this.pinnedProducts
+    });
+  },
+  
+  clearPinnedProducts() {
+    this.pinnedProducts = [];
   },
   
   // Broadcast stream status via WebSocket

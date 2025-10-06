@@ -1,4 +1,5 @@
 const LiveStream = require('../../models/livestream/liveStream');
+const Product = require('../../models/ecommerce/product');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
@@ -377,5 +378,159 @@ exports.deleteLiveStream = async (req, res) => {
 
 // Upload video file
 exports.uploadVideo = upload.single('video');
+
+// Pin a product to livestream
+exports.pinProduct = async (req, res) => {
+  try {
+    const { id } = req.params; // livestream ID
+    const { productId, displayOrder } = req.body;
+    
+    const livestream = await LiveStream.findById(id);
+    if (!livestream) {
+      return res.status(404).json({ message: 'Livestream not found' });
+    }
+    
+    // Check if product exists
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    
+    // Check if product is already pinned
+    const existingPin = livestream.pinnedProducts.find(
+      pin => pin.productId.toString() === productId && pin.isActive
+    );
+    
+    if (existingPin) {
+      return res.status(400).json({ message: 'Product is already pinned to this livestream' });
+    }
+    
+    // Add pinned product
+    livestream.pinnedProducts.push({
+      productId,
+      displayOrder: displayOrder || livestream.pinnedProducts.length,
+      isActive: true
+    });
+    
+    await livestream.save();
+    
+    // Populate the pinned products for response
+    await livestream.populate('pinnedProducts.productId');
+    
+    res.json({
+      message: 'Product pinned successfully',
+      pinnedProducts: livestream.pinnedProducts.filter(pin => pin.isActive)
+    });
+  } catch (error) {
+    console.error('Error pinning product:', error);
+    res.status(500).json({ message: 'Failed to pin product', error: error.message });
+  }
+};
+
+// Unpin a product from livestream
+exports.unpinProduct = async (req, res) => {
+  try {
+    const { id, productId } = req.params; // livestream ID and product ID
+    
+    const livestream = await LiveStream.findById(id);
+    if (!livestream) {
+      return res.status(404).json({ message: 'Livestream not found' });
+    }
+    
+    // Find and deactivate the pinned product
+    const pinnedProduct = livestream.pinnedProducts.find(
+      pin => pin.productId.toString() === productId && pin.isActive
+    );
+    
+    if (!pinnedProduct) {
+      return res.status(404).json({ message: 'Product is not pinned to this livestream' });
+    }
+    
+    pinnedProduct.isActive = false;
+    await livestream.save();
+    
+    // Populate the pinned products for response
+    await livestream.populate('pinnedProducts.productId');
+    
+    res.json({
+      message: 'Product unpinned successfully',
+      pinnedProducts: livestream.pinnedProducts.filter(pin => pin.isActive)
+    });
+  } catch (error) {
+    console.error('Error unpinning product:', error);
+    res.status(500).json({ message: 'Failed to unpin product', error: error.message });
+  }
+};
+
+// Get pinned products for a livestream
+exports.getPinnedProducts = async (req, res) => {
+  try {
+    const { id } = req.params; // livestream ID
+    
+    const livestream = await LiveStream.findById(id)
+      .populate({
+        path: 'pinnedProducts.productId',
+        populate: {
+          path: 'category',
+          select: 'name'
+        }
+      });
+    
+    if (!livestream) {
+      return res.status(404).json({ message: 'Livestream not found' });
+    }
+    
+    // Filter active pinned products and sort by display order
+    const activePinnedProducts = livestream.pinnedProducts
+      .filter(pin => pin.isActive)
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+    
+    res.json({
+      message: 'Pinned products retrieved successfully',
+      pinnedProducts: activePinnedProducts
+    });
+  } catch (error) {
+    console.error('Error getting pinned products:', error);
+    res.status(500).json({ message: 'Failed to get pinned products', error: error.message });
+  }
+};
+
+// Update pinned product order
+exports.updatePinnedProductOrder = async (req, res) => {
+  try {
+    const { id } = req.params; // livestream ID
+    const { productOrders } = req.body; // Array of { productId, displayOrder }
+    
+    const livestream = await LiveStream.findById(id);
+    if (!livestream) {
+      return res.status(404).json({ message: 'Livestream not found' });
+    }
+    
+    // Update display orders
+    productOrders.forEach(({ productId, displayOrder }) => {
+      const pinnedProduct = livestream.pinnedProducts.find(
+        pin => pin.productId.toString() === productId && pin.isActive
+      );
+      if (pinnedProduct) {
+        pinnedProduct.displayOrder = displayOrder;
+      }
+    });
+    
+    await livestream.save();
+    
+    // Populate the pinned products for response
+    await livestream.populate('pinnedProducts.productId');
+    
+    res.json({
+      message: 'Pinned product order updated successfully',
+      pinnedProducts: livestream.pinnedProducts
+        .filter(pin => pin.isActive)
+        .sort((a, b) => a.displayOrder - b.displayOrder)
+    });
+  } catch (error) {
+    console.error('Error updating pinned product order:', error);
+    res.status(500).json({ message: 'Failed to update pinned product order', error: error.message });
+  }
+};
 
 module.exports = exports;
