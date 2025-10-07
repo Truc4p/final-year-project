@@ -21,7 +21,7 @@ if (!process.env.GEMINI_API_KEY) {
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Flow 1: Get predefined FAQs (menu-driven)
 exports.getFAQs = async (req, res) => {

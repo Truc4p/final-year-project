@@ -241,7 +241,7 @@ function connectAdminWebSocket() {
 
   try {
     // Connect to WebSocket server
-    adminWebSocket = new WebSocket('ws://localhost:8080');
+    adminWebSocket = new WebSocket('ws://localhost:3000');
     
     adminWebSocket.onopen = () => {
       console.log('🔌 Admin WebSocket connected');

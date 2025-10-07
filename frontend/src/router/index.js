@@ -124,7 +124,10 @@ const routes = [
     component: CustomerLayout, meta: { requiresAuth: true, role: 'customer' },
     children: [
       { path: "", component: CustomerPage },
+      { path: "products", component: CustomerPage }, // Products list page
       { path: "products/:id", component: DetailProduct },
+      { path: "categories", component: CustomerPage }, // Categories page  
+      { path: "orders", component: OrderHistory }, // Orders list page
       { path: "cart", component: Cart },
       { path: "checkout", component: Checkout },
       { path: "orders/order/:id", component: OrderDetail },

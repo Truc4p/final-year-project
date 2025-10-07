@@ -649,7 +649,7 @@ mongo wrencos_db --eval "db.chatconversations.deleteMany({lastActivity: {$lt: ne
 **Solutions**:
 ```bash
 # Check CORS settings
-curl -H "Origin: http://localhost:8080" \
+curl -H "Origin: http://localhost:3000" \
      -H "Access-Control-Request-Method: POST" \
      -H "Access-Control-Request-Headers: X-Requested-With" \
      -X OPTIONS http://localhost:3000/chat/ai

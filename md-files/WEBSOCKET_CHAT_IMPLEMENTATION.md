@@ -9,7 +9,7 @@ This document describes the WebSocket implementation that enables real-time bidi
 ### System Components
 
 1. **WebSocket Server** (`backend/websocket.js`)
-   - Runs on port 8080
+   - Runs on port 3000
    - Manages separate connection pools for customers and staff/admin
    - Handles authentication and message routing
    - Provides broadcasting capabilities
@@ -134,7 +134,7 @@ function connectWebSocket() {
   }
 
   try {
-    websocket = new WebSocket('ws://localhost:8080');
+    websocket = new WebSocket('ws://localhost:3000');
     
     websocket.onopen = () => {
       console.log('🔗 Customer WebSocket connected');
@@ -218,7 +218,7 @@ function connectAdminWebSocket() {
   }
 
   try {
-    adminWebsocket = new WebSocket('ws://localhost:8080');
+    adminWebsocket = new WebSocket('ws://localhost:3000');
     
     adminWebsocket.onopen = () => {
       console.log('🔗 Admin WebSocket connected');
@@ -436,7 +436,7 @@ console.log('🔌 Admin WebSocket disconnected for user: admin_456');
 ## Deployment Considerations
 
 ### Port Configuration
-- WebSocket server runs on port 8080
+- WebSocket server runs on port 3000
 - Ensure firewall allows WebSocket connections
 - Configure load balancers for WebSocket support
 

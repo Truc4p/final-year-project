@@ -51,7 +51,7 @@ export const livestreamStore = reactive({
     }
 
     try {
-      this.ws = new WebSocket('ws://localhost:8080');
+      this.ws = new WebSocket('ws://localhost:3000');
       this.connectionType = type;
       
       this.ws.onopen = () => {

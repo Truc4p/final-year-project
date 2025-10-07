@@ -5,7 +5,7 @@ const ChatConversation = require('./models/communication/chatConversation');
 class WebSocketManager {
   constructor(server) {
     this.wss = new WebSocket.Server({ 
-      port: 8080,
+      server: server, // Use the existing HTTP server instead of creating a new one
       verifyClient: this.verifyClient.bind(this)
     });
     
@@ -32,7 +32,7 @@ class WebSocketManager {
     };
     
     this.wss.on('connection', this.handleConnection.bind(this));
-    console.log('🔗 WebSocket server running on port 8080');
+    console.log(`🔗 WebSocket server running on same port as HTTP server`);
   }
 
   // Verify client connection (optional authentication)

@@ -26,29 +26,35 @@
           <div class="lg:col-span-2">
             <div class="rounded-lg overflow-hidden">
               <div class="relative aspect-video bg-gray-100 flex items-center justify-center">
-                <div v-if="!streamUrl" class="text-center text-white">
-                  <div class="mb-4">
-                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM5 8a1 1 0 000 2h8a1 1 0 100-2H5z" />
-                    </svg>
-                  </div>
-                  <h3 class="text-xl font-semibold mb-2">{{ t('noActiveStream') }}</h3>
-                  <p class="text-gray-400">{{ t('streamWillStartSoon') }}</p>
-                </div>
+                <!-- Always render video element, but conditionally show placeholder -->
                 <video 
-                  v-else
                   ref="videoPlayer"
+                  :class="{ 'hidden': !isLive }"
                   controls
                   autoplay
                   muted
                   playsinline
-                  class="w-full h-full"
+                  class="w-full h-full cursor-pointer"
                   @loadstart="onVideoLoadStart"
                   @canplay="onVideoCanPlay"
                   @error="onVideoError"
+                  @click="onVideoClick"
                 >
                   {{ t('videoNotSupported') }}
                 </video>
+                
+                <!-- Placeholder shown when no stream -->
+                <div v-if="!isLive" class="absolute inset-0 flex items-center justify-center">
+                  <div class="text-center text-white px-6">
+                    <div class="mb-6">
+                      <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM5 8a1 1 0 000 2h8a1 1 0 100-2H5z" />
+                      </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">{{ t('noActiveStream') }}</h3>
+                    <p class="text-gray-500 text-base leading-relaxed">{{ t('streamWillStartSoon') }}</p>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -619,6 +625,16 @@ const onVideoError = (event) => {
   }
 };
 
+// Handle video click to ensure playback starts
+const onVideoClick = () => {
+  if (videoPlayer.value && videoPlayer.value.srcObject) {
+    console.log('🖱️ User clicked video, attempting to play...');
+    videoPlayer.value.play().catch(error => {
+      console.error('❌ Manual play failed:', error);
+    });
+  }
+};
+
 onMounted(async () => {
   // Fetch past streams from backend
   fetchPastStreams();
@@ -669,24 +685,40 @@ watch([
   
   // Use nextTick to ensure video element is ready
   nextTick(() => {
-    if (!videoPlayer.value) {
-      console.log('⚠️ videoPlayer.value is null, retrying...');
-      // Retry after a short delay to ensure DOM is ready
-      setTimeout(() => {
-        if (videoPlayer.value) {
-          applyStreamToVideo(sharedStream, remoteStream);
-        }
-      }, 100);
-      return;
-    }
+    // Enhanced retry logic with multiple attempts
+    const maxRetries = 10;
+    let attempts = 0;
     
-    applyStreamToVideo(sharedStream, remoteStream);
+    const tryApplyStream = () => {
+      attempts++;
+      
+      if (!videoPlayer.value) {
+        console.log(`⚠️ videoPlayer.value is null (attempt ${attempts}/${maxRetries}), retrying...`);
+        
+        if (attempts < maxRetries) {
+          // Exponential backoff: 50ms, 100ms, 200ms, 400ms, etc.
+          const delay = Math.min(50 * Math.pow(2, attempts - 1), 1000);
+          setTimeout(tryApplyStream, delay);
+        } else {
+          console.error('❌ Failed to get video element after maximum retries');
+        }
+        return;
+      }
+      
+      console.log(`✅ Video element found on attempt ${attempts}`);
+      applyStreamToVideo(sharedStream, remoteStream);
+    };
+    
+    tryApplyStream();
   });
 }, { immediate: true });
 
 // Helper function to apply stream to video element
 const applyStreamToVideo = (sharedStream, remoteStream) => {
-  if (!videoPlayer.value) return;
+  if (!videoPlayer.value) {
+    console.error('❌ applyStreamToVideo called but videoPlayer.value is null');
+    return;
+  }
   
   // Priority: WebRTC remote stream (cross-browser) > shared stream (same context)
   const streamToUse = remoteStream || sharedStream;
@@ -699,26 +731,50 @@ const applyStreamToVideo = (sharedStream, remoteStream) => {
       return;
     }
     
-    console.log('🎥 Customer: Setting stream to video element:', remoteStream ? 'WebRTC Remote Stream' : 'Shared MediaStream');
+    console.log('🎥 Customer: Setting stream to video element:', {
+      streamType: remoteStream ? 'WebRTC Remote Stream' : 'Shared MediaStream',
+      streamId: streamToUse.id,
+      streamActive: streamToUse.active,
+      videoTracks: streamToUse.getVideoTracks().length,
+      audioTracks: streamToUse.getAudioTracks().length
+    });
     
     // Clear any existing src to avoid conflicts
     videoPlayer.value.src = '';
     videoPlayer.value.removeAttribute('src');
     videoPlayer.value.srcObject = streamToUse;
     
-    // Force the video to play
-    videoPlayer.value.play().then(() => {
-      console.log('✅ Video playing successfully');
-    }).catch(error => {
-      console.error('❌ Error playing stream:', error);
-      
-      // Try to play again without autoplay restrictions
-      setTimeout(() => {
-        if (videoPlayer.value && videoPlayer.value.srcObject) {
-          videoPlayer.value.play().catch(err => console.error('❌ Retry failed:', err));
+    // Force the video to play with enhanced error handling
+    const playPromise = videoPlayer.value.play();
+    
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        console.log('✅ Video playing successfully');
+      }).catch(error => {
+        console.error('❌ Error playing stream:', error);
+        
+        // Try different approaches for autoplay restrictions
+        if (error.name === 'NotAllowedError') {
+          console.log('🔇 Autoplay blocked, trying muted playback...');
+          videoPlayer.value.muted = true;
+          
+          setTimeout(() => {
+            videoPlayer.value.play().catch(err => {
+              console.error('❌ Muted retry failed:', err);
+              // Show user interaction prompt
+              console.log('ℹ️ User interaction may be required to start video');
+            });
+          }, 100);
+        } else {
+          // Try again after a short delay for other errors
+          setTimeout(() => {
+            if (videoPlayer.value && videoPlayer.value.srcObject) {
+              videoPlayer.value.play().catch(err => console.error('❌ Retry failed:', err));
+            }
+          }, 100);
         }
-      }, 100);
-    });
+      });
+    }
   } else if (!isLive.value) {
     // Only clear if there's actually no active stream
     console.log('🎥 Customer: No active stream - clearing video element');

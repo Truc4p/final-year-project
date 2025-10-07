@@ -1,15 +1,3 @@
-I'll explain how the livestream system works by examining the key components and their interactions. Let me first check the documentation file to see what's already documented.
-
-
-[1 tool called]
-
-Now let me examine the core livestream functionality to provide a comprehensive explanation:
-
-
-[2 tools called]
-
-Now let me create a comprehensive explanation of how the livestream system works:
-
 # 🎥 **How the Livestream System Works**
 
 ## 🏗️ **System Architecture Overview**
@@ -358,7 +346,7 @@ const toggleStream = async () => {
 ### **WebSocket**
 - **Purpose**: Real-time bidirectional communication
 - **Features**: Chat, likes, pinned products, viewer count
-- **Port**: 8080 (separate from HTTP server)
+- **Port**: 3000 (separate from HTTP server)
 
 ### **MediaRecorder API**
 - **Purpose**: Record video streams for later playback
