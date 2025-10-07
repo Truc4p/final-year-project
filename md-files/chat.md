@@ -1,31 +1,3 @@
-I'll explain how the three main chat functionalities work in your system. Let me examine the relevant code to provide a comprehensive explanation.
-
-
-[2 tools called]
-
-Now let me examine the specific chat flows and WebSocket functionality:
-
-
-[2 tools called]
-
-Now let me examine the WebSocket functionality for staff chat:
-
-
-[2 tools called]
-
-Now let me create a comprehensive diagram to explain how these three chat systems work:
-
-
-[1 tool called]
-
-Let me provide a comprehensive explanation of how the three chat systems work:
-
-## 🎯 **Three Chat Systems Overview**
-
-Your application has three distinct chat functionalities that work together to provide comprehensive customer support:
-
----
-
 ## 1. 📋 **Get FAQs (Predefined Q&A System)**
 
 ### **How it works:**
