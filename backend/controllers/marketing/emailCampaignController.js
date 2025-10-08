@@ -2,6 +2,7 @@ const EmailCampaign = require('../../models/marketing/emailCampaign');
 const EmailTemplate = require('../../models/marketing/emailTemplate');
 const EmailAnalytics = require('../../models/marketing/emailAnalytics');
 const NewsletterSubscription = require('../../models/marketing/newsletterSubscription');
+const emailService = require('../../services/emailService');
 
 // Get all email campaigns with pagination and filters
 const getCampaigns = async (req, res) => {
@@ -524,6 +525,292 @@ const exportAnalytics = async (req, res) => {
   }
 };
 
+// Send campaign immediately
+const sendCampaign = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Get campaign
+    const campaign = await EmailCampaign.findById(id);
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: 'Campaign not found'
+      });
+    }
+
+    // Check if campaign is already sent
+    if (campaign.status === 'sent') {
+      return res.status(400).json({
+        success: false,
+        message: 'Campaign has already been sent'
+      });
+    }
+
+    // Validate campaign content
+    if (!campaign.subject || !campaign.htmlContent) {
+      return res.status(400).json({
+        success: false,
+        message: 'Campaign must have subject and content'
+      });
+    }
+
+    // Get recipients based on target audience
+    const recipients = await getRecipients(campaign);
+    
+    if (recipients.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No recipients found for this campaign'
+      });
+    }
+
+    // Update campaign status
+    campaign.status = 'sending';
+    campaign.sentAt = new Date();
+    await campaign.save();
+
+    // Send emails
+    const emailResults = await emailService.sendCampaignEmails(campaign, recipients);
+    
+    if (!emailResults.success) {
+      campaign.status = 'failed';
+      await campaign.save();
+      
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send campaign emails',
+        error: emailResults.error
+      });
+    }
+
+    // Update campaign with results
+    campaign.status = 'sent';
+    campaign.emailsSent = emailResults.totalSent;
+    campaign.emailsFailed = emailResults.totalFailed;
+    await campaign.save();
+
+    // Create individual analytics records for each email sent
+    if (emailResults.results && emailResults.results.length > 0) {
+      const analyticsPromises = emailResults.results
+        .filter(result => result.success) // Only track successful sends
+        .map(result => {
+          const analytics = new EmailAnalytics({
+            campaignId: campaign._id,
+            subscriberEmail: result.to,
+            sentAt: new Date()
+          });
+          return analytics.save();
+        });
+      
+      try {
+        await Promise.all(analyticsPromises);
+        console.log(`✅ Created ${analyticsPromises.length} analytics records`);
+      } catch (analyticsError) {
+        console.error('⚠️  Analytics creation failed, but emails were sent:', analyticsError.message);
+        // Don't fail the whole operation if analytics fail
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Campaign sent successfully',
+      data: {
+        campaignId: campaign._id,
+        emailsSent: emailResults.totalSent,
+        emailsFailed: emailResults.totalFailed,
+        recipients: recipients.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Send campaign error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send campaign'
+    });
+  }
+};
+
+// Create and send campaign immediately
+const createAndSendCampaign = async (req, res) => {
+  try {
+    const campaignData = {
+      ...req.body,
+      createdBy: req.user.id,
+      status: 'sending'
+    };
+
+    // Create campaign
+    const campaign = new EmailCampaign(campaignData);
+    await campaign.save();
+
+    // Validate campaign content
+    if (!campaign.subject || !campaign.htmlContent) {
+      return res.status(400).json({
+        success: false,
+        message: 'Campaign must have subject and content'
+      });
+    }
+
+    // Get recipients
+    const recipients = await getRecipients(campaign);
+    
+    if (recipients.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No recipients found for this campaign'
+      });
+    }
+
+    // Send emails
+    const emailResults = await emailService.sendCampaignEmails(campaign, recipients);
+    
+    if (!emailResults.success) {
+      campaign.status = 'failed';
+      await campaign.save();
+      
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send campaign emails',
+        error: emailResults.error
+      });
+    }
+
+    // Update campaign with results
+    campaign.status = 'sent';
+    campaign.sentAt = new Date();
+    campaign.emailsSent = emailResults.totalSent;
+    campaign.emailsFailed = emailResults.totalFailed;
+    await campaign.save();
+
+    // Create individual analytics records for each email sent
+    if (emailResults.results && emailResults.results.length > 0) {
+      const analyticsPromises = emailResults.results
+        .filter(result => result.success) // Only track successful sends
+        .map(result => {
+          const analytics = new EmailAnalytics({
+            campaignId: campaign._id,
+            subscriberEmail: result.to,
+            sentAt: new Date()
+          });
+          return analytics.save();
+        });
+      
+      try {
+        await Promise.all(analyticsPromises);
+        console.log(`✅ Created ${analyticsPromises.length} analytics records`);
+      } catch (analyticsError) {
+        console.error('⚠️  Analytics creation failed, but emails were sent:', analyticsError.message);
+        // Don't fail the whole operation if analytics fail
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Campaign created and sent successfully',
+      data: {
+        campaign: campaign,
+        emailsSent: emailResults.totalSent,
+        emailsFailed: emailResults.totalFailed
+      }
+    });
+
+  } catch (error) {
+    console.error('Create and send campaign error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create and send campaign'
+    });
+  }
+};
+
+// Helper function to get recipients based on campaign target audience
+const getRecipients = async (campaign) => {
+  try {
+    let recipients = [];
+    
+    switch (campaign.targetAudience) {
+      case 'all':
+        // Get all active subscribers
+        const allSubscribers = await NewsletterSubscription.find({ 
+          isActive: true 
+        }).select('email name source preferences');
+        recipients = allSubscribers.map(sub => ({
+          email: sub.email,
+          name: sub.name || sub.email.split('@')[0],
+          source: sub.source,
+          preferences: sub.preferences
+        }));
+        break;
+        
+      case 'segment':
+        // Get subscribers based on criteria
+        const query = { isActive: true };
+        
+        // Date range filter
+        if (campaign.segmentCriteria.subscriptionDateFrom || campaign.segmentCriteria.subscriptionDateTo) {
+          query.createdAt = {};
+          if (campaign.segmentCriteria.subscriptionDateFrom) {
+            query.createdAt.$gte = new Date(campaign.segmentCriteria.subscriptionDateFrom);
+          }
+          if (campaign.segmentCriteria.subscriptionDateTo) {
+            query.createdAt.$lte = new Date(campaign.segmentCriteria.subscriptionDateTo);
+          }
+        }
+        
+        // Source filter
+        if (campaign.segmentCriteria.sources && campaign.segmentCriteria.sources.length > 0) {
+          query.source = { $in: campaign.segmentCriteria.sources };
+        }
+        
+        // Preferences filter
+        if (campaign.segmentCriteria.preferences) {
+          if (campaign.segmentCriteria.preferences.newProducts) {
+            query['preferences.newProducts'] = true;
+          }
+          if (campaign.segmentCriteria.preferences.promotions) {
+            query['preferences.promotions'] = true;
+          }
+          if (campaign.segmentCriteria.preferences.newsletter) {
+            query['preferences.newsletter'] = true;
+          }
+        }
+        
+        const segmentSubscribers = await NewsletterSubscription.find(query)
+          .select('email name source preferences');
+        recipients = segmentSubscribers.map(sub => ({
+          email: sub.email,
+          name: sub.name || sub.email.split('@')[0],
+          source: sub.source,
+          preferences: sub.preferences
+        }));
+        break;
+        
+      case 'custom':
+        // Use custom email list
+        if (campaign.segmentCriteria.customEmails && campaign.segmentCriteria.customEmails.length > 0) {
+          recipients = campaign.segmentCriteria.customEmails.map(email => ({
+            email: email,
+            name: email.split('@')[0], // Use email prefix as name
+            source: 'custom',
+            preferences: {}
+          }));
+        }
+        break;
+        
+      default:
+        throw new Error('Invalid target audience type');
+    }
+    
+    return recipients;
+    
+  } catch (error) {
+    console.error('Error getting recipients:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   getCampaigns,
   getCampaign,
@@ -534,5 +821,7 @@ module.exports = {
   getCampaignPreview,
   getCampaignStats,
   getAnalytics,
-  exportAnalytics
+  exportAnalytics,
+  sendCampaign,
+  createAndSendCampaign
 };

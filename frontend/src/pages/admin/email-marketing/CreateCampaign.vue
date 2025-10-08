@@ -353,10 +353,88 @@
           <!-- Template grid will be implemented here -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
             <!-- Template cards -->
-            <div class="border rounded-lg p-4 hover:shadow-md cursor-pointer">
-              <div class="bg-gray-100 h-32 rounded mb-3"></div>
-              <h4 class="font-medium">Newsletter Template</h4>
-              <p class="text-sm text-gray-600">Perfect for weekly newsletters</p>
+            <div 
+              v-for="template in emailTemplates" 
+              :key="template.id"
+              @click="selectTemplate(template)"
+              class="border rounded-lg p-4 hover:shadow-md cursor-pointer hover:border-blue-500 transition-colors"
+            >
+              <div class="bg-gray-100 h-32 rounded mb-3 flex items-center justify-center">
+                <div class="text-gray-400 text-xs">{{ template.name }} Preview</div>
+              </div>
+              <h4 class="font-medium">{{ template.name }}</h4>
+              <p class="text-sm text-gray-600">{{ template.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campaign Preview Modal -->
+    <div v-if="showPreviewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-5xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">Campaign Preview</h3>
+              <p class="text-sm text-gray-600">{{ campaign.name }}</p>
+            </div>
+            <div class="flex gap-3">
+              <button @click="showPreviewModal = false" class="btn btn-outline">
+                Close
+              </button>
+              <button @click="sendCampaign" class="btn btn-primary">
+                Send Campaign
+              </button>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Email Preview -->
+            <div class="lg:col-span-2">
+              <div class="bg-white border rounded-lg">
+                <div class="border-b p-4">
+                  <h4 class="font-medium text-gray-900">Email Preview</h4>
+                  <div class="text-sm text-gray-600 mt-2">
+                    <div><strong>Subject:</strong> {{ campaign.subject }}</div>
+                    <div><strong>From:</strong> Company Name &lt;noreply@company.com&gt;</div>
+                  </div>
+                </div>
+                <div class="p-4">
+                  <div class="border rounded-lg overflow-hidden">
+                    <iframe 
+                      :srcdoc="previewHtml" 
+                      class="w-full h-96 border-0"
+                      style="height: 500px;"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Campaign Details -->
+            <div class="space-y-4">
+              <div class="bg-gray-50 rounded-lg p-4">
+                <h4 class="font-medium text-gray-900 mb-3">Campaign Details</h4>
+                <div class="space-y-2 text-sm">
+                  <div><strong>Campaign Name:</strong> {{ campaign.name }}</div>
+                  <div><strong>Type:</strong> {{ campaign.type }}</div>
+                  <div><strong>Target Audience:</strong> {{ campaign.targetAudience }}</div>
+                  <div><strong>Recipients:</strong> {{ targetCount }} subscribers</div>
+                  <div v-if="sendTimeOption === 'scheduled'">
+                    <strong>Scheduled:</strong> {{ formatDate(campaign.scheduledAt) }}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-gray-50 rounded-lg p-4">
+                <h4 class="font-medium text-gray-900 mb-3">Settings</h4>
+                <div class="space-y-2 text-sm">
+                  <div>✓ Track Opens: {{ campaign.settings.trackOpens ? 'Yes' : 'No' }}</div>
+                  <div>✓ Track Clicks: {{ campaign.settings.trackClicks ? 'Yes' : 'No' }}</div>
+                  <div>✓ Unsubscribe Link: {{ campaign.settings.enableUnsubscribe ? 'Yes' : 'No' }}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -378,6 +456,7 @@ const router = useRouter();
 const isEditing = computed(() => !!route.params.id);
 const isHtmlView = ref(false);
 const showTemplateSelector = ref(false);
+const showPreviewModal = ref(false);
 const sendTimeOption = ref('now');
 const customEmailList = ref('');
 const targetCount = ref(0);
@@ -428,6 +507,124 @@ const availableSources = ref([
   { value: 'other', label: 'Other' }
 ]);
 
+// Email templates
+const emailTemplates = ref([
+  {
+    id: 'newsletter',
+    name: 'Newsletter Template',
+    description: 'Perfect for weekly newsletters',
+    htmlContent: `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <header style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+          <h1 style="color: #333; margin: 0;">{{company_name}} Newsletter</h1>
+        </header>
+        <main style="padding: 20px;">
+          <h2 style="color: #333;">Hello {{subscriber_name}},</h2>
+          <p style="line-height: 1.6; color: #666;">Welcome to our weekly newsletter! Here's what's new this week.</p>
+          
+          <div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #007bff;">
+            <h3 style="margin-top: 0; color: #333;">Featured Article</h3>
+            <p style="margin-bottom: 0; color: #666;">Add your featured content here...</p>
+          </div>
+          
+          <p style="line-height: 1.6; color: #666;">Thank you for being a valued subscriber!</p>
+        </main>
+        <footer style="background-color: #333; color: white; padding: 20px; text-align: center;">
+          <p style="margin: 0;">Best regards,<br>{{company_name}} Team</p>
+          <p style="margin: 10px 0 0 0; font-size: 12px;">
+            <a href="{{unsubscribe_url}}" style="color: #ccc;">Unsubscribe</a>
+          </p>
+        </footer>
+      </div>
+    `
+  },
+  {
+    id: 'promotion',
+    name: 'Promotion Template',
+    description: 'Great for sales and special offers',
+    htmlContent: `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <header style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">Special Offer!</h1>
+          <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Limited Time Only</p>
+        </header>
+        <main style="padding: 30px;">
+          <h2 style="color: #333; text-align: center;">Hi {{subscriber_name}},</h2>
+          <p style="line-height: 1.6; color: #666; text-align: center; font-size: 18px;">
+            Don't miss out on this amazing deal!
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <div style="background-color: #ff6b6b; color: white; display: inline-block; padding: 15px 30px; border-radius: 50px; font-size: 24px; font-weight: bold;">
+              50% OFF
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="#" style="background-color: #28a745; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+              Shop Now
+            </a>
+          </div>
+          
+          <p style="line-height: 1.6; color: #666; text-align: center; font-style: italic;">
+            Offer valid until {{current_date}}
+          </p>
+        </main>
+        <footer style="background-color: #333; color: white; padding: 20px; text-align: center;">
+          <p style="margin: 0;">{{company_name}}</p>
+          <p style="margin: 10px 0 0 0; font-size: 12px;">
+            <a href="{{unsubscribe_url}}" style="color: #ccc;">Unsubscribe</a>
+          </p>
+        </footer>
+      </div>
+    `
+  },
+  {
+    id: 'welcome',
+    name: 'Welcome Template',
+    description: 'Perfect for welcoming new subscribers',
+    htmlContent: `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <header style="background-color: #28a745; padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0;">Welcome to {{company_name}}!</h1>
+        </header>
+        <main style="padding: 30px;">
+          <h2 style="color: #333;">Hello {{subscriber_name}},</h2>
+          <p style="line-height: 1.6; color: #666; font-size: 18px;">
+            Welcome aboard! We're thrilled to have you join our community.
+          </p>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; text-align: center;">
+            <h3 style="margin-top: 0; color: #333;">What's Next?</h3>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="margin: 10px 0; color: #666;">✓ Explore our latest products</li>
+              <li style="margin: 10px 0; color: #666;">✓ Follow us on social media</li>
+              <li style="margin: 10px 0; color: #666;">✓ Watch for exclusive offers</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="#" style="background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+              Get Started
+            </a>
+          </div>
+          
+          <p style="line-height: 1.6; color: #666;">
+            If you have any questions, feel free to reach out to our support team.
+          </p>
+        </main>
+        <footer style="background-color: #333; color: white; padding: 20px; text-align: center;">
+          <p style="margin: 0;">Thanks for joining us!</p>
+          <p style="margin: 5px 0 0 0;">{{company_name}} Team</p>
+          <p style="margin: 10px 0 0 0; font-size: 12px;">
+            <a href="{{unsubscribe_url}}" style="color: #ccc;">Unsubscribe</a>
+          </p>
+        </footer>
+      </div>
+    `
+  }
+]);
+
 // Computed properties
 const canSave = computed(() => {
   return campaign.value.name && campaign.value.subject;
@@ -435,6 +632,25 @@ const canSave = computed(() => {
 
 const canPreview = computed(() => {
   return canSave.value && (campaign.value.content || campaign.value.htmlContent);
+});
+
+const previewHtml = computed(() => {
+  let html = campaign.value.htmlContent || '';
+  
+  // Replace variables with sample data for preview
+  const replacements = {
+    '{{company_name}}': 'Your Company Name',
+    '{{subscriber_name}}': 'John Doe',
+    '{{subscriber_email}}': 'john.doe@example.com',
+    '{{current_date}}': new Date().toLocaleDateString(),
+    '{{unsubscribe_url}}': '#unsubscribe'
+  };
+  
+  Object.entries(replacements).forEach(([variable, value]) => {
+    html = html.replace(new RegExp(variable, 'g'), value);
+  });
+  
+  return html;
 });
 
 // Methods
@@ -528,6 +744,30 @@ const updateTargetCount = async () => {
   }
 };
 
+const selectTemplate = (template) => {
+  // Load the selected template content
+  campaign.value.htmlContent = template.htmlContent;
+  
+  // If we're in visual editor mode, update the editor content
+  if (!isHtmlView.value && editor.value) {
+    editor.value.innerHTML = template.htmlContent;
+  }
+  
+  // Update the campaign name if it's empty
+  if (!campaign.value.name) {
+    campaign.value.name = `Campaign using ${template.name}`;
+  }
+  
+  // Update content for both views
+  updateContent();
+  
+  // Close the template selector
+  showTemplateSelector.value = false;
+  
+  // Show success message (you could replace this with a toast notification)
+  console.log(`Template "${template.name}" loaded successfully!`);
+};
+
 const saveDraft = async () => {
   try {
     updateContent();
@@ -561,12 +801,62 @@ const saveDraft = async () => {
 
 const previewCampaign = () => {
   updateContent();
-  // Navigate to preview page
-  router.push({
-    name: 'CampaignPreview',
-    params: { id: route.params.id || 'new' },
-    query: { campaign: JSON.stringify(campaign.value) }
-  });
+  // Open preview modal instead of navigating to a non-existent route
+  showPreviewModal.value = true;
+};
+
+const sendCampaign = async () => {
+  try {
+    updateContent();
+    
+    const campaignData = {
+      ...campaign.value,
+      status: sendTimeOption.value === 'now' ? 'sent' : 'scheduled'
+    };
+
+    let response;
+    if (isEditing.value) {
+      // Send existing campaign
+      response = await axios.post(`${API_URL}/email-campaigns/campaigns/${route.params.id}/send`, {}, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+    } else {
+      // Create and send new campaign
+      response = await axios.post(`${API_URL}/email-campaigns/campaigns/send`, campaignData, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+    }
+    
+    showPreviewModal.value = false;
+    
+    // Show success message with details
+    const { emailsSent, emailsFailed } = response.data.data;
+    if (sendTimeOption.value === 'now') {
+      alert(`Campaign sent successfully!\n✅ Emails sent: ${emailsSent}\n❌ Failed: ${emailsFailed || 0}`);
+      console.log('Campaign sent successfully!', response.data);
+    } else {
+      alert('Campaign has been scheduled successfully!');
+      console.log('Campaign scheduled successfully!', response.data);
+    }
+    
+    // Navigate back to campaigns list
+    router.push('/admin/email-marketing/campaigns');
+  } catch (error) {
+    console.error('Error sending campaign:', error);
+    
+    // Show detailed error message
+    const errorMessage = error.response?.data?.message || 'Failed to send campaign. Please try again.';
+    alert(`Error: ${errorMessage}`);
+  }
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  return new Date(dateString).toLocaleString();
 };
 
 const loadCampaign = async () => {
