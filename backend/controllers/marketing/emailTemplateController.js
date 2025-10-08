@@ -35,20 +35,18 @@ const getTemplates = async (req, res) => {
       .sort(sort)
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .select('-htmlContent'); // Exclude large HTML content for list view
+      // Include htmlContent for frontend preview
     
     const total = await EmailTemplate.countDocuments(query);
     
     res.status(200).json({
       success: true,
-      data: {
-        templates,
-        pagination: {
-          current: parseInt(page),
-          pages: Math.ceil(total / limit),
-          total,
-          limit: parseInt(limit)
-        }
+      data: templates,
+      pagination: {
+        current: parseInt(page),
+        pages: Math.ceil(total / limit),
+        total,
+        limit: parseInt(limit)
       }
     });
     

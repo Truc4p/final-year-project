@@ -97,10 +97,10 @@
           <div class="relative">
             <div class="h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg overflow-hidden">
               <iframe
-                :srcdoc="template.htmlContent"
+                :srcdoc="sanitizeHtmlForPreview(template.htmlContent)"
                 class="w-full h-full transform scale-50 origin-top-left"
                 style="width: 200%; height: 200%;"
-                sandbox="allow-same-origin allow-scripts"
+                sandbox="allow-same-origin"
               ></iframe>
             </div>
             
@@ -376,9 +376,9 @@
 
           <div v-if="previewContent" class="border rounded-lg overflow-hidden">
             <iframe
-              :srcdoc="previewContent"
+              :srcdoc="sanitizeHtmlForPreview(previewContent)"
               class="w-full h-96"
-              sandbox="allow-same-origin allow-scripts"
+              sandbox="allow-same-origin"
             ></iframe>
           </div>
         </div>
@@ -499,7 +499,7 @@ export default {
           }
         })
         
-        previewContent.value = response.data.htmlContent
+        previewContent.value = response.data.rendered.html
         showPreviewModal.value = true
       } catch (error) {
         console.error('Error previewing template:', error)
@@ -621,34 +621,25 @@ export default {
       }
     }
 
-    return {
-      templates,
-      loading,
-      saving,
-      totalPages,
-      currentPage,
-      activeDropdown,
-      showCreateModal,
-      showEditModal,
-      showPreviewModal,
-      previewContent,
-      templateForm,
-      filters,
-      loadTemplates,
-      saveTemplate,
-      previewTemplate,
-      duplicateTemplate,
-      editTemplate,
-      deleteTemplate,
-      useTemplate,
-      addVariable,
-      removeVariable,
-      toggleDropdown,
-      closeModals,
-      closePreview,
-      getCategoryLabel,
-      formatDate
-    }    // Close dropdown when clicking outside
+    const sanitizeHtmlForPreview = (htmlContent) => {
+      if (!htmlContent) return ''
+      
+      // Remove script tags and their content
+      let sanitized = htmlContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      
+      // Remove event handlers (onclick, onload, etc.)
+      sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')
+      
+      // Remove javascript: URLs
+      sanitized = sanitized.replace(/javascript:[^"']*/gi, '')
+      
+      // Remove any remaining script-related attributes
+      sanitized = sanitized.replace(/\s*javascript\s*:/gi, '')
+      
+      return sanitized
+    }
+
+    // Close dropdown when clicking outside
     const handleClickOutside = () => {
       activeDropdown.value = null
     }
@@ -700,7 +691,9 @@ export default {
       toggleDropdown,
       closeModals,
       closePreview,
-      getCategoryLabel
+      getCategoryLabel,
+      formatDate,
+      sanitizeHtmlForPreview
     }
   }
 }
