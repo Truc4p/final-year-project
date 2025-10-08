@@ -148,7 +148,7 @@ const getActiveSubscriptions = async (req, res) => {
       preferences
     } = req.query;
     
-    const query = { isActive: true };
+    const query = {}; // Remove the isActive: true filter to show all subscribers
     
     // Search by email
     if (search) {
@@ -189,7 +189,7 @@ const getActiveSubscriptions = async (req, res) => {
     const sort = { [sortBy]: sortDirection };
 
     const subscriptions = await NewsletterSubscription.find(query)
-      .select('email subscriptionDate source preferences ipAddress userId')
+      .select('email subscriptionDate source preferences ipAddress userId isActive')
       .populate('userId', 'username email')
       .sort(sort)
       .limit(limit * 1)

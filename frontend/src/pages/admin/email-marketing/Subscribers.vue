@@ -305,7 +305,63 @@
     <!-- Edit Subscriber Modal -->
     <!-- View Subscriber Modal -->
     <!-- Analytics Modal -->
+    
     <!-- Bulk Preferences Modal -->
+    <div v-if="showBulkPreferences" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">
+            Update Bulk Preferences
+          </h3>
+        </div>
+        
+        <div class="px-6 py-4">
+          <form @submit.prevent="updateBulkPreferences">
+            <p class="text-sm text-gray-600 mb-4">
+              Update preferences for {{ selectedSubscribers.length }} selected subscriber(s)
+            </p>
+            
+            <div class="space-y-3">
+              <label class="flex items-center">
+                <input
+                  type="checkbox"
+                  v-model="bulkPreferencesForm.newProducts"
+                  class="rounded border-gray-300 text-blue-600"
+                />
+                <span class="ml-2 text-sm text-gray-700">New Products</span>
+              </label>
+              
+              <label class="flex items-center">
+                <input
+                  type="checkbox"
+                  v-model="bulkPreferencesForm.promotions"
+                  class="rounded border-gray-300 text-blue-600"
+                />
+                <span class="ml-2 text-sm text-gray-700">Promotions</span>
+              </label>
+              
+              <label class="flex items-center">
+                <input
+                  type="checkbox"
+                  v-model="bulkPreferencesForm.newsletter"
+                  class="rounded border-gray-300 text-blue-600"
+                />
+                <span class="ml-2 text-sm text-gray-700">Newsletter</span>
+              </label>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-6">
+              <button type="button" @click="closeBulkPreferences" class="btn btn-outline">
+                Cancel
+              </button>
+              <button type="submit" :disabled="saving" class="btn btn-primary">
+                {{ saving ? 'Updating...' : 'Update Preferences' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
     <!-- Create/Edit Segment Modal -->
     <div v-if="showCreateSegmentModal || showEditSegmentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -475,6 +531,13 @@ const segmentForm = ref({
   }
 });
 
+// Bulk preferences form data
+const bulkPreferencesForm = ref({
+  newProducts: false,
+  promotions: false,
+  newsletter: false
+});
+
 // Available sources for filtering
 const availableSources = ref([
   { value: 'public_page', label: 'Public Page' },
@@ -591,8 +654,52 @@ const toggleSelectAll = () => {
 const bulkAction = async (action) => {
   if (selectedSubscribers.value.length === 0) return;
   
-  // Implement bulk actions
-  console.log(`Bulk ${action} for:`, selectedSubscribers.value);
+  // Confirmation for delete action
+  if (action === 'delete') {
+    if (!confirm(`Are you sure you want to delete ${selectedSubscribers.value.length} subscriber(s)? This action cannot be undone.`)) {
+      return;
+    }
+  }
+  
+  try {
+    loading.value = true;
+    
+    const requestData = {
+      operation: action,
+      subscriptionIds: selectedSubscribers.value
+    };
+    
+    // Add updateData for preferences action
+    if (action === 'updatePreferences') {
+      // This will be handled by the bulk preferences modal
+      showBulkPreferences.value = true;
+      loading.value = false;
+      return;
+    }
+    
+    const response = await axios.post(`${API_URL}/newsletter/subscriptions/bulk`, requestData, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    
+    if (response.data.success) {
+      // Clear selections
+      selectedSubscribers.value = [];
+      
+      // Refresh the subscriber list
+      await fetchSubscribers();
+      
+      // Show success message
+      alert(`Successfully ${action}d ${response.data.data.modifiedCount} subscriber(s)`);
+    }
+    
+  } catch (error) {
+    console.error(`Error performing bulk ${action}:`, error);
+    alert(`Failed to ${action} subscribers. Please try again.`);
+  } finally {
+    loading.value = false;
+  }
 };
 
 const exportSubscribers = async () => {
@@ -843,6 +950,56 @@ const deleteSegmentConfirm = async (segment) => {
 
 const refreshSegments = async () => {
   await fetchSegments();
+};
+
+// Bulk preferences methods
+const closeBulkPreferences = () => {
+  showBulkPreferences.value = false;
+  bulkPreferencesForm.value = {
+    newProducts: false,
+    promotions: false,
+    newsletter: false
+  };
+};
+
+const updateBulkPreferences = async () => {
+  if (selectedSubscribers.value.length === 0) return;
+  
+  try {
+    saving.value = true;
+    
+    const requestData = {
+      operation: 'updatePreferences',
+      subscriptionIds: selectedSubscribers.value,
+      updateData: {
+        preferences: bulkPreferencesForm.value
+      }
+    };
+    
+    const response = await axios.post(`${API_URL}/newsletter/subscriptions/bulk`, requestData, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    
+    if (response.data.success) {
+      // Clear selections and close modal
+      selectedSubscribers.value = [];
+      closeBulkPreferences();
+      
+      // Refresh the subscriber list
+      await fetchSubscribers();
+      
+      // Show success message
+      alert(`Successfully updated preferences for ${response.data.data.modifiedCount} subscriber(s)`);
+    }
+    
+  } catch (error) {
+    console.error('Error updating bulk preferences:', error);
+    alert('Failed to update preferences. Please try again.');
+  } finally {
+    saving.value = false;
+  }
 };
 
 // Lifecycle
