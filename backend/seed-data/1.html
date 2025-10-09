@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{company_name}} Newsletter</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: radial-gradient(circle at 20% 80%, rgba(243, 176, 250, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(230, 120, 249, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(252, 248, 252, 0.1) 0%, transparent 50%);
+            line-height: 1.6;
+        }
+        .email-wrapper { 
+            max-width: 650px; 
+            margin: 40px auto; 
+            background-color: #ffffff; 
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        /* Updated to Modern Pink Color Palette */
+        .header { 
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(243, 176, 250, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(230, 120, 249, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(252, 248, 252, 0.1) 0%, transparent 50%);
+            color: #8C3154; 
+            padding: 50px 40px; 
+            text-align: center; 
+            position: relative;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="70" r="0.5" fill="rgba(255,255,255,0.05)"/></svg>') repeat;
+        }
+        .header h1 { 
+            margin: 0 0 10px 0; 
+            font-size: 32px; 
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+            position: relative;
+            z-index: 1;
+        }
+        .header p { 
+            margin: 0; 
+            font-size: 18px; 
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        .content { 
+            padding: 50px 40px; 
+            background-color: #ffffff;
+        }
+        .content h2 { 
+            color: #2d3748; 
+            font-size: 28px; 
+            margin: 0 0 20px 0; 
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        .content p { 
+            color: #4a5568; 
+            font-size: 16px; 
+            margin: 0 0 25px 0; 
+            line-height: 1.7;
+        }
+        .cta-section {
+            text-align: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .button { 
+            background: linear-gradient(135deg, #C97F98 0%, #A44A6B 50%, #8C3154 100%);
+            color: #FDFBF7; 
+            padding: 16px 32px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            display: inline-block; 
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(201, 127, 152, 0.3);
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #A44A6B 0%, #8C3154 50%, #7F2548 100%);
+            box-shadow: 0 8px 25px rgba(201, 127, 152, 0.4);
+        }
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #F8EAE1, transparent);
+            margin: 30px 0;
+        }
+        .signature {
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #FDF6F0;
+            border-radius: 8px;
+            border-left: 4px solid #C97F98;
+        }
+        .footer { 
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(243, 176, 250, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(230, 120, 249, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(252, 248, 252, 0.1) 0%, transparent 50%);
+            color: #A44A6B;
+            padding: 40px; 
+            text-align: center; 
+            font-size: 14px;
+        }
+        .footer a { 
+            color: #A44A6B; 
+            text-decoration: none; 
+            font-weight: 500;
+        }
+        .footer a:hover { 
+            color: #A44A6B;
+        }
+        .social-links {
+            margin: 20px 0;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 36px;
+            transition: all 0.3s ease;
+            color: #A44A6B;
+        }
+        .social-links a:hover {
+            background: rgba(243, 176, 250, 0.2);
+            transform: translateY(-2px);
+            color: #FFFFFF;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-wrapper { margin: 20px; border-radius: 12px; }
+            .header, .content, .footer { padding: 30px 25px; }
+            .header h1 { font-size: 26px; }
+            .content h2 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="header">
+            <h1>{{company_name}}</h1>
+            <p>{{newsletter_title}}</p>
+        </div>
+        
+        <div class="content">
+            <h2>{{headline}}</h2>
+            <p>{{main_content}}</p>
+            
+            <div class="cta-section">
+                <a href="{{cta_url}}" class="button">{{cta_text}}</a>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="signature">
+                <p style="margin: 0; color: #671C39; font-weight: 500;">Best regards,</p>
+                <p style="margin: 5px 0 0 0; color: #A44A6B; font-weight: 600;">The {{company_name}} Team</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="social-links">
+                <a href="#">📘</a>
+                <a href="#">🐦</a>
+                <a href="#">📷</a>
+            </div>
+            <p>You're receiving this email because you subscribed to our newsletter.</p>
+            <p style="margin: 15px 0;">
+                <a href="{{unsubscribe_url}}">Unsubscribe</a> | 
+                <a href="{{preferences_url}}">Update Preferences</a>
+            </p>
+            <p style="margin-top: 20px; font-size: 12px; opacity: 0.7;">© {{current_year}} {{company_name}}. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

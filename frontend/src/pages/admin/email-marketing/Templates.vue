@@ -100,7 +100,7 @@
                 :srcdoc="sanitizeHtmlForPreview(template.htmlContent)"
                 class="w-full h-full transform scale-50 origin-top-left"
                 style="width: 200%; height: 200%;"
-                sandbox=""
+                sandbox="allow-same-origin"
                 @load="disableLinksInIframe($event)"
               ></iframe>
             </div>
@@ -369,7 +369,7 @@
                     v-if="templateForm.htmlContent"
                     :srcdoc="sanitizeHtmlForPreview(templateForm.htmlContent)"
                     class="w-full h-full"
-                    sandbox=""
+                    sandbox="allow-same-origin"
                   ></iframe>
                   <div v-else class="flex items-center justify-center h-full text-gray-500">
                     <div class="text-center">
@@ -498,7 +498,7 @@
             <iframe
               :srcdoc="sanitizeHtmlForPreview(previewContent)"
               class="w-full h-96"
-              sandbox=""
+              sandbox="allow-same-origin"
               @load="disableLinksInIframe($event)"
             ></iframe>
           </div>
@@ -1161,8 +1161,10 @@ export default {
       // Remove script tags and their content
       let sanitized = htmlContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       
-      // Remove style tags that might contain expressions
-      sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      // Remove dangerous style content but preserve basic CSS styles
+      // Only remove styles that contain javascript or expressions
+      sanitized = sanitized.replace(/<style\b[^>]*>[\s\S]*?expression\s*\([\s\S]*?<\/style>/gi, '')
+      sanitized = sanitized.replace(/<style\b[^>]*>[\s\S]*?javascript[\s\S]*?<\/style>/gi, '')
       
       // Remove all event handlers (onclick, onload, etc.)
       sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')

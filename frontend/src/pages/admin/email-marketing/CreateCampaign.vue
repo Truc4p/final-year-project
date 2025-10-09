@@ -74,68 +74,17 @@
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium text-gray-900">Email Content</h3>
             <div class="flex gap-2">
-              <button @click="showTemplateSelector = true" class="btn btn-outline btn-sm">
+              <button @click="openTemplateSelector" class="btn btn-outline btn-sm">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
                 </svg>
                 Use Template
               </button>
-              <button @click="toggleView" class="btn btn-outline btn-sm">
-                {{ isHtmlView ? 'Visual Editor' : 'HTML Editor' }}
-              </button>
             </div>
-          </div>
-
-          <!-- Rich Text Editor -->
-          <div v-if="!isHtmlView" class="border rounded-lg">
-            <div class="border-b bg-gray-50 p-3">
-              <div class="flex flex-wrap gap-2">
-                <!-- Formatting Tools -->
-                <button @click="formatText('bold')" class="editor-btn" title="Bold">
-                  <strong>B</strong>
-                </button>
-                <button @click="formatText('italic')" class="editor-btn" title="Italic">
-                  <em>I</em>
-                </button>
-                <button @click="formatText('underline')" class="editor-btn" title="Underline">
-                  <u>U</u>
-                </button>
-                <div class="border-l mx-2"></div>
-                <button @click="formatText('insertUnorderedList')" class="editor-btn" title="Bullet List">
-                  •
-                </button>
-                <button @click="formatText('insertOrderedList')" class="editor-btn" title="Numbered List">
-                  1.
-                </button>
-                <div class="border-l mx-2"></div>
-                <button @click="insertLink" class="editor-btn" title="Insert Link">
-                  🔗
-                </button>
-                <button @click="insertImage" class="editor-btn" title="Insert Image">
-                  🖼️
-                </button>
-                <div class="border-l mx-2"></div>
-                <select @change="changeHeading" class="text-sm border rounded px-2 py-1">
-                  <option value="">Normal</option>
-                  <option value="h1">Heading 1</option>
-                  <option value="h2">Heading 2</option>
-                  <option value="h3">Heading 3</option>
-                </select>
-              </div>
-            </div>
-            
-            <div
-              ref="editor"
-              @input="updateContent"
-              contenteditable="true"
-              class="min-h-96 p-4 focus:outline-none"
-              style="min-height: 400px;"
-              placeholder="Start writing your email content..."
-            ></div>
           </div>
 
           <!-- HTML Editor -->
-          <div v-else>
+          <div>
             <textarea
               v-model="campaign.htmlContent"
               class="form-textarea w-full font-mono text-sm"
@@ -351,19 +300,42 @@
           </div>
           
           <!-- Template grid will be implemented here -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+          <div v-if="templatesLoading" class="text-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+            <p class="text-gray-500 mt-2">Loading templates...</p>
+          </div>
+          
+          <div v-else-if="emailTemplates.length === 0" class="text-center py-8">
+            <p class="text-gray-500">No templates available. Create some templates first.</p>
+          </div>
+          
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
             <!-- Template cards -->
             <div 
               v-for="template in emailTemplates" 
-              :key="template.id"
+              :key="template._id || template.id"
               @click="selectTemplate(template)"
               class="border rounded-lg p-4 hover:shadow-md cursor-pointer hover:border-blue-500 transition-colors"
             >
-              <div class="bg-gray-100 h-32 rounded mb-3 flex items-center justify-center">
-                <div class="text-gray-400 text-xs">{{ template.name }} Preview</div>
+              <div class="bg-gray-100 h-32 rounded mb-3 overflow-hidden relative">
+                <iframe
+                  :srcdoc="getTemplatePreview(template)"
+                  class="w-full h-full border-0 pointer-events-none"
+                  style="transform: scale(0.25); transform-origin: top left; width: 400%; height: 400%;"
+                  sandbox="allow-same-origin"
+                ></iframe>
+                <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity"></div>
               </div>
-              <h4 class="font-medium">{{ template.name }}</h4>
-              <p class="text-sm text-gray-600">{{ template.description }}</p>
+              <h4 class="font-medium truncate">{{ template.name }}</h4>
+              <p class="text-sm text-gray-600 line-clamp-2">{{ template.description || 'Email template' }}</p>
+              <div class="mt-2">
+                <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                  {{ template.category || 'general' }}
+                </span>
+                <span v-if="template.isDefault" class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded ml-1">
+                  Default
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -444,7 +416,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { API_URL } from '../../../utils/config';
@@ -454,13 +426,12 @@ const router = useRouter();
 
 // Component state
 const isEditing = computed(() => !!route.params.id);
-const isHtmlView = ref(false);
 const showTemplateSelector = ref(false);
 const showPreviewModal = ref(false);
 const sendTimeOption = ref('now');
 const customEmailList = ref('');
 const targetCount = ref(0);
-const editor = ref(null);
+const templatesLoading = ref(false);
 
 // Campaign data
 const campaign = ref({
@@ -507,123 +478,8 @@ const availableSources = ref([
   { value: 'other', label: 'Other' }
 ]);
 
-// Email templates
-const emailTemplates = ref([
-  {
-    id: 'newsletter',
-    name: 'Newsletter Template',
-    description: 'Perfect for weekly newsletters',
-    htmlContent: `
-      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-        <header style="background-color: #f8f9fa; padding: 20px; text-align: center;">
-          <h1 style="color: #333; margin: 0;">{{company_name}} Newsletter</h1>
-        </header>
-        <main style="padding: 20px;">
-          <h2 style="color: #333;">Hello {{subscriber_name}},</h2>
-          <p style="line-height: 1.6; color: #666;">Welcome to our weekly newsletter! Here's what's new this week.</p>
-          
-          <div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #007bff;">
-            <h3 style="margin-top: 0; color: #333;">Featured Article</h3>
-            <p style="margin-bottom: 0; color: #666;">Add your featured content here...</p>
-          </div>
-          
-          <p style="line-height: 1.6; color: #666;">Thank you for being a valued subscriber!</p>
-        </main>
-        <footer style="background-color: #333; color: white; padding: 20px; text-align: center;">
-          <p style="margin: 0;">Best regards,<br>{{company_name}} Team</p>
-          <p style="margin: 10px 0 0 0; font-size: 12px;">
-            <a href="{{unsubscribe_url}}" style="color: #ccc;">Unsubscribe</a>
-          </p>
-        </footer>
-      </div>
-    `
-  },
-  {
-    id: 'promotion',
-    name: 'Promotion Template',
-    description: 'Great for sales and special offers',
-    htmlContent: `
-      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-        <header style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">Special Offer!</h1>
-          <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Limited Time Only</p>
-        </header>
-        <main style="padding: 30px;">
-          <h2 style="color: #333; text-align: center;">Hi {{subscriber_name}},</h2>
-          <p style="line-height: 1.6; color: #666; text-align: center; font-size: 18px;">
-            Don't miss out on this amazing deal!
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <div style="background-color: #ff6b6b; color: white; display: inline-block; padding: 15px 30px; border-radius: 50px; font-size: 24px; font-weight: bold;">
-              50% OFF
-            </div>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="#" style="background-color: #28a745; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-              Shop Now
-            </a>
-          </div>
-          
-          <p style="line-height: 1.6; color: #666; text-align: center; font-style: italic;">
-            Offer valid until {{current_date}}
-          </p>
-        </main>
-        <footer style="background-color: #333; color: white; padding: 20px; text-align: center;">
-          <p style="margin: 0;">{{company_name}}</p>
-          <p style="margin: 10px 0 0 0; font-size: 12px;">
-            <a href="{{unsubscribe_url}}" style="color: #ccc;">Unsubscribe</a>
-          </p>
-        </footer>
-      </div>
-    `
-  },
-  {
-    id: 'welcome',
-    name: 'Welcome Template',
-    description: 'Perfect for welcoming new subscribers',
-    htmlContent: `
-      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-        <header style="background-color: #28a745; padding: 30px; text-align: center;">
-          <h1 style="color: white; margin: 0;">Welcome to {{company_name}}!</h1>
-        </header>
-        <main style="padding: 30px;">
-          <h2 style="color: #333;">Hello {{subscriber_name}},</h2>
-          <p style="line-height: 1.6; color: #666; font-size: 18px;">
-            Welcome aboard! We're thrilled to have you join our community.
-          </p>
-          
-          <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; text-align: center;">
-            <h3 style="margin-top: 0; color: #333;">What's Next?</h3>
-            <ul style="list-style: none; padding: 0; margin: 0;">
-              <li style="margin: 10px 0; color: #666;">✓ Explore our latest products</li>
-              <li style="margin: 10px 0; color: #666;">✓ Follow us on social media</li>
-              <li style="margin: 10px 0; color: #666;">✓ Watch for exclusive offers</li>
-            </ul>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="#" style="background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-              Get Started
-            </a>
-          </div>
-          
-          <p style="line-height: 1.6; color: #666;">
-            If you have any questions, feel free to reach out to our support team.
-          </p>
-        </main>
-        <footer style="background-color: #333; color: white; padding: 20px; text-align: center;">
-          <p style="margin: 0;">Thanks for joining us!</p>
-          <p style="margin: 5px 0 0 0;">{{company_name}} Team</p>
-          <p style="margin: 10px 0 0 0; font-size: 12px;">
-            <a href="{{unsubscribe_url}}" style="color: #ccc;">Unsubscribe</a>
-          </p>
-        </footer>
-      </div>
-    `
-  }
-]);
+// Email templates (loaded from API)
+const emailTemplates = ref([]);
 
 // Computed properties
 const canSave = computed(() => {
@@ -653,68 +509,136 @@ const previewHtml = computed(() => {
   return html;
 });
 
+// Helper function to extract plain text from HTML
+const extractTextFromHtml = (html) => {
+  if (!html) return '';
+  // Create a temporary element to parse HTML and extract text
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || tempDiv.innerText || '';
+};
+
+// Watch for changes in htmlContent to update plain text content
+watch(() => campaign.value.htmlContent, (newHtmlContent) => {
+  campaign.value.content = extractTextFromHtml(newHtmlContent);
+});
+
 // Methods
-const toggleView = () => {
-  if (!isHtmlView.value) {
-    // Switching to HTML view, save current visual content
-    campaign.value.htmlContent = editor.value?.innerHTML || '';
-  } else {
-    // Switching to visual view, load HTML content
-    if (editor.value) {
-      editor.value.innerHTML = campaign.value.htmlContent || '';
-    }
-  }
-  isHtmlView.value = !isHtmlView.value;
-};
-
-const formatText = (command, value = null) => {
-  document.execCommand(command, false, value);
-  updateContent();
-};
-
-const changeHeading = (event) => {
-  const value = event.target.value;
-  if (value) {
-    formatText('formatBlock', value);
-  }
-  event.target.value = '';
-};
-
-const insertLink = () => {
-  const url = prompt('Enter URL:');
-  if (url) {
-    formatText('createLink', url);
+const loadEmailTemplates = async () => {
+  templatesLoading.value = true;
+  try {
+    const response = await axios.get(`${API_URL}/email-templates`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    
+    emailTemplates.value = response.data.data || [];
+  } catch (error) {
+    console.error('Error loading email templates:', error);
+    // Set empty array on error
+    emailTemplates.value = [];
+  } finally {
+    templatesLoading.value = false;
   }
 };
 
-const insertImage = () => {
-  const url = prompt('Enter image URL:');
-  if (url) {
-    formatText('insertImage', url);
+const openTemplateSelector = async () => {
+  showTemplateSelector.value = true;
+  // Load templates if not already loaded
+  if (emailTemplates.value.length === 0 && !templatesLoading.value) {
+    await loadEmailTemplates();
   }
+};
+
+const getTemplatePreview = (template) => {
+  if (!template.htmlContent) return '<div style="padding: 20px; text-align: center; color: #666;">No preview available</div>';
+  
+  let html = template.htmlContent;
+  
+  // Replace template variables with sample data for preview
+  const variableReplacements = {
+    'company_name': 'Your Company',
+    'email_subject': 'Sample Email Subject',
+    'newsletter_title': 'Monthly Newsletter',
+    'headline': 'Welcome to Our Newsletter!',
+    'main_headline': 'Welcome to Our Newsletter!',
+    'content': 'This is sample content to show how your email will look.',
+    'main_content': 'This is sample content to show how your email will look.',
+    'subscriber_name': 'John Doe',
+    'subscriber_email': 'john.doe@example.com',
+    'promotion_title': 'Limited Time Sale!',
+    'promotion_type': 'SPECIAL OFFER',
+    'promotion_subtitle': 'Don\'t miss out on these amazing deals',
+    'discount_amount': '50% OFF',
+    'offer_description': 'Save big on all items',
+    'offer_details': 'Valid until end of month.',
+    'cta_text': 'Shop Now',
+    'cta_url': '#',
+    'shop_url': '#',
+    'button_text': 'Click Here',
+    'button_url': '#',
+    'user_name': 'John Doe',
+    'welcome_message': 'Thanks for joining our community!',
+    'personal_message': 'We\'re excited to have you on board!',
+    'current_date': new Date().toLocaleDateString(),
+    'current_year': new Date().getFullYear().toString(),
+    'unsubscribe_url': '#unsubscribe',
+    'preferences_url': '#preferences'
+  };
+  
+  // Replace variables with sample values
+  html = html.replace(/\{\{([^}]+)\}\}/g, (match, variableName) => {
+    const cleanName = variableName.trim();
+    return variableReplacements[cleanName] || `[${cleanName}]`;
+  });
+  
+  // Remove or neutralize potentially problematic elements for preview
+  html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  html = html.replace(/javascript:/gi, '');
+  html = html.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
+  
+  // Disable all links for preview
+  html = html.replace(/href\s*=\s*["'][^"']*["']/gi, 'href="#"');
+  
+  // Wrap in a container with base styles for consistent preview
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+          * { pointer-events: none; }
+        </style>
+      </head>
+      <body>
+        ${html}
+      </body>
+    </html>
+  `;
 };
 
 const insertVariable = (variableName) => {
   const variableText = `{{${variableName}}}`;
-  if (isHtmlView.value) {
-    // Insert into textarea
-    const textarea = document.querySelector('textarea');
+  // Insert into textarea
+  const textarea = document.querySelector('textarea');
+  if (textarea) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     campaign.value.htmlContent = 
       campaign.value.htmlContent.substring(0, start) + 
       variableText + 
       campaign.value.htmlContent.substring(end);
-  } else {
-    // Insert into visual editor
-    formatText('insertText', variableText);
-  }
-};
-
-const updateContent = () => {
-  if (editor.value) {
-    campaign.value.content = editor.value.innerText;
-    campaign.value.htmlContent = editor.value.innerHTML;
+    
+    // Update cursor position
+    const newPosition = start + variableText.length;
+    nextTick(() => {
+      textarea.selectionStart = newPosition;
+      textarea.selectionEnd = newPosition;
+      textarea.focus();
+    });
   }
 };
 
@@ -748,18 +672,10 @@ const selectTemplate = (template) => {
   // Load the selected template content
   campaign.value.htmlContent = template.htmlContent;
   
-  // If we're in visual editor mode, update the editor content
-  if (!isHtmlView.value && editor.value) {
-    editor.value.innerHTML = template.htmlContent;
-  }
-  
   // Update the campaign name if it's empty
   if (!campaign.value.name) {
     campaign.value.name = `Campaign using ${template.name}`;
   }
-  
-  // Update content for both views
-  updateContent();
   
   // Close the template selector
   showTemplateSelector.value = false;
@@ -770,10 +686,9 @@ const selectTemplate = (template) => {
 
 const saveDraft = async () => {
   try {
-    updateContent();
-    
     const campaignData = {
       ...campaign.value,
+      content: extractTextFromHtml(campaign.value.htmlContent),
       status: 'draft'
     };
 
@@ -800,17 +715,15 @@ const saveDraft = async () => {
 };
 
 const previewCampaign = () => {
-  updateContent();
   // Open preview modal instead of navigating to a non-existent route
   showPreviewModal.value = true;
 };
 
 const sendCampaign = async () => {
   try {
-    updateContent();
-    
     const campaignData = {
       ...campaign.value,
+      content: extractTextFromHtml(campaign.value.htmlContent),
       status: sendTimeOption.value === 'now' ? 'sent' : 'scheduled'
     };
 
@@ -889,28 +802,69 @@ watch(() => campaign.value.segmentCriteria, updateTargetCount, { deep: true });
 // Lifecycle
 onMounted(() => {
   loadCampaign();
+  loadEmailTemplates();
   updateTargetCount();
 });
 </script>
 
 <style scoped>
-.editor-btn {
-  @apply px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500;
+.form-input {
+  display: block;
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
-.form-input {
-  @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm;
+.form-input:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 1px #3b82f6;
 }
 
 .form-select {
-  @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm;
+  display: block;
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.form-select:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 1px #3b82f6;
 }
 
 .form-textarea {
-  @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm;
+  display: block;
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.form-textarea:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 1px #3b82f6;
 }
 
 .page-header {
-  @apply mb-6;
+  margin-bottom: 1.5rem;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>
