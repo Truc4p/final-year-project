@@ -48,7 +48,7 @@ Create/update your `.env` file:
 GEMINI_API_KEY=your_gemini_api_key_here
 
 # Database
-MONGODB_URI=mongodb://localhost:27017/wrencos_db
+MONGODB_URI=mongodb://localhost:27017/wrencos_db+srv://mongo-api:7TZYsdhwiXhiKRp9@cluster0.18pi3.mongodb://localhost:27017/wrencos_db.net/Wrencos?retryWrites=true&w=majority
 
 # Authentication
 JWT_SECRET=your_jwt_secret_here

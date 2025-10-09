@@ -6,7 +6,7 @@ const EmailTemplate = require('../models/marketing/emailTemplate');
 const User = require('../models/auth/user');
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/wrencos_db', {});
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/wrencos_db+srv://mongo-api:7TZYsdhwiXhiKRp9@cluster0.18pi3.mongodb://localhost:27017/wrencos_db.net/Wrencos?retryWrites=true&w=majority', {});
 
 const defaultTemplates = [
   {
