@@ -735,12 +735,13 @@ const getRecipients = async (campaign) => {
         // Get all active subscribers
         const allSubscribers = await NewsletterSubscription.find({ 
           isActive: true 
-        }).select('email name source preferences');
+        }).select('email name source preferences unsubscribeToken');
         recipients = allSubscribers.map(sub => ({
           email: sub.email,
           name: sub.name || sub.email.split('@')[0],
           source: sub.source,
-          preferences: sub.preferences
+          preferences: sub.preferences,
+          unsubscribeToken: sub.unsubscribeToken
         }));
         break;
         
@@ -778,12 +779,13 @@ const getRecipients = async (campaign) => {
         }
         
         const segmentSubscribers = await NewsletterSubscription.find(query)
-          .select('email name source preferences');
+          .select('email name source preferences unsubscribeToken');
         recipients = segmentSubscribers.map(sub => ({
           email: sub.email,
           name: sub.name || sub.email.split('@')[0],
           source: sub.source,
-          preferences: sub.preferences
+          preferences: sub.preferences,
+          unsubscribeToken: sub.unsubscribeToken
         }));
         break;
         

@@ -8,6 +8,7 @@ const role = require('../../middleware/role');
 // Public routes
 router.post('/subscribe', optionalAuth, newsletterController.subscribe);
 router.post('/unsubscribe/:token', newsletterController.unsubscribe);
+router.post('/unsubscribe-by-email', newsletterController.unsubscribeByEmail);
 router.put('/preferences/:token', newsletterController.updatePreferences);
 
 // Admin routes - Enhanced subscriber management

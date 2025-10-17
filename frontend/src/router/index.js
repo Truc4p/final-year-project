@@ -6,6 +6,7 @@ import Register from "@/pages/public/Register.vue";
 import Logout from "@/pages/public/Logout.vue";
 import PublicPage from "@/pages/public/PublicPage.vue";
 import PublicLayout from "@/layout/PublicLayout.vue";
+import Unsubscribe from "@/pages/public/Unsubscribe.vue";
 
 import AdminLayout from "@/layout/AdminLayout.vue";
 import AdminPage from "@/pages/admin/AdminPage.vue";
@@ -75,6 +76,8 @@ const routes = [
       { path: "login", component: Login },
       { path: "register", component: Register },
       { path: "logout", component: Logout },
+      { path: "unsubscribe/:token", component: Unsubscribe },
+      { path: "unsubscribe", component: Unsubscribe }, // For legacy email links with ?email parameter
     ],
   },
 

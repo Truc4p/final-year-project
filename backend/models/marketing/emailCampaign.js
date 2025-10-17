@@ -24,6 +24,11 @@ const emailCampaignSchema = new mongoose.Schema({
     ref: 'EmailTemplate',
     default: null
   },
+  templateVariables: {
+    type: Map,
+    of: String,
+    default: {}
+  },
   status: {
     type: String,
     enum: ['draft', 'scheduled', 'sending', 'sent', 'paused', 'cancelled'],

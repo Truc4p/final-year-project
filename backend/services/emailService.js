@@ -54,7 +54,7 @@ class EmailService {
     }
   }
 
-  async sendBulkEmails(recipients, subject, htmlContent, textContent = null) {
+  async sendBulkEmails(recipients, subject, htmlContent, textContent = null, templateVariables = {}) {
     const results = [];
     const batchSize = 10; // Send in batches to avoid rate limiting
     
@@ -62,8 +62,8 @@ class EmailService {
       const batch = recipients.slice(i, i + batchSize);
       const batchPromises = batch.map(async (recipient) => {
         // Replace variables in content for each recipient
-        const personalizedHtml = this.replaceVariables(htmlContent, recipient);
-        const personalizedText = textContent ? this.replaceVariables(textContent, recipient) : null;
+        const personalizedHtml = this.replaceVariables(htmlContent, recipient, templateVariables);
+        const personalizedText = textContent ? this.replaceVariables(textContent, recipient, templateVariables) : null;
         
         const result = await this.sendEmail(
           recipient.email, 
@@ -90,20 +90,28 @@ class EmailService {
     return results;
   }
 
-  replaceVariables(content, recipient) {
+  replaceVariables(content, recipient, templateVariables = {}) {
     let personalizedContent = content;
     
     // Replace common variables
-    const variables = {
+    const commonVariables = {
       '{{subscriber_name}}': recipient.name || recipient.email.split('@')[0],
       '{{subscriber_email}}': recipient.email,
       '{{company_name}}': process.env.COMPANY_NAME || 'Your Company',
       '{{current_date}}': new Date().toLocaleDateString(),
-      '{{unsubscribe_url}}': `${process.env.FRONTEND_URL || 'http://localhost:5173'}/unsubscribe?email=${encodeURIComponent(recipient.email)}`
+      '{{current_year}}': new Date().getFullYear().toString(),
+      '{{unsubscribe_url}}': recipient.unsubscribeToken 
+        ? `${process.env.FRONTEND_URL || 'http://localhost:5173'}/unsubscribe/${recipient.unsubscribeToken}`
+        : `${process.env.FRONTEND_URL || 'http://localhost:5173'}/unsubscribe?email=${encodeURIComponent(recipient.email)}`
     };
+
+    // Combine common variables with template variables
+    const allVariables = { ...commonVariables, ...templateVariables };
     
-    Object.entries(variables).forEach(([variable, value]) => {
-      personalizedContent = personalizedContent.replace(new RegExp(variable, 'g'), value);
+    // Replace all variables
+    Object.entries(allVariables).forEach(([variable, value]) => {
+      const regex = new RegExp(variable.replace(/[{()}]/g, '\\$&'), 'g');
+      personalizedContent = personalizedContent.replace(regex, value || '');
     });
     
     return personalizedContent;
@@ -127,11 +135,20 @@ class EmailService {
     try {
       console.log(`Starting to send campaign "${campaign.name}" to ${recipients.length} recipients`);
       
+      // Convert template variables map to plain object
+      const templateVariables = {};
+      if (campaign.templateVariables) {
+        for (const [key, value] of campaign.templateVariables) {
+          templateVariables[`{{${key}}}`] = value;
+        }
+      }
+      
       const results = await this.sendBulkEmails(
         recipients,
         campaign.subject,
         campaign.htmlContent,
-        campaign.content
+        campaign.content,
+        templateVariables
       );
       
       const successCount = results.filter(r => r.success).length;

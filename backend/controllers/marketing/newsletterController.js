@@ -133,6 +133,50 @@ const unsubscribe = async (req, res) => {
   }
 };
 
+// Unsubscribe from newsletter by email (for backward compatibility)
+const unsubscribeByEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    const subscription = await NewsletterSubscription.findOne({ 
+      email: email.toLowerCase(),
+      isActive: true 
+    });
+
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'No active subscription found for this email address'
+      });
+    }
+
+    await subscription.unsubscribe();
+
+    res.status(200).json({
+      success: true,
+      message: 'Successfully unsubscribed from newsletter',
+      data: {
+        email: subscription.email,
+        unsubscribedDate: subscription.unsubscribedDate
+      }
+    });
+
+  } catch (error) {
+    console.error('Newsletter unsubscribe by email error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to unsubscribe. Please try again later.'
+    });
+  }
+};
+
 // Get all active subscriptions (admin only) with enhanced filtering
 const getActiveSubscriptions = async (req, res) => {
   try {
@@ -598,6 +642,7 @@ const getSubscriptionAnalytics = async (req, res) => {
 module.exports = {
   subscribe,
   unsubscribe,
+  unsubscribeByEmail,
   getActiveSubscriptions,
   getSubscription,
   updateSubscription,
