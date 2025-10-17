@@ -91,7 +91,7 @@
         <div
           v-for="template in templates"
           :key="template._id"
-          class="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow"
+          class="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow overflow-visible"
         >
           <!-- Template Preview -->
           <div class="relative">
@@ -158,29 +158,57 @@
                 <!-- Dropdown Menu -->
                   <div
                     v-if="activeDropdown === template._id"
-                    class="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border z-10"
+                    class="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-xl border z-50"
+                    style="box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);"
                     @click.stop
                   >
                   <div class="py-1">
                     <button
                       @click="editTemplate(template)"
-                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                     >
-                      Edit Template
+                      <span class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Edit Template
+                      </span>
                     </button>
                     <button
                       @click="useTemplate(template)"
-                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                     >
-                      Use in Campaign
+                      <span class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Use in Campaign
+                      </span>
                     </button>
-                    <hr class="my-1">
+                    <hr class="my-1 border-gray-200">
                     <button
                       v-if="!template.isDefault"
                       @click="deleteTemplate(template)"
-                      class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      class="block w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >
-                      Delete Template
+                      <span class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Delete Template
+                      </span>
+                    </button>
+                    <button
+                      v-if="template.isDefault"
+                      disabled
+                      class="block w-full text-left px-4 py-3 text-sm text-gray-400 cursor-not-allowed"
+                    >
+                      <span class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        Default Template (Protected)
+                      </span>
                     </button>
                   </div>
                 </div>
