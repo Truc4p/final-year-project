@@ -330,7 +330,7 @@ Don't want promotional emails? Unsubscribe: {{unsubscribe_url}}
         .price { font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #C97F98 0%, #A44A6B 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 15px 0; }
         .old-price { text-decoration: line-through; color: #94a3b8; font-size: 20px; margin-right: 10px; }
         .cta-section p { color: #475569; margin: 10px 0; }
-    .big-button { background: linear-gradient(135deg, #C97F98 0%, #A44A6B 100%); color: white !important; padding: 18px 48px; text-decoration: none; border-radius: 12px; display: inline-block; font-size: 20px; font-weight: 800; margin: 25px 0 15px; box-shadow: 0 6px 25px rgba(164, 74, 107, 0.4); transition: all 0.3s ease; }
+        .big-button { background: linear-gradient(135deg, #C97F98 0%, #A44A6B 100%); color: white !important; padding: 18px 48px; text-decoration: none; border-radius: 12px; display: inline-block; font-size: 20px; font-weight: 800; margin: 25px 0 15px; box-shadow: 0 6px 25px rgba(164, 74, 107, 0.4); transition: all 0.3s ease; }
         .big-button:hover { box-shadow: 0 8px 30px rgba(164, 74, 107, 0.5); transform: translateY(-3px); }
         .footer { background: linear-gradient(to right, #FDF6F0, #F8EAE1); color: #8C3154; padding: 35px; text-align: center; border-top: 1px solid #F0D7CC; }
         .footer p { margin: 8px 0; opacity: 0.95; }
