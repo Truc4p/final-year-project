@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to WrenCos!</title>
+    <style>
+        body { font-family: 'Inter', Arial, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #FDFBF7 0%, #F8EAE1 100%); }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 25px rgba(0, 0, 0, 0.12); }
+        .header { background: linear-gradient(135deg, #FDF6F0 0%, #F0D7CC 50%, #FDF6F0 100%); color: #8C3154; padding: 50px 30px; text-align: center; border-bottom: 3px solid #E4BCC0; }
+        .welcome-icon { font-size: 64px; margin-bottom: 15px; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .header h1 { margin: 10px 0; font-size: 36px; font-weight: 800; letter-spacing: -0.5px; }
+        .header p { margin: 10px 0 0; font-size: 17px; opacity: 0.9; color: #A44A6B; }
+        .content { padding: 45px 35px; }
+        .welcome-message { font-size: 16px; line-height: 1.8; margin-bottom: 30px; color: #475569; }
+        .welcome-message p:first-child { color: #8C3154; font-weight: 600; font-size: 18px; }
+        .benefits { background: linear-gradient(to bottom, #FDF6F0, #F8EAE1); padding: 30px; border-radius: 12px; margin: 30px 0; border: 1px solid #F0D7CC; }
+        .benefits h3 { color: #8C3154; font-size: 22px; margin: 0 0 25px; font-weight: 700; }
+        .benefit-item { margin-bottom: 20px; display: flex; align-items: start; }
+        .benefit-icon { font-size: 28px; margin-right: 15px; flex-shrink: 0; }
+        .benefit-content { flex: 1; }
+        .benefit-title { font-weight: 700; margin-bottom: 6px; color: #8C3154; font-size: 16px; }
+        .benefit-description { color: #64748b; font-size: 14px; line-height: 1.6; }
+        .cta-section { text-align: center; margin: 35px 0; padding: 30px; background: linear-gradient(to right, #FDFBF7, #FDF6F0); border-radius: 12px; }
+        .cta-section p { color: #475569; margin: 0 0 12px; }
+        .button { background: linear-gradient(135deg, #C97F98 0%, #A44A6B 100%); color: white; padding: 16px 36px; text-decoration: none; border-radius: 10px; display: inline-block; font-weight: 700; font-size: 17px; box-shadow: 0 6px 20px rgba(164, 74, 107, 0.3); transition: all 0.3s ease; }
+        .button:hover { box-shadow: 0 8px 25px rgba(164, 74, 107, 0.4); transform: translateY(-2px); }
+        .footer { background: linear-gradient(to right, #FDF6F0, #F8EAE1); padding: 35px; text-align: center; font-size: 14px; color: #8C3154; border-top: 1px solid #F0D7CC; }
+        .social-links { margin: 20px 0; }
+        .social-links span { font-weight: 700; color: #A44A6B; display: block; margin-bottom: 12px; }
+        .social-links a { margin: 0 12px; text-decoration: none; font-size: 28px; transition: transform 0.3s ease; display: inline-block; }
+        .social-links a:hover { transform: scale(1.2); }
+        .footer a { color: #A44A6B; text-decoration: none; font-weight: 600; }
+        .footer a:hover { color: #8C3154; }
+        .divider { height: 2px; background: linear-gradient(to right, transparent, #E4BCC0, transparent); margin: 25px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="welcome-icon">🎉</div>
+            <h1>Welcome to WrenCos!</h1>
+            <p>We're absolutely thrilled to have you join our community</p>
+        </div>
+        
+        <div class="content">
+            <div class="welcome-message">
+                <p>Hi {{subscriber_name}},</p>
+                <p>Thank you for subscribing to our newsletter! We're excited to share our latest updates, exclusive offers, and valuable insights with you.</p>
+            </div>
+            
+            <div class="benefits">
+                <h3>✨ Here's what you can expect:</h3>
+                <div class="benefit-item">
+                    <div class="benefit-icon">🎁</div>
+                    <div class="benefit-content">
+                        <div class="benefit-title">Exclusive Access to New Products</div>
+                        <div class="benefit-description">Be the first to discover our latest innovations and special member-only deals before anyone else</div>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">💫</div>
+                    <div class="benefit-content">
+                        <div class="benefit-title">Special Discounts & Offers</div>
+                        <div class="benefit-description">Enjoy exclusive promotions and limited-time offers designed just for our valued subscribers</div>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">📚</div>
+                    <div class="benefit-content">
+                        <div class="benefit-title">Weekly Tips & Insights</div>
+                        <div class="benefit-description">Get expert advice, beauty tips, and industry insights delivered straight to your inbox every week</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="cta-section">
+                <p style="font-size: 18px; font-weight: 600; color: #8C3154;">Ready to get started?</p>
+                <p>Explore our amazing collection and discover what makes us special</p>
+                <a href="https://example.com/products" class="button">Explore Our Products</a>
+            </div>
+            
+            <p style="color: #475569; line-height: 1.7;">If you have any questions, feel free to reply to this email or contact our friendly support team. We're here to help!</p>
+            
+            <p style="margin-top: 30px; color: #475569;">Welcome aboard! 🚀<br><br>
+            <strong style="color: #8C3154;">The WrenCos Team</strong></p>
+        </div>
+        
+        <div class="footer">
+            <div class="social-links">
+                <span>Connect with us</span>
+                <a href="#" title="Facebook">📘</a>
+                <a href="#" title="Twitter">🐦</a>
+                <a href="#" title="Instagram">📷</a>
+            </div>
+            <p style="margin: 15px 0;">You're receiving this email because you subscribed to WrenCos.</p>
+            <p><a href="{{unsubscribe_url}}">Unsubscribe</a> | <a href="#">Update Preferences</a></p>
+            <p style="margin: 15px 0 0;">© {{current_date}} WrenCos. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
