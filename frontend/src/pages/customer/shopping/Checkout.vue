@@ -25,7 +25,7 @@ const user = ref({
 });
 
 const customerDetails = ref({
-    paymentMethod: 'cod', // Default to Cash on Delivery
+    paymentMethod: 'onlinePayment', // Default to Online Payment
 });
 
 // Computed property to detect shipping location from address
@@ -167,6 +167,29 @@ const placeOrder = async () => {
         };
 
         console.log('Order data:', orderData); // Log order data
+
+        // If online payment selected, create VNPay payment URL instead of immediate order placement
+        if (customerDetails.value.paymentMethod === 'onlinePayment') {
+            const payResp = await axios.post(`${API_URL}/payments/vnpay/create`, orderData, {
+                headers: {
+                    'x-auth-token': localStorage.getItem('token'),
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            // Check if payment URL is returned
+            if (payResp.data.url) {
+                // Clear cart and redirect to VNPay
+                localStorage.removeItem('cart');
+                window.dispatchEvent(new CustomEvent('cartUpdated'));
+                window.location.href = payResp.data.url;
+                return;
+            } else {
+                // Error creating payment URL
+                alert('Failed to create payment URL. Please try again or use Cash on Delivery.');
+                return;
+            }
+        }
 
         const response = await axios.post(`${API_URL}/orders`, orderData, {
             headers: {

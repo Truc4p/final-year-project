@@ -34,6 +34,12 @@ const OrderSchema = new Schema({
     enum: ["cod", "onlinePayment"],
     required: true,
   },
+
+  paymentStatus: {
+    type: String,
+    enum: ["pending", "paid", "failed"],
+    default: "pending",
+  },
   
   orderDate: {
     type: Date,
@@ -42,7 +48,7 @@ const OrderSchema = new Schema({
 
   status: {
     type: String,
-    enum: ["processing", "shipping", 'completed'],
+    enum: ["pending", "processing", "shipping", "completed", "cancelled"],
     default: "processing",
   },
 
@@ -50,6 +56,31 @@ const OrderSchema = new Schema({
     type: Number,
     required: true,
     default: 0,
+  },
+
+  subtotal: {
+    type: Number,
+    default: 0,
+  },
+
+  tax: {
+    type: Number,
+    default: 0,
+  },
+
+  taxRate: {
+    type: Number,
+    default: 0,
+  },
+
+  shippingFee: {
+    type: Number,
+    default: 0,
+  },
+
+  shippingLocation: {
+    type: String,
+    enum: ["major", "other"],
   },
 });
 

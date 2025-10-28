@@ -107,6 +107,20 @@
                   </span>
                 </div>
 
+                <!-- Payment Status (for online payments) -->
+                <div v-if="order.paymentMethod === 'onlinePayment'" class="info-item">
+                  <div class="flex items-center text-gray-500 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span class="text-sm font-medium">{{ t('paymentStatus') || 'Payment Status' }}</span>
+                  </div>
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium" 
+                        :class="getPaymentStatusBadgeClass(order.paymentStatus)">
+                    {{ getPaymentStatusLabel(order.paymentStatus) }}
+                  </span>
+                </div>
+
                 <!-- Total Price -->
                 <div class="info-item border-t border-gray-100 pt-4">
                   <div class="flex items-center justify-between">
@@ -258,6 +272,36 @@ const getStatusBadgeClass = (status) => {
       return 'bg-blue-100 text-blue-800';
     default:
       return 'bg-slate-100 text-slate-700';
+  }
+};
+
+const getPaymentStatusBadgeClass = (paymentStatus) => {
+  switch (paymentStatus?.toLowerCase()) {
+    case 'paid':
+      return 'bg-green-100 text-green-800';
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'failed':
+      return 'bg-red-100 text-red-800';
+    case 'refunded':
+      return 'bg-blue-100 text-blue-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
+
+const getPaymentStatusLabel = (paymentStatus) => {
+  switch (paymentStatus?.toLowerCase()) {
+    case 'paid':
+      return '✓ Paid';
+    case 'pending':
+      return '⏳ Pending';
+    case 'failed':
+      return '✗ Failed';
+    case 'refunded':
+      return '↩ Refunded';
+    default:
+      return paymentStatus || 'Unknown';
   }
 };
 
