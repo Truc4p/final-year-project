@@ -42,7 +42,7 @@ const role = require("../../middleware/role");
  *           description: The payment method
  *         status:
  *           type: string
- *           enum: ["processing", "shipping", "completed"]
+ *           enum: ["pending", "processing", "shipping", "completed"]
  *           description: The order status
  *         totalPrice:
  *           type: number
@@ -225,5 +225,32 @@ router.get("/user/:id", auth, role(["admin", "customer"]), orderController.getOr
  *         description: Order not found
  */
 router.get("/order/:id", auth, role(["admin", "customer"]), orderController.getOrderByOrderId);
+
+/**
+ * @swagger
+ * /orders/{id}/confirm-payment:
+ *   post:
+ *     summary: Confirm payment for a pending order
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The order ID
+ *     responses:
+ *       200:
+ *         description: Payment confirmed and order updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Order'
+ *       404:
+ *         description: Order not found
+ *       400:
+ *         description: Order is not in pending status or insufficient stock
+ */
+router.post("/:id/confirm-payment", auth, role(["admin", "customer"]), orderController.confirmPayment);
 
 module.exports = router;

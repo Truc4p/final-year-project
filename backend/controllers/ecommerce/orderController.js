@@ -56,17 +56,21 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    // Decrement stock atomically per item
-    for (const item of products) {
-      const updated = await Product.findOneAndUpdate(
-        { _id: item.productId, stockQuantity: { $gte: item.quantity } },
-        { $inc: { stockQuantity: -item.quantity } },
-        { new: true }
-      );
-      if (!updated) {
-        return res.status(409).send({
-          error: 'Stock changed while processing your order. Please try again.',
-        });
+    // Only decrement stock for non-pending orders (COD orders)
+    // For pending orders (online payments), stock will be decremented after payment confirmation
+    if (status !== 'pending') {
+      // Decrement stock atomically per item
+      for (const item of products) {
+        const updated = await Product.findOneAndUpdate(
+          { _id: item.productId, stockQuantity: { $gte: item.quantity } },
+          { $inc: { stockQuantity: -item.quantity } },
+          { new: true }
+        );
+        if (!updated) {
+          return res.status(409).send({
+            error: 'Stock changed while processing your order. Please try again.',
+          });
+        }
       }
     }
 
@@ -265,5 +269,60 @@ exports.getOrdersByUserId = async (req, res) => {
     res.json(orders);
   } catch (err) {
     res.status(500).send("Server Error");
+  }
+};
+
+// Payment Confirmation: Update order from pending to processing and decrement stock
+exports.confirmPayment = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    console.log("Confirming payment for order ID:", orderId);
+
+    // Find the pending order
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).send({ error: "Order not found" });
+    }
+
+    if (order.status !== 'pending') {
+      return res.status(400).send({ error: "Order is not in pending status" });
+    }
+
+    // Validate stock again before confirming
+    for (const item of order.products) {
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        return res.status(400).send({ error: `Product not found: ${item.productId}` });
+      }
+      if (product.stockQuantity < item.quantity) {
+        return res.status(400).send({
+          error: `Insufficient stock for product ${product.name}. Available: ${product.stockQuantity}, requested: ${item.quantity}`,
+        });
+      }
+    }
+
+    // Decrement stock atomically per item
+    for (const item of order.products) {
+      const updated = await Product.findOneAndUpdate(
+        { _id: item.productId, stockQuantity: { $gte: item.quantity } },
+        { $inc: { stockQuantity: -item.quantity } },
+        { new: true }
+      );
+      if (!updated) {
+        return res.status(409).send({
+          error: 'Stock changed while processing your order. Please try again.',
+        });
+      }
+    }
+
+    // Update order status to processing
+    order.status = 'processing';
+    await order.save();
+
+    console.log("Payment confirmed and order updated successfully:", order);
+    res.json(order);
+  } catch (error) {
+    console.error('Error confirming payment:', error);
+    res.status(500).send({ error: 'Internal Server Error' });
   }
 };

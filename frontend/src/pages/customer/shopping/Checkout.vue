@@ -143,9 +143,72 @@ const getCustomer = async () => {
     }
 };
 
+const initiateVNPayPayment = () => {
+    // Show payment instructions to user
+    const paymentInfo = `
+        VNPay Payment Instructions:
+        
+        1. Product Type: Select "Thanh toan hoa don" (Bill Payment)
+        2. Amount: Enter ${Math.round(totalPrice.value * 100)} VND
+        3. Description: "Thanh toan don hang thoi gian: ${new Date().toLocaleString('vi-VN')}"
+        4. Language: Select "Tiếng Việt"
+        5. Click "Thanh toan Redirect" button
+        
+        Your order total: $${totalPrice.value.toFixed(2)} (${Math.round(totalPrice.value * 100)} VND)
+    `;
+    
+    alert(paymentInfo);
+    
+    // Open VNPay in new tab
+    const vnpayUrl = 'https://sandbox.vnpayment.vn/tryitnow/Home/CreateOrder';
+    window.open(vnpayUrl, '_blank');
+};
+
 const placeOrder = async () => {
     try {
-        // Transform cart items to the payload expected by the backend
+        // If online payment is selected, redirect to VNPay
+        if (customerDetails.value.paymentMethod === 'onlinePayment') {
+            // First, create a pending order in the backend
+            const productsPayload = cartItems.value.map((item) => ({
+                productId: item._id || item.productId,
+                quantity: item.quantity,
+                price: item.price,
+            }));
+
+            const orderData = {
+                user: userId,
+                products: productsPayload,
+                paymentMethod: customerDetails.value.paymentMethod,
+                orderDate: new Date(),
+                status: 'pending', // Set to pending for online payment
+                totalPrice: totalPrice.value,
+                subtotal: subtotal.value,
+                tax: taxAmount.value,
+                taxRate: TAX_RATE,
+                shippingFee: shippingFee.value,
+                shippingLocation: shippingLocation.value,
+            };
+
+            console.log('Creating pending order for online payment:', orderData);
+
+            const response = await axios.post(`${API_URL}/orders`, orderData, {
+                headers: {
+                    'x-auth-token': localStorage.getItem('token'),
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            console.log('Pending order created successfully:', response.data);
+
+            // Store order ID for later reference
+            localStorage.setItem('pendingOrderId', response.data._id);
+
+            // Redirect to VNPay
+            initiateVNPayPayment();
+            return;
+        }
+
+        // For COD (Cash on Delivery), proceed with normal order flow
         const productsPayload = cartItems.value.map((item) => ({
             productId: item._id || item.productId,
             quantity: item.quantity,
@@ -294,8 +357,21 @@ onMounted(async () => {
                                     class="w-full px-4 py-3 border border-secondary-200 rounded-xl focus:ring-2 transition-colors duration-200"
                                 >
                                     <option value="cod">{{ t('cod') || 'Cash on Delivery' }}</option>
-                                    <option value="onlinePayment">{{ t('onlinePayment') || 'Online Payment' }}</option>
+                                    <option value="onlinePayment">{{ t('onlinePayment') || 'Online Payment (VNPay)' }}</option>
                                 </select>
+                                
+                                <!-- Online Payment Info -->
+                                <div v-if="customerDetails.paymentMethod === 'onlinePayment'" class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <div class="flex items-start gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <div class="text-xs text-blue-800">
+                                            <p class="font-semibold mb-1">Online Payment via VNPay</p>
+                                            <p>You will be redirected to VNPay secure payment gateway to complete your payment. After successful payment, you will be redirected back to view your order details.</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -362,10 +438,13 @@ onMounted(async () => {
                             @click="handleSubmit" 
                             class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg v-if="customerDetails.paymentMethod === 'onlinePayment'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            {{ t('placeOrder') || 'Place Order' }}
+                            {{ customerDetails.paymentMethod === 'onlinePayment' ? (t('payWithVNPay') || 'Pay with VNPay') : (t('placeOrder') || 'Place Order') }}
                         </button>
                     </div>
                 </div>
