@@ -24,6 +24,12 @@
           <router-link :to="{ path: '/customer/live-stream' }" exact-active-class="router-link-exact-active" class="navbar-link">
             {{ t('liveStream') }}
           </router-link>
+          <a href="http://localhost:5175" target="_blank" class="navbar-link">
+            Skin Study
+          </a>
+          <a href="http://localhost:5001" target="_blank" class="navbar-link">
+            Track Nutrition
+          </a>
           <router-link :to="{ path: '/customer/cart' }" exact-active-class="router-link-exact-active" class="relative navbar-link group">
             <div class="flex items-center space-x-2">
               <div class="relative">
@@ -75,6 +81,12 @@
         <router-link :to="{ path: '/customer/live-stream' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
           {{ t('liveStream') }}
         </router-link>
+        <a href="http://localhost:5175" target="_blank" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
+          Skin Study
+        </a>
+        <a href="http://localhost:5001" target="_blank" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
+          Track Nutrition
+        </a>
         <router-link :to="{ path: '/customer/cart' }" exact-active-class="router-link-exact-active" class="flex items-center justify-between navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
           <span>{{ t('cart') }}</span>
           <span v-if="cartItemCount > 0" class="bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">

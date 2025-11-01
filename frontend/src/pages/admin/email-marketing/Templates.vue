@@ -107,14 +107,14 @@
             
             <!-- Category Badge -->
             <div class="absolute top-3 left-3">
-              <span class="px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded-full">
+              <span class="px-2 py-1 bg-primary-600 text-white text-xs font-medium rounded-full">
                 {{ getCategoryLabel(template.category) }}
               </span>
             </div>
             
             <!-- Default Badge -->
             <div v-if="template.isDefault" class="absolute top-3 right-3">
-              <span class="px-2 py-1 bg-green-600 text-white text-xs font-medium rounded-full">
+              <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
                 Default
               </span>
             </div>
