@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import { ProductService, CategoryService } from '../services/productService';
 import { COLORS, API_BASE_URL } from '../constants';
@@ -119,6 +120,7 @@ export default function HomeScreen({ navigation }) {
           styles.categoryText,
           selectedCategory === item._id && styles.categoryTextActive,
         ]}
+        numberOfLines={1}
       >
         {item.name}
       </Text>
@@ -134,7 +136,7 @@ export default function HomeScreen({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Shop</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
@@ -150,14 +152,16 @@ export default function HomeScreen({ navigation }) {
       />
 
       {categories.length > 0 && (
-        <FlatList
-          horizontal
-          data={categories}
-          renderItem={renderCategory}
-          keyExtractor={(item) => item._id}
-          style={styles.categoryList}
-          showsHorizontalScrollIndicator={false}
-        />
+        <View style={styles.categoryContainer}>
+          <FlatList
+            horizontal
+            data={categories}
+            renderItem={renderCategory}
+            keyExtractor={(item) => item._id}
+            style={styles.categoryList}
+            showsHorizontalScrollIndicator={false}
+          />
+        </View>
       )}
 
       <FlatList
@@ -175,7 +179,7 @@ export default function HomeScreen({ navigation }) {
           </View>
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -215,19 +219,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.lightGray,
   },
+  categoryContainer: {
+    marginBottom: 16,
+    height: 40,
+  },
   categoryList: {
     paddingHorizontal: 16,
-    maxHeight: 50,
-    marginBottom: 8,
+    flexGrow: 0,
   },
   categoryChip: {
     backgroundColor: COLORS.white,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderRadius: 20,
     marginRight: 8,
     borderWidth: 1,
     borderColor: COLORS.lightGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 40,
   },
   categoryChipActive: {
     backgroundColor: COLORS.primary,
@@ -235,7 +245,9 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     color: COLORS.text,
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: '500',
+    lineHeight: 15,
   },
   categoryTextActive: {
     color: COLORS.white,
