@@ -2,11 +2,16 @@ import axios from 'axios';
 import { API_BASE_URL } from '../constants';
 import { StorageService } from '../utils/storage';
 
-// Create axios instance
+// Create axios instance with timeout configuration
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+  },
+  timeout: 30000, // 30 seconds timeout
+  // Add retry configuration for network errors
+  validateStatus: function (status) {
+    return status >= 200 && status < 500; // Don't reject on 4xx errors
   },
 });
 

@@ -1,11 +1,14 @@
 // API Configuration
 // For testing on physical device (recommended)
 // IMPORTANT: Backend routes do NOT use /api prefix, so we connect directly to the base URL
-export const API_BASE_URL = 'http://192.168.88.55:3000';
+
+// For iOS Simulator (use localhost)
+export const API_BASE_URL = 'http://localhost:3000';
 
 // Alternative configurations:
-// For iOS Simulator: export const API_BASE_URL = 'http://localhost:3000';
+// For physical device on current network: export const API_BASE_URL = 'http://172.25.175.149:3000';
 // For Android Emulator: export const API_BASE_URL = 'http://10.0.2.2:3000';
+// For physical device on old network: export const API_BASE_URL = 'http://192.168.88.55:3000';
 
 export const API_ENDPOINTS = {
   // Auth

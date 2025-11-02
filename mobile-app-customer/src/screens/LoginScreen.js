@@ -11,19 +11,18 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { AuthService } from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 import { COLORS } from '../constants';
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     console.log('=== LOGIN ATTEMPT STARTED ===');
-    console.log('Debug: Opening JavaScript inspector in the browser...');
     console.log('Username:', username);
-    console.log('Password length:', password?.length);
     console.log('Timestamp:', new Date().toISOString());
     
     if (!username || !password) {
@@ -35,33 +34,28 @@ export default function LoginScreen({ navigation }) {
     console.log('✓ Validation passed, starting login process...');
     setLoading(true);
     try {
-      console.log('📡 Calling AuthService.login...');
-      const response = await AuthService.login(username, password);
-      console.log('✓ Login API response received:', JSON.stringify(response, null, 2));
+      const response = await login(username, password);
+      console.log('✓ Login API response received');
       
-      console.log('Checking user role:', response.user.role);
       if (response.user.role !== 'customer') {
         console.log('❌ Role check failed: User is not a customer');
         Alert.alert('Error', 'Only customers can use this app');
-        await AuthService.logout();
+        const { logout } = useAuth();
+        await logout();
         return;
       }
 
-      console.log('✅ Login successful! User is a customer.');
-      console.log('Navigation will be handled automatically by App.js');
-      // Navigation will be handled automatically by App.js
-      // when the auth state changes
+      console.log('✅ Login successful! Navigation will happen automatically.');
+      // AuthContext automatically updates isAuthenticated
+      // App.js will automatically show MainTabs
+      
     } catch (error) {
       console.error('=== LOGIN ERROR ===');
-      console.error('Error object:', error);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
+      console.error('Error:', error.message);
       
-      // Extract the error message properly
       const errorMessage = error.msg || error.message || 'Invalid username or password';
       Alert.alert('Login Failed', errorMessage);
     } finally {
-      console.log('Login attempt completed, setting loading to false');
       setLoading(false);
       console.log('=== LOGIN ATTEMPT ENDED ===\n');
     }

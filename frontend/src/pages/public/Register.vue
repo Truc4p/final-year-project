@@ -8,6 +8,7 @@ import ChatWidget from '../../components/ChatWidget.vue';
 const { t } = useI18n();
 
 const username = ref("");
+const email = ref("");
 const password = ref("");
 const role = ref("customer"); // Default role is customer
 const adminKey = ref(""); // Admin key for admin registration
@@ -37,6 +38,11 @@ const register = async () => {
       password: password.value,
       role: role.value,
     };
+
+    // Include email if provided
+    if (email.value) {
+      data.email = email.value;
+    }
 
     // Include adminKey if the role is admin
     if (role.value === "admin") {
@@ -79,6 +85,17 @@ const register = async () => {
           class="form-control"
           :placeholder="t('enterUsername')"
           required
+        />
+      </div>
+      
+      <div>
+        <label class="form-label" for="email">{{ t('email') }}</label>
+        <input
+          id="email"
+          v-model="email"
+          type="email"
+          class="form-control"
+          :placeholder="t('enterEmail')"
         />
       </div>
       

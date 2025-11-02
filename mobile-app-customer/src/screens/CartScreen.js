@@ -94,18 +94,25 @@ export default function CartScreen({ navigation }) {
   };
 
   const processOrder = async (paymentMethod) => {
+    console.log('🛒 Starting order process...');
+    console.log('🛒 Payment method:', paymentMethod);
+    console.log('🛒 Cart contents:', JSON.stringify(cart, null, 2));
+    
     setLoading(true);
     try {
+      console.log('👤 Fetching current user...');
       const user = await AuthService.getCurrentUser();
+      console.log('👤 Current user:', user ? JSON.stringify(user, null, 2) : 'null');
 
       if (!user) {
+        console.log('❌ No user found, redirecting to login');
         Alert.alert('Error', 'Please login to place an order');
         navigation.navigate('Login');
         return;
       }
 
       const orderData = {
-        user: user._id,
+        user: user.id || user._id, // Handle both formats
         products: cart.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -114,11 +121,19 @@ export default function CartScreen({ navigation }) {
         totalPrice: calculateTotal(),
       };
 
-      await OrderService.createOrder(orderData);
+      console.log('📦 Order data prepared:', JSON.stringify(orderData, null, 2));
+      console.log('💰 Total price:', calculateTotal());
+      console.log('👤 User ID being sent:', user.id || user._id);
+      
+      console.log('📤 Sending order to backend...');
+      const result = await OrderService.createOrder(orderData);
+      console.log('✅ Order creation result:', JSON.stringify(result, null, 2));
 
       // Clear cart
+      console.log('🧹 Clearing cart...');
       await AsyncStorage.removeItem('cart');
       setCart([]);
+      console.log('✅ Cart cleared');
 
       Alert.alert('Success', 'Order placed successfully!', [
         {
@@ -127,9 +142,19 @@ export default function CartScreen({ navigation }) {
         },
       ]);
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to place order');
+      console.error('❌ Error in processOrder:', error);
+      console.error('❌ Error type:', typeof error);
+      console.error('❌ Error keys:', Object.keys(error));
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error string:', JSON.stringify(error, null, 2));
+      
+      const errorMessage = error.error || error.message || 'Failed to place order';
+      console.error('❌ Final error message shown to user:', errorMessage);
+      
+      Alert.alert('Error', errorMessage);
     } finally {
       setLoading(false);
+      console.log('🏁 Order process completed');
     }
   };
 

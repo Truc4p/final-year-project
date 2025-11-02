@@ -7,23 +7,12 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import { AuthService } from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 import { COLORS } from '../constants';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function ProfileScreen({ navigation }) {
-  const [user, setUser] = useState(null);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      loadUser();
-    }, [])
-  );
-
-  const loadUser = async () => {
-    const userData = await AuthService.getCurrentUser();
-    setUser(userData);
-  };
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -32,8 +21,8 @@ export default function ProfileScreen({ navigation }) {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
-          await AuthService.logout();
-          // Navigation will be handled automatically by App.js
+          await logout();
+          // AuthContext will automatically update and App.js will show login screen
         },
       },
     ]);

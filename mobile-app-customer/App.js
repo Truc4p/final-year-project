@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { ActivityIndicator, View, Text } from 'react-native';
-import { AuthService } from './src/services/authService';
+import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { COLORS } from './src/constants';
 
 // Screens
@@ -172,20 +172,8 @@ const ProfileIcon = ({ color, size }) => (
   </View>
 );
 
-export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    const authenticated = await AuthService.isAuthenticated();
-    const user = await AuthService.getCurrentUser();
-    setIsAuthenticated(authenticated);
-    setIsLoading(false);
-  };
+function AppNavigator() {
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -199,5 +187,13 @@ export default function App() {
     <NavigationContainer>
       {isAuthenticated ? <MainTabs /> : <AuthStack />}
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppNavigator />
+    </AuthProvider>
   );
 }

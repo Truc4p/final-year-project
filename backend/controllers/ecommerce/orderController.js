@@ -25,103 +25,129 @@ exports.getAllOrders = async (req, res) => {
 
 // User Operation: Create an Order
 exports.createOrder = async (req, res) => {
+  console.log('\n========== CREATE ORDER START ==========');
+  console.log('📦 Request received at:', new Date().toISOString());
+  console.log('📦 Request headers:', JSON.stringify(req.headers, null, 2));
+  console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
+  
   try {
     const { products, paymentMethod, status, totalPrice } = req.body;
-    console.log("Products from request body:", products);
-    console.log("Payment method from request body:", paymentMethod);
-    console.log("Status from request body:", status);
-    console.log("Total price from request body:", totalPrice);
+    console.log("✅ Products from request body:", products);
+    console.log("✅ Payment method from request body:", paymentMethod);
+    console.log("✅ Status from request body:", status);
+    console.log("✅ Total price from request body:", totalPrice);
 
     if (!products || !paymentMethod || !totalPrice) {
+      console.log('❌ Missing required fields');
+      console.log('   - products:', !!products);
+      console.log('   - paymentMethod:', !!paymentMethod);
+      console.log('   - totalPrice:', !!totalPrice);
       return res.status(400).send({ error: 'Products, payment method, and total price are required' });
     }
 
     const userId = req.user.id;
-    console.log("User ID from request:", userId);
+    console.log("✅ User ID from request:", userId);
+    console.log("✅ User details:", JSON.stringify(req.user, null, 2));
 
-    // Validate stock for each product line
-    // Expect each item: { productId, quantity, price }
-    for (const item of products) {
+    // Validate stock for each product line and enrich with price
+    console.log('\n--- Validating and enriching products ---');
+    const enrichedProducts = [];
+    for (let i = 0; i < products.length; i++) {
+      const item = products[i];
+      console.log(`\n📦 Processing product ${i + 1}/${products.length}:`, item);
+      
       if (!item.productId || typeof item.quantity !== 'number' || item.quantity <= 0) {
+        console.log(`❌ Invalid product data at index ${i}:`, item);
         return res.status(400).send({ error: 'Each product requires productId and positive quantity' });
       }
+      
+      console.log(`   Fetching product details for ID: ${item.productId}`);
       const product = await Product.findById(item.productId);
+      
       if (!product) {
+        console.log(`❌ Product not found: ${item.productId}`);
         return res.status(400).send({ error: `Product not found: ${item.productId}` });
       }
+      
+      console.log(`   ✅ Product found:`, {
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        stock: product.stockQuantity
+      });
+      
       if (product.stockQuantity < item.quantity) {
+        console.log(`❌ Insufficient stock for ${product.name}`);
+        console.log(`   Available: ${product.stockQuantity}, Requested: ${item.quantity}`);
         return res.status(400).send({
           error: `Insufficient stock for product ${product.name}. Available: ${product.stockQuantity}, requested: ${item.quantity}`,
         });
       }
+      
+      // Add the price from the product if not provided
+      const enrichedItem = {
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price || product.price,
+      };
+      console.log(`   ✅ Enriched product:`, enrichedItem);
+      enrichedProducts.push(enrichedItem);
     }
 
+    console.log('\n✅ All products validated and enriched:', enrichedProducts);
+
     // Decrement stock atomically per item
-    for (const item of products) {
+    console.log('\n--- Updating stock quantities ---');
+    for (let i = 0; i < enrichedProducts.length; i++) {
+      const item = enrichedProducts[i];
+      console.log(`\n📦 Updating stock for product ${i + 1}/${enrichedProducts.length}`);
+      console.log(`   Product ID: ${item.productId}`);
+      console.log(`   Decrementing by: ${item.quantity}`);
+      
       const updated = await Product.findOneAndUpdate(
         { _id: item.productId, stockQuantity: { $gte: item.quantity } },
         { $inc: { stockQuantity: -item.quantity } },
         { new: true }
       );
+      
       if (!updated) {
+        console.log(`❌ Stock update failed - concurrent modification detected`);
         return res.status(409).send({
           error: 'Stock changed while processing your order. Please try again.',
         });
       }
+      
+      console.log(`   ✅ Stock updated. New stock: ${updated.stockQuantity}`);
     }
 
+    console.log('\n--- Creating order document ---');
     const order = new Order({
       user: userId,
-      products,
+      products: enrichedProducts,
       paymentMethod,
       status: status || "processing",
       totalPrice,
       orderDate: new Date(),
     });
 
+    console.log('💾 Saving order to database...');
     await order.save();
-    console.log("Order to be saved:", order);
+    console.log("✅ Order saved successfully!");
+    console.log("   Order ID:", order._id);
+    console.log("   Order details:", JSON.stringify(order, null, 2));
+    
+    console.log('\n========== CREATE ORDER SUCCESS ==========\n');
     res.status(201).send(order);
   } catch (error) {
-    console.error('Error creating order:', error);
-    res.status(500).send({ error: 'Internal Server Error' });
+    console.error('\n❌❌❌ ERROR IN CREATE ORDER ❌❌❌');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Full error object:', JSON.stringify(error, null, 2));
+    console.error('========== CREATE ORDER FAILED ==========\n');
+    res.status(500).send({ error: 'Internal Server Error', details: error.message });
   }
 };
-
-// // User Operation: Edit an Order
-// exports.updateOrder = async (req, res) => {
-//   try {
-//     const { products, status, totalPrice } = req.body;
-//     const orderId = req.params.id;
-//     console.log("order ID from request body:", orderId);
-
-//     const userId = req.user.id;
-//     console.log("Admin ID from request:", userId);
-
-//     const user = req.user;
-//     console.log("Admin:", user);
-
-//     const updateData = { products, status, totalPrice };
-
-//     let query = { _id: orderId };
-//     if (user.role !== 'admin') {
-//       query.user = userId;
-//     }
-
-//     const order = await Order.findOneAndUpdate(query, updateData, { new: true });
-
-//     if (order) {
-//       console.log("Order updated successfully:", order);
-//       res.json(order);
-//     } else {
-//       console.log("Order not found");
-//       res.status(404).send("Order not found");
-//     }
-//   } catch (err) {
-//     console.error("Error updating order:", err);
-//     res.status(500).send("Server Error");
-//   }
-// };
 
 // User Operation: Update Order Status
 exports.updateOrderStatus = async (req, res) => {
