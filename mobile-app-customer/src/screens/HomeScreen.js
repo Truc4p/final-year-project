@@ -23,6 +23,7 @@ export default function HomeScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -139,17 +140,28 @@ export default function HomeScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Shop</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
-          <Text style={styles.cartIcon}>🛒</Text>
-        </TouchableOpacity>
+        <View style={styles.headerIcons}>
+          <TouchableOpacity 
+            onPress={() => setShowSearch(!showSearch)}
+            style={styles.iconButton}
+          >
+            <Text style={styles.searchIcon}>🔍</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
+            <Text style={styles.cartIcon}>🛒</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search products..."
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
+      {showSearch && (
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search products..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoFocus
+        />
+      )}
 
       {categories.length > 0 && (
         <View style={styles.categoryContainer}>
@@ -198,14 +210,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.lightGray,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: COLORS.text,
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  iconButton: {
+    padding: 4,
+  },
+  searchIcon: {
+    fontSize: 24,
   },
   cartIcon: {
     fontSize: 24,
@@ -213,6 +233,7 @@ const styles = StyleSheet.create({
   searchInput: {
     backgroundColor: COLORS.white,
     margin: 16,
+    marginBottom: 12,
     padding: 12,
     borderRadius: 8,
     fontSize: 16,
@@ -220,7 +241,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.lightGray,
   },
   categoryContainer: {
-    marginBottom: 16,
+    marginBottom: 0,
     height: 40,
   },
   categoryList: {
@@ -233,8 +254,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 20,
     marginRight: 8,
-    borderWidth: 1,
-    borderColor: COLORS.lightGray,
     justifyContent: 'center',
     alignItems: 'center',
     height: 40,
@@ -255,6 +274,8 @@ const styles = StyleSheet.create({
   },
   productList: {
     padding: 8,
+    paddingTop: 2,
+    paddingBottom: 16,
   },
   productCard: {
     flex: 1,
