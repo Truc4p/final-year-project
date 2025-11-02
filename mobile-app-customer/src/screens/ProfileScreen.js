@@ -109,10 +109,9 @@ export default function ProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.white,
   },
   header: {
-    backgroundColor: COLORS.white,
     alignItems: 'center',
     padding: 24,
     marginBottom: 16,
@@ -142,7 +141,6 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
   section: {
-    backgroundColor: COLORS.white,
     marginBottom: 16,
     paddingVertical: 8,
   },

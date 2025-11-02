@@ -35,16 +35,30 @@ export default function HomeScreen({ navigation }) {
 
   const loadData = async () => {
     try {
+      console.log('Loading data from API...');
+      console.log('API Base URL:', API_BASE_URL);
+      
       const [productsData, categoriesData] = await Promise.all([
         ProductService.getAllProducts(),
         CategoryService.getAllCategories(),
       ]);
-      console.log('Loaded products:', productsData.length);
-      console.log('First product sample:', JSON.stringify(productsData[0], null, 2));
+      
+      console.log('Products loaded successfully:', productsData.length);
+      console.log('Categories loaded:', categoriesData.length);
+      
+      if (productsData.length > 0) {
+        console.log('First product sample:', JSON.stringify(productsData[0], null, 2));
+      }
+      
       setProducts(productsData);
       setCategories(categoriesData);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load products');
+      console.error('Error loading data:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      Alert.alert(
+        'Error', 
+        `Failed to load products: ${error.response?.data?.message || error.message || 'Network error'}`
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -56,7 +70,11 @@ export default function HomeScreen({ navigation }) {
 
     if (selectedCategory) {
       filtered = filtered.filter(
-        (product) => product.categoryId === selectedCategory
+        (product) => {
+          // Handle both populated and unpopulated category field
+          const categoryId = product.category?._id || product.category;
+          return categoryId === selectedCategory;
+        }
       );
     }
 
@@ -66,6 +84,7 @@ export default function HomeScreen({ navigation }) {
       );
     }
 
+    console.log('Filtered products:', filtered.length, 'of', products.length);
     setFilteredProducts(filtered);
   };
 

@@ -26,23 +26,44 @@ export const API_ENDPOINTS = {
   USER_ORDERS: (userId) => `/orders/user/${userId}`,
 };
 
-// Theme colors
+// Theme colors - Matching frontend website theme
 export const COLORS = {
-  primary: '#4CAF50',
-  secondary: '#FFC107',
-  accent: '#FF5722',
-  background: '#F5F5F5',
+  // Primary - Modern Pink Color Palette
+  primary: '#C97F98',        // primary-500
+  primaryLight: '#F0D7CC',   // primary-300
+  primaryDark: '#A44A6B',    // primary-600
+  primaryDarker: '#8C3154',  // primary-700
+  
+  // Secondary - Slate Gray Palette
+  secondary: '#64748b',      // secondary-500
+  secondaryLight: '#e2e8f0', // secondary-200
+  secondaryDark: '#475569',  // secondary-600
+  
+  // Accent colors
+  accent: '#ec4899',         // pink accent
+  
+  // Background colors
+  background: '#f8fafc',     // secondary-50
+  backgroundAlt: '#f1f5f9',  // secondary-100
+  
+  // Basic colors
   white: '#FFFFFF',
   black: '#000000',
-  gray: '#9E9E9E',
-  lightGray: '#E0E0E0',
-  darkGray: '#424242',
-  success: '#4CAF50',
-  error: '#F44336',
-  warning: '#FF9800',
-  info: '#2196F3',
-  text: '#212121',
-  textSecondary: '#757575',
+  
+  // Gray shades
+  gray: '#94a3b8',           // secondary-400
+  lightGray: '#cbd5e1',      // secondary-300
+  darkGray: '#334155',       // secondary-700
+  
+  // Status colors
+  success: '#008000',
+  error: '#ef4444',
+  warning: '#f59e0b',
+  info: '#3b82f6',
+  
+  // Text colors
+  text: '#0f172a',           // secondary-900
+  textSecondary: '#64748b',  // secondary-500
 };
 
 // Order status
