@@ -470,14 +470,21 @@ export default function LivestreamScreen({ navigation }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Live Chat</Text>
           <View style={styles.chatContainer}>
-            <FlatList
+            <ScrollView
               ref={chatScrollRef}
-              data={chatMessages}
-              renderItem={renderChatMessage}
-              keyExtractor={(item) => item.id.toString()}
               style={styles.chatList}
               contentContainerStyle={styles.chatListContent}
-            />
+              // Auto scroll when content changes
+              onContentSizeChange={() => {
+                chatScrollRef.current?.scrollToEnd({ animated: true });
+              }}
+            >
+              {chatMessages.map((item) => (
+                <View key={item.id}>
+                  {renderChatMessage({ item })}
+                </View>
+              ))}
+            </ScrollView>
             <View style={styles.chatInput}>
               <TextInput
                 style={styles.chatTextInput}
