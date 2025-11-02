@@ -16,14 +16,23 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.customershoppingapp"
+      "bundleIdentifier": "com.yourcompany.customershoppingapp",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs camera access to view livestreams",
+        "NSMicrophoneUsageDescription": "This app needs microphone access for livestream audio"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.yourcompany.customershoppingapp"
+      "package": "com.yourcompany.customershoppingapp",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

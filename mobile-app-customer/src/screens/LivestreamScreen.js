@@ -14,6 +14,7 @@ import {
   Dimensions,
   RefreshControl,
 } from 'react-native';
+import { RTCView } from 'react-native-webrtc';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { livestreamService } from '../services/livestreamService';
 import { COLORS, API_BASE_URL } from '../constants';
@@ -45,6 +46,9 @@ export default function LivestreamScreen({ navigation }) {
   // User session
   const [userId, setUserId] = useState(null);
   const [sessionId, setSessionId] = useState(null);
+
+  // WebRTC remote stream
+  const [remoteStream, setRemoteStream] = useState(null);
 
   useEffect(() => {
     initializeSession();
@@ -146,7 +150,14 @@ export default function LivestreamScreen({ navigation }) {
         console.log('⏹️ Setting isLive to FALSE');
         setIsLive(false);
         setCurrentStream(null);
+        setRemoteStream(null); // Clear remote stream
         console.log('⏹️ State updated - isLive should now be false');
+        break;
+
+      case 'remote_stream_ready':
+        console.log('📺 Remote stream ready!');
+        console.log('📺 Setting remote stream for video display');
+        setRemoteStream(data.stream);
         break;
 
       case 'stream_update':
@@ -434,11 +445,18 @@ export default function LivestreamScreen({ navigation }) {
         {/* Video Player Section */}
         <View style={styles.videoSection}>
           <View style={styles.videoPlayer}>
-            {isLive ? (
+            {isLive && remoteStream ? (
+              <RTCView
+                streamURL={remoteStream.toURL()}
+                style={styles.rtcView}
+                objectFit="cover"
+                mirror={false}
+              />
+            ) : isLive && !remoteStream ? (
               <View style={styles.videoPlaceholder}>
-                <Text style={styles.videoPlaceholderText}>📹</Text>
+                <ActivityIndicator size="large" color={COLORS.primary} />
                 <Text style={styles.videoPlaceholderSubtext}>
-                  Live video streaming via web browser
+                  Connecting to stream...
                 </Text>
               </View>
             ) : (
@@ -620,6 +638,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 220,
     backgroundColor: COLORS.lightGray,
+  },
+  rtcView: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#000',
   },
   videoPlaceholder: {
     flex: 1,
