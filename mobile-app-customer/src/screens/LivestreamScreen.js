@@ -74,29 +74,43 @@ export default function LivestreamScreen({ navigation }) {
 
   // Load data from API
   const loadData = async () => {
+    console.log('🔄 loadData called - fetching streams and products');
     try {
       // Fetch active stream
       const activeStream = await livestreamService.getActiveStream();
+      console.log('🔍 Active stream fetched:', activeStream);
+      
       if (activeStream) {
+        console.log('✅ Active stream found! Setting isLive to TRUE');
         setIsLive(true);
         setCurrentStream(activeStream);
         setViewerCount(activeStream.viewerCount || 0);
         setLikes(activeStream.likes || 0);
         setLikedBy(activeStream.likedBy || []);
+        console.log('✅ Stream state updated:', {
+          title: activeStream.title,
+          viewerCount: activeStream.viewerCount,
+          likes: activeStream.likes
+        });
 
         // Fetch pinned products
         const products = await livestreamService.getPinnedProducts(activeStream._id);
+        console.log('📌 Pinned products fetched:', products.length);
         setPinnedProducts(products);
+      } else {
+        console.log('❌ No active stream found');
       }
 
       // Fetch past streams
       const past = await livestreamService.getPastStreams(12);
+      console.log('📚 Past streams fetched:', past.length);
       setPastStreams(past);
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('❌ Error loading data:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
+      console.log('✅ loadData completed');
     }
   };
 
@@ -111,27 +125,40 @@ export default function LivestreamScreen({ navigation }) {
 
   // Handle WebSocket messages
   const handleWebSocketMessage = (data) => {
+    console.log('📨 handleWebSocketMessage called with type:', data.type);
+    console.log('📨 Full message data:', JSON.stringify(data, null, 2));
+    
     switch (data.type) {
       case 'stream_started':
+        console.log('🎥 STREAM_STARTED received!');
+        console.log('🎥 Stream data:', data.streamData);
+        console.log('🎥 Setting isLive to TRUE');
         setIsLive(true);
         setCurrentStream(data.streamData);
         setViewerCount(data.streamData.viewerCount || 0);
         setLikes(data.streamData.likes || 0);
         setLikedBy(data.streamData.likedBy || []);
+        console.log('🎥 State updated - isLive should now be true');
         break;
 
       case 'stream_stopped':
+        console.log('⏹️ STREAM_STOPPED received!');
+        console.log('⏹️ Setting isLive to FALSE');
         setIsLive(false);
         setCurrentStream(null);
+        console.log('⏹️ State updated - isLive should now be false');
         break;
 
       case 'stream_update':
+        console.log('📊 STREAM_UPDATE received!');
+        console.log('📊 Update data:', { viewerCount: data.viewerCount, likes: data.likes, likedBy: data.likedBy });
         if (data.viewerCount !== undefined) setViewerCount(data.viewerCount);
         if (data.likes !== undefined) setLikes(data.likes);
         if (data.likedBy !== undefined) setLikedBy(data.likedBy);
         break;
 
       case 'chat_message':
+        console.log('💬 CHAT_MESSAGE received:', data.message);
         setChatMessages((prev) => [
           ...prev,
           {
@@ -149,6 +176,7 @@ export default function LivestreamScreen({ navigation }) {
         break;
 
       case 'chat_history':
+        console.log('📜 CHAT_HISTORY received:', data.messages.length, 'messages');
         setChatMessages(
           data.messages.map((msg) => ({
             ...msg,
@@ -158,10 +186,12 @@ export default function LivestreamScreen({ navigation }) {
         break;
 
       case 'pinned_products_updated':
+        console.log('📌 PINNED_PRODUCTS_UPDATED received:', data.pinnedProducts?.length, 'products');
         setPinnedProducts(data.pinnedProducts || []);
         break;
 
       default:
+        console.log('❓ Unknown message type received:', data.type);
         break;
     }
   };
@@ -169,7 +199,9 @@ export default function LivestreamScreen({ navigation }) {
   // Check if user has liked
   useEffect(() => {
     const identifier = userId || sessionId;
-    setIsLiked(likedBy.includes(identifier));
+    const liked = likedBy.includes(identifier);
+    console.log('❤️ Checking like status:', { identifier, liked, likedByCount: likedBy.length });
+    setIsLiked(liked);
   }, [likedBy, userId, sessionId]);
 
   // Send chat message
@@ -366,12 +398,24 @@ export default function LivestreamScreen({ navigation }) {
   );
 
   if (loading) {
+    console.log('⏳ Component in loading state');
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
+
+  console.log('🎬 Rendering LivestreamScreen with state:', {
+    isLive,
+    hasCurrentStream: !!currentStream,
+    currentStreamTitle: currentStream?.title,
+    viewerCount,
+    likes,
+    chatMessagesCount: chatMessages.length,
+    pinnedProductsCount: pinnedProducts.length,
+    pastStreamsCount: pastStreams.length
+  });
 
   return (
     <SafeAreaView style={styles.container}>

@@ -107,8 +107,12 @@ class LivestreamService {
 
   // Register message handler
   addMessageHandler(handler) {
+    console.log('📝 Registering WebSocket message handler');
     this.messageHandlers.add(handler);
-    return () => this.messageHandlers.delete(handler);
+    return () => {
+      console.log('📝 Unregistering WebSocket message handler');
+      this.messageHandlers.delete(handler);
+    };
   }
 
   // Send message via WebSocket
@@ -144,15 +148,20 @@ class LivestreamService {
 
   // API Methods
   async getActiveStream() {
+    console.log('📡 API: Fetching active stream from:', `${API_BASE_URL}/livestreams/active`);
     try {
       const response = await fetch(`${API_BASE_URL}/livestreams/active`);
+      console.log('📡 API: Active stream response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('📡 API: Active stream data:', JSON.stringify(data, null, 2));
         return data.livestream;
       }
+      console.log('📡 API: No active stream (response not ok)');
       return null;
     } catch (error) {
-      console.error('Error fetching active stream:', error);
+      console.error('📡 API: Error fetching active stream:', error);
       return null;
     }
   }
