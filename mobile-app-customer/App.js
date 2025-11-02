@@ -15,6 +15,7 @@ import CartScreen from './src/screens/CartScreen';
 import OrdersScreen from './src/screens/OrdersScreen';
 import OrderDetailScreen from './src/screens/OrderDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import LivestreamScreen from './src/screens/LivestreamScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -119,6 +120,15 @@ function MainTabs() {
         }}
       />
       <Tab.Screen 
+        name="Livestream" 
+        component={LivestreamScreen}
+        options={{
+          title: 'Live Stream',
+          tabBarLabel: 'Live',
+          tabBarIcon: ({ color, size }) => <LivestreamIcon color={color} size={size} />,
+        }}
+      />
+      <Tab.Screen 
         name="Cart" 
         component={CartScreen}
         options={{
@@ -151,6 +161,12 @@ function MainTabs() {
 const HomeIcon = ({ color, size }) => (
   <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
     <Text style={{ fontSize: size, color }}>🏠</Text>
+  </View>
+);
+
+const LivestreamIcon = ({ color, size }) => (
+  <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
+    <Text style={{ fontSize: size, color }}>📹</Text>
   </View>
 );
 
