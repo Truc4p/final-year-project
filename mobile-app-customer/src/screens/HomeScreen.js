@@ -12,6 +12,7 @@ import {
   Alert,
   SafeAreaView,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ProductService, CategoryService } from '../services/productService';
 import { COLORS, API_BASE_URL } from '../constants';
 
@@ -42,13 +43,6 @@ export default function HomeScreen({ navigation }) {
         ProductService.getAllProducts(),
         CategoryService.getAllCategories(),
       ]);
-      
-      console.log('Products loaded successfully:', productsData.length);
-      console.log('Categories loaded:', categoriesData.length);
-      
-      if (productsData.length > 0) {
-        console.log('First product sample:', JSON.stringify(productsData[0], null, 2));
-      }
       
       setProducts(productsData);
       setCategories(categoriesData);
@@ -84,7 +78,6 @@ export default function HomeScreen({ navigation }) {
       );
     }
 
-    console.log('Filtered products:', filtered.length, 'of', products.length);
     setFilteredProducts(filtered);
   };
 
@@ -93,15 +86,48 @@ export default function HomeScreen({ navigation }) {
     loadData();
   };
 
+  const addToCart = async (product) => {
+    try {
+      const cartJson = await AsyncStorage.getItem('cart');
+      const cart = cartJson ? JSON.parse(cartJson) : [];
+
+      // Check if product already in cart
+      const existingItemIndex = cart.findIndex(
+        (item) => item.productId === product._id
+      );
+
+      if (existingItemIndex > -1) {
+        // Update quantity if already in cart
+        cart[existingItemIndex].quantity += 1;
+        Alert.alert('Success', `${product.name} quantity updated in cart`);
+      } else {
+        // Add new item to cart
+        const cartItem = {
+          productId: product._id,
+          name: product.name,
+          price: product.price,
+          imageUrl: product.image || product.imageUrl,
+          quantity: 1,
+          stockQuantity: product.stockQuantity,
+        };
+        cart.push(cartItem);
+        Alert.alert('Success', `${product.name} added to cart`);
+      }
+
+      await AsyncStorage.setItem('cart', JSON.stringify(cart));
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      Alert.alert('Error', 'Failed to add item to cart');
+    }
+  };
+
   const renderProduct = ({ item }) => {
     // Construct the full image URL - check both 'image' and 'imageUrl' fields
     const imagePath = item.image || item.imageUrl;
     const imageUri = imagePath 
       ? `${API_BASE_URL}/${imagePath}`
       : 'https://via.placeholder.com/150';
-    
-    console.log('Product:', item.name, 'Image URL:', imageUri);
-    
+        
     return (
       <TouchableOpacity
         style={styles.productCard}
@@ -117,9 +143,22 @@ export default function HomeScreen({ navigation }) {
             {item.name}
           </Text>
           <Text style={styles.productPrice}>${item.price?.toFixed(2)}</Text>
-          <Text style={styles.productStock}>
-            {item.stockQuantity > 0 ? `In Stock: ${item.stockQuantity}` : 'Out of Stock'}
-          </Text>
+          <View style={styles.productFooter}>
+            <Text style={styles.productStock}>
+              {item.stockQuantity > 0 ? `Stock: ${item.stockQuantity}` : 'Out of Stock'}
+            </Text>
+            {item.stockQuantity > 0 && (
+              <TouchableOpacity
+                style={styles.addToCartButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  addToCart(item);
+                }}
+              >
+                <Text style={styles.addToCartIcon}>🛒</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -331,6 +370,28 @@ const styles = StyleSheet.create({
   productStock: {
     fontSize: 12,
     color: COLORS.textSecondary,
+  },
+  productFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  addToCartButton: {
+    backgroundColor: COLORS.primaryLight,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  addToCartIcon: {
+    fontSize: 16,
   },
   emptyContainer: {
     flex: 1,

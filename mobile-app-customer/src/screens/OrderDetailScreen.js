@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Image,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import { OrderService } from '../services/orderService';
 import { COLORS, API_BASE_URL, ORDER_STATUS, PAYMENT_METHODS } from '../constants';
@@ -22,9 +23,17 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   const loadOrder = async () => {
     try {
+      console.log('📦 Loading order details for ID:', orderId);
       const orderData = await OrderService.getOrderById(orderId);
+      console.log('📦 Order data received:', JSON.stringify(orderData, null, 2));
+      console.log('📦 Order date fields:', {
+        createdAt: orderData.createdAt,
+        orderDate: orderData.orderDate
+      });
+      console.log('📦 Order products:', orderData.products);
       setOrder(orderData);
     } catch (error) {
+      console.error('❌ Error loading order details:', error);
       Alert.alert('Error', 'Failed to load order details');
       navigation.goBack();
     } finally {
@@ -62,6 +71,30 @@ export default function OrderDetailScreen({ route, navigation }) {
     return method === PAYMENT_METHODS.COD ? 'Cash on Delivery' : 'Online Payment';
   };
 
+  const handleCancelOrder = () => {
+    Alert.alert(
+      'Cancel Order',
+      'Are you sure you want to cancel this order?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await OrderService.cancelOrder(orderId);
+              Alert.alert('Success', 'Order cancelled successfully');
+              navigation.goBack();
+            } catch (error) {
+              console.error('❌ Error cancelling order:', error);
+              Alert.alert('Error', 'Failed to cancel order');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
@@ -92,7 +125,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Order Date:</Text>
           <Text style={styles.infoValue}>
-            {new Date(order.createdAt).toLocaleDateString()}
+            {new Date(order.orderDate).toLocaleDateString()}
           </Text>
         </View>
         <View style={styles.infoRow}>
@@ -109,15 +142,26 @@ export default function OrderDetailScreen({ route, navigation }) {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Products</Text>
-        {order.products?.map((item, index) => (
+        {order.products?.map((item, index) => {
+          console.log(`🖼️ Product ${index}:`, item);
+          console.log(`🖼️ Product ID object:`, item.productId);
+          console.log(`🖼️ Product image field:`, item.productId?.image);
+          console.log(`🖼️ Product imageUrl field:`, item.productId?.imageUrl);
+          
+          const imageUrl = item.productId?.image
+            ? `${API_BASE_URL}/${item.productId.image}`
+            : 'https://via.placeholder.com/80';
+          
+          console.log(`🖼️ Final image URL:`, imageUrl);
+          console.log(`🖼️ API_BASE_URL:`, API_BASE_URL);
+          
+          return (
           <View key={index} style={styles.productItem}>
             <Image
-              source={{
-                uri: item.productId?.imageUrl
-                  ? `${API_BASE_URL.replace('/api', '')}/${item.productId.imageUrl}`
-                  : 'https://via.placeholder.com/80',
-              }}
+              source={{ uri: imageUrl }}
               style={styles.productImage}
+              onError={(e) => console.error(`❌ Image load error for product ${index}:`, e.nativeEvent.error)}
+              onLoad={() => console.log(`✅ Image loaded successfully for product ${index}`)}
             />
             <View style={styles.productInfo}>
               <Text style={styles.productName}>
@@ -131,7 +175,7 @@ export default function OrderDetailScreen({ route, navigation }) {
               </Text>
             </View>
           </View>
-        ))}
+        );})}
       </View>
 
       <View style={styles.section}>
@@ -140,6 +184,14 @@ export default function OrderDetailScreen({ route, navigation }) {
           <Text style={styles.totalAmount}>${order.totalPrice?.toFixed(2)}</Text>
         </View>
       </View>
+
+      {order.status === ORDER_STATUS.PROCESSING && (
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.cancelButton} onPress={handleCancelOrder}>
+            <Text style={styles.cancelButtonText}>Cancel Order</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -147,7 +199,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.white,
   },
   centerContainer: {
     flex: 1,
@@ -155,13 +207,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    backgroundColor: COLORS.white,
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.lightGray,
   },
   orderId: {
     fontSize: 18,
@@ -179,7 +228,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   section: {
-    backgroundColor: COLORS.white,
     padding: 16,
     marginTop: 12,
   },
@@ -251,5 +299,16 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: COLORS.primary,
+  },
+  cancelButton: {
+    borderRadius: 6,
+    alignItems: 'center',
+    marginTop: 12,
+    alignSelf: 'center',
+  },
+  cancelButtonText: {
+    color: COLORS.error,
+    fontSize: 13,
+    fontWeight: 'bold',
   },
 });

@@ -79,5 +79,5 @@ export const ORDER_STATUS = {
 // Payment methods
 export const PAYMENT_METHODS = {
   COD: 'cod',
-  ONLINE: 'online',
+  ONLINE: 'onlinePayment',
 };

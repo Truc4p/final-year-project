@@ -28,14 +28,25 @@ export default function OrdersScreen({ navigation }) {
   const loadOrders = async () => {
     try {
       const user = await AuthService.getCurrentUser();
+      console.log('📦 Loading orders for user:', user);
       if (!user) {
         Alert.alert('Error', 'Please login to view orders');
         return;
       }
 
-      const ordersData = await OrderService.getUserOrders(user._id);
-      setOrders(ordersData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      const ordersData = await OrderService.getUserOrders(user.id);
+      console.log('📦 Orders data received:', JSON.stringify(ordersData, null, 2));
+      console.log('📦 First order:', ordersData[0]);
+      console.log('📦 First order date fields:', {
+        createdAt: ordersData[0]?.createdAt,
+        orderDate: ordersData[0]?.orderDate,
+        _id: ordersData[0]?._id
+      });
+      
+      // Sort by orderDate instead of createdAt
+      setOrders(ordersData.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate)));
     } catch (error) {
+      console.error('❌ Error loading orders:', error);
       Alert.alert('Error', 'Failed to load orders');
     } finally {
       setLoading(false);
@@ -78,30 +89,14 @@ export default function OrdersScreen({ navigation }) {
     return method === PAYMENT_METHODS.COD ? 'Cash on Delivery' : 'Online Payment';
   };
 
-  const handleCancelOrder = (orderId) => {
-    Alert.alert(
-      'Cancel Order',
-      'Are you sure you want to cancel this order?',
-      [
-        { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await OrderService.cancelOrder(orderId);
-              Alert.alert('Success', 'Order cancelled successfully');
-              loadOrders();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to cancel order');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const renderOrder = ({ item }) => (
+  const renderOrder = ({ item }) => {
+    console.log('🎨 Rendering order:', item._id);
+    console.log('🎨 Order date value:', item.orderDate);
+    console.log('🎨 Order createdAt value:', item.createdAt);
+    console.log('🎨 Date object from orderDate:', new Date(item.orderDate));
+    console.log('🎨 Date string from orderDate:', new Date(item.orderDate).toLocaleDateString());
+    
+    return (
     <TouchableOpacity
       style={styles.orderCard}
       onPress={() => navigation.navigate('OrderDetail', { orderId: item._id })}
@@ -117,7 +112,7 @@ export default function OrdersScreen({ navigation }) {
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Date:</Text>
           <Text style={styles.infoValue}>
-            {new Date(item.createdAt).toLocaleDateString()}
+            {new Date(item.orderDate).toLocaleDateString()}
           </Text>
         </View>
         <View style={styles.infoRow}>
@@ -133,20 +128,8 @@ export default function OrdersScreen({ navigation }) {
           <Text style={styles.totalPrice}>${item.totalPrice?.toFixed(2)}</Text>
         </View>
       </View>
-
-      {item.status === ORDER_STATUS.PROCESSING && (
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={(e) => {
-            e.stopPropagation();
-            handleCancelOrder(item._id);
-          }}
-        >
-          <Text style={styles.cancelButtonText}>Cancel Order</Text>
-        </TouchableOpacity>
-      )}
     </TouchableOpacity>
-  );
+  );};
 
   if (loading) {
     return (
@@ -274,17 +257,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.primary,
-  },
-  cancelButton: {
-    backgroundColor: COLORS.error,
-    borderRadius: 6,
-    padding: 10,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  cancelButtonText: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontWeight: 'bold',
   },
 });
