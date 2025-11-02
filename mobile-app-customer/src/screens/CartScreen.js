@@ -138,7 +138,7 @@ export default function CartScreen({ navigation }) {
       <Image
         source={{
           uri: item.imageUrl
-            ? `${API_BASE_URL.replace('/api', '')}/${item.imageUrl}`
+            ? `${API_BASE_URL}/${item.imageUrl}`
             : 'https://via.placeholder.com/100',
         }}
         style={styles.itemImage}

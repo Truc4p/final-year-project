@@ -37,6 +37,8 @@ export default function HomeScreen({ navigation }) {
         ProductService.getAllProducts(),
         CategoryService.getAllCategories(),
       ]);
+      console.log('Loaded products:', productsData.length);
+      console.log('First product sample:', JSON.stringify(productsData[0], null, 2));
       setProducts(productsData);
       setCategories(categoriesData);
     } catch (error) {
@@ -70,30 +72,37 @@ export default function HomeScreen({ navigation }) {
     loadData();
   };
 
-  const renderProduct = ({ item }) => (
-    <TouchableOpacity
-      style={styles.productCard}
-      onPress={() => navigation.navigate('ProductDetail', { productId: item._id })}
-    >
-      <Image
-        source={{
-          uri: item.imageUrl
-            ? `${API_BASE_URL.replace('/api', '')}/${item.imageUrl}`
-            : 'https://via.placeholder.com/150',
-        }}
-        style={styles.productImage}
-      />
-      <View style={styles.productInfo}>
-        <Text style={styles.productName} numberOfLines={2}>
-          {item.name}
-        </Text>
-        <Text style={styles.productPrice}>${item.price?.toFixed(2)}</Text>
-        <Text style={styles.productStock}>
-          {item.stockQuantity > 0 ? `In Stock: ${item.stockQuantity}` : 'Out of Stock'}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderProduct = ({ item }) => {
+    // Construct the full image URL - check both 'image' and 'imageUrl' fields
+    const imagePath = item.image || item.imageUrl;
+    const imageUri = imagePath 
+      ? `${API_BASE_URL}/${imagePath}`
+      : 'https://via.placeholder.com/150';
+    
+    console.log('Product:', item.name, 'Image URL:', imageUri);
+    
+    return (
+      <TouchableOpacity
+        style={styles.productCard}
+        onPress={() => navigation.navigate('ProductDetail', { productId: item._id })}
+      >
+        <Image
+          source={{ uri: imageUri }}
+          style={styles.productImage}
+          onError={(error) => console.log('Image load error for', item.name, error.nativeEvent.error)}
+        />
+        <View style={styles.productInfo}>
+          <Text style={styles.productName} numberOfLines={2}>
+            {item.name}
+          </Text>
+          <Text style={styles.productPrice}>${item.price?.toFixed(2)}</Text>
+          <Text style={styles.productStock}>
+            {item.stockQuantity > 0 ? `In Stock: ${item.stockQuantity}` : 'Out of Stock'}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderCategory = ({ item }) => (
     <TouchableOpacity

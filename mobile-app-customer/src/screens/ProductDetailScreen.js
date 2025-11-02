@@ -54,7 +54,7 @@ export default function ProductDetailScreen({ route, navigation }) {
           productId: product._id,
           name: product.name,
           price: product.price,
-          imageUrl: product.imageUrl,
+          imageUrl: product.image || product.imageUrl,
           quantity,
           stockQuantity: product.stockQuantity,
         });
@@ -90,8 +90,8 @@ export default function ProductDetailScreen({ route, navigation }) {
     <ScrollView style={styles.container}>
       <Image
         source={{
-          uri: product.imageUrl
-            ? `${API_BASE_URL.replace('/api', '')}/${product.imageUrl}`
+          uri: (product.image || product.imageUrl)
+            ? `${API_BASE_URL}/${product.image || product.imageUrl}`
             : 'https://via.placeholder.com/400',
         }}
         style={styles.productImage}
