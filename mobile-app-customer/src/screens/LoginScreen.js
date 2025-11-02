@@ -56,7 +56,10 @@ export default function LoginScreen({ navigation }) {
       console.error('Error object:', error);
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack);
-      Alert.alert('Login Failed', error.message || 'Invalid username or password');
+      
+      // Extract the error message properly
+      const errorMessage = error.msg || error.message || 'Invalid username or password';
+      Alert.alert('Login Failed', errorMessage);
     } finally {
       console.log('Login attempt completed, setting loading to false');
       setLoading(false);

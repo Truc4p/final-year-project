@@ -182,15 +182,10 @@ export default function App() {
 
   const checkAuth = async () => {
     const authenticated = await AuthService.isAuthenticated();
+    const user = await AuthService.getCurrentUser();
     setIsAuthenticated(authenticated);
     setIsLoading(false);
   };
-
-  // Set up a listener to check auth state periodically
-  useEffect(() => {
-    const interval = setInterval(checkAuth, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   if (isLoading) {
     return (

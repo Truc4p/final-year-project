@@ -77,7 +77,10 @@ export const AuthService = {
   },
 
   async logout() {
+    console.log('=== LOGOUT INITIATED ===');
     await StorageService.clearAll();
+    console.log('✓ All storage cleared');
+    console.log('=== LOGOUT COMPLETE ===');
   },
 
   async getCurrentUser() {

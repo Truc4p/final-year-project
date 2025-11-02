@@ -33,9 +33,15 @@ export const StorageService = {
   // User data management
   async saveUser(userData) {
     try {
+      console.log('💾 Saving user data:', userData);
+      if (!userData) {
+        console.error('❌ Cannot save null/undefined user data');
+        return;
+      }
       await AsyncStorage.setItem(USER_KEY, JSON.stringify(userData));
+      console.log('✅ User data saved successfully');
     } catch (error) {
-      console.error('Error saving user data:', error);
+      console.error('❌ Error saving user data:', error);
     }
   },
 
@@ -44,7 +50,7 @@ export const StorageService = {
       const userData = await AsyncStorage.getItem(USER_KEY);
       return userData ? JSON.parse(userData) : null;
     } catch (error) {
-      console.error('Error getting user data:', error);
+      console.error('❌ Error getting user data:', error);
       return null;
     }
   },
