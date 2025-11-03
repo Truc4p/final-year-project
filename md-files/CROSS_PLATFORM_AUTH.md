@@ -30,15 +30,6 @@ Added email field to registration form for consistency with mobile app:
 - Web frontend now also collects email (optional)
 - Both platforms store email in the same database field
 
-### 3. Added Translations
-**File:** `frontend/src/i18n.js`
-
-Added email label translations for both English and Vietnamese:
-```javascript
-email: 'Email',           // English
-email: 'Email',           // Vietnamese
-```
-
 ## How It Works
 
 ### Shared Backend

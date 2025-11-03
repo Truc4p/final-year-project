@@ -2,15 +2,21 @@
 
 ## Overview
 
-**WrenCos** is a comprehensive full-stack beauty and skincare e-commerce platform built with **Vue.js 3** frontend and **Node.js/Express** backend. The application combines traditional e-commerce functionality with innovative features including **AI-powered product recommendations**, **WebRTC live streaming commerce**, **real-time customer support**, and **automated email marketing**. 
+**WrenCos** is a comprehensive full-stack beauty and skincare e-commerce platform built with **Vue.js 3** web frontend, **React Native Expo** mobile app, and **Node.js/Express** backend. The application combines traditional e-commerce functionality with innovative features including **AI-powered product recommendations**, **WebRTC live streaming commerce**, **real-time customer support**, and **automated email marketing**. 
 
 This platform is specifically designed for the beauty and skincare industry, featuring specialized product attributes such as skin types, ingredients, skin concerns, and benefits to enable intelligent product matching and recommendations.
 
+### Platform Availability
+- **Web Application**: Full-featured admin dashboard and customer shopping interface
+- **Mobile Application**: Native mobile app for iOS and Android customers with shopping, live streaming, and order management
+- **Backend API**: RESTful API with WebSocket support for real-time features
+
 ### Key Innovations
-- **Live Commerce**: Integration of WebRTC live streaming with pinned products for interactive shopping experiences
+- **Live Commerce**: Integration of WebRTC live streaming with pinned products for interactive shopping experiences on both web and mobile
 - **AI Shopping Assistant**: Google Gemini-powered chatbot for personalized product recommendations
 - **Beauty-Specific Search**: Advanced product search with skin type, concerns, and ingredient filters
 - **Multi-language Support**: Full internationalization (English/Vietnamese) for diverse customer base
+- **Cross-Platform Experience**: Seamless shopping experience across web and mobile platforms
 - **Real-time Analytics**: Live tracking of sales, customers, and live stream engagement
 
 ## Technology Stack
@@ -39,6 +45,16 @@ This platform is specifically designed for the beauty and skincare industry, fea
 - **Internationalization**: vue-i18n 11.0.0-beta.1
 - **JWT Handling**: jwt-decode 4.0.0
 - **Utilities**: lodash-es 4.17.21
+
+### Mobile App (React Native Expo)
+- **Framework**: React Native 0.73.6
+- **Platform**: Expo ~50.0.0
+- **Navigation**: React Navigation 6.x (Stack & Bottom Tabs)
+- **State Management**: React Context API + AsyncStorage
+- **HTTP Client**: Axios 1.6.2
+- **Local Storage**: @react-native-async-storage/async-storage 1.21.0
+- **UI Components**: React Native Gesture Handler, Vector Icons
+- **Image Picker**: expo-image-picker ~14.7.1
 
 ## Project Structure
 
@@ -93,8 +109,51 @@ final-project/
 │   ├── seed-data/          # Database seeding scripts
 │   └── uploads/            # File upload storage directory
 │
-└── frontend/               # Vue.js 3 SPA
-    ├── Dockerfile         # Frontend Docker container config
+├── frontend/               # Vue.js 3 SPA (Web Application)
+│   ├── Dockerfile         # Frontend Docker container config
+│   ├── src/
+│   │   ├── components/    # Reusable Vue components
+│   │   ├── pages/         # Page components (admin & customer)
+│   │   ├── router/        # Vue Router configuration
+│   │   ├── stores/        # State management stores
+│   │   ├── utils/         # Utility functions
+│   │   └── assets/        # Static assets
+│   └── ...
+│
+└── mobile-app-customer/    # React Native Expo Mobile App
+    ├── App.js             # Main app entry with navigation
+    ├── app.json           # Expo configuration
+    ├── eas.json           # Expo Application Services config
+    ├── package.json       # Dependencies
+    ├── setup.sh           # Automated setup script
+    ├── assets/            # App icons and splash screens
+    ├── md-files/          # Documentation
+    │   ├── CHECKLIST.md
+    │   ├── DEVELOPMENT.md
+    │   ├── PROJECT_SUMMARY.md
+    │   └── QUICKSTART.md
+    └── src/
+        ├── constants/     # API URLs, colors, config
+        ├── contexts/      # React Context providers (AuthContext)
+        ├── screens/       # Screen components
+        │   ├── LoginScreen.js
+        │   ├── RegisterScreen.js
+        │   ├── HomeScreen.js
+        │   ├── ProductDetailScreen.js
+        │   ├── CartScreen.js
+        │   ├── OrdersScreen.js
+        │   ├── OrderDetailScreen.js
+        │   ├── ProfileScreen.js
+        │   └── LivestreamScreen.js
+        ├── services/      # API service layer
+        │   ├── api.js
+        │   ├── authService.js
+        │   ├── productService.js
+        │   ├── orderService.js
+        │   └── livestreamService.js
+        └── utils/         # Utility functions
+            └── storage.js
+```
     ├── index.html         # HTML entry point
     ├── vite.config.js     # Vite build configuration
     ├── tailwind.config.js # TailwindCSS configuration
@@ -143,17 +202,21 @@ final-project/
 ## Core Features
 
 ### 1. **Authentication & Authorization**
-- JWT-based authentication
+- JWT-based authentication (Web & Mobile)
 - Role-based access control (Admin, Customer, Staff)
 - Protected routes with route guards
 - Token refresh mechanism
 - Secure password hashing with bcryptjs
+- Persistent authentication on mobile with AsyncStorage
 
 ### 2. **E-commerce Functionality**
 - **Product Management**: CRUD operations with image uploads
 - **Category Management**: Product categorization system
-- **Shopping Cart**: Add, update, remove items
-- **Checkout Process**: Order placement and confirmation
+- **Shopping Cart**: Add, update, remove items (Web & Mobile)
+- **Checkout Process**: Order placement and confirmation (Web & Mobile)
+- **Order Management**: Track order status and history (Web & Mobile)
+- **Payment Integration**: COD and Online Payment options (Web & Mobile)
+- **Mobile-specific**: Pull-to-refresh, native UI components, offline cart persistence
 - **Order Management**: Track order status and history
 - **Payment Integration**: Payment processing routes
 
@@ -163,17 +226,20 @@ final-project/
 - **Admin Chat Widget**: Real-time customer support interface
 - **Session-based messaging**: Track conversations by session ID
 - **Online/Offline status**: Connection state management
+- **Mobile Live Chat**: Real-time chat during live streams with native notifications
 
 ### 4. **Live Streaming**
-- **WebRTC Integration**: Real-time video streaming
-- **Admin Broadcasting**: Start/stop live streams
-- **Customer Viewing**: Watch live streams with real-time updates
+- **WebRTC Integration**: Real-time video streaming (Web & Mobile)
+- **Admin Broadcasting**: Start/stop live streams (Web)
+- **Customer Viewing**: Watch live streams with real-time updates (Web & Mobile)
 - **Interactive Features**:
-  - Live chat during streams
-  - Like/unlike functionality
+  - Live chat during streams (Web & Mobile)
+  - Like/unlike functionality (Web & Mobile)
   - Viewer count tracking
-  - Pinned products during streams
+  - Pinned products during streams (Web & Mobile)
 - **Stream Management**: Title, description, quality settings
+- **Mobile-specific**: Native video player, optimized for mobile networks
+- **Past Streams Archive**: View previous livestreams with thumbnails and stats (Mobile)
 
 ### 5. **Email Marketing System**
 - **Newsletter Subscriptions**: Subscriber management with unsubscribe tokens
@@ -856,13 +922,51 @@ npm start          # Production
 npm run dev        # Development
 ```
 
-### Frontend
+### Web Frontend
 ```bash
 cd frontend
 npm install
 npm run dev        # Development server
 npm run build      # Production build
 npm run preview    # Preview production build
+```
+
+### Mobile App
+
+#### Prerequisites
+- Node.js (v14+)
+- Expo CLI: `npm install -g expo-cli`
+- Expo Go app on your iOS/Android device
+
+#### Setup & Run
+```bash
+cd mobile-app-customer
+npm install        # Install dependencies
+
+# Configure API URL in src/constants/index.js
+# Use your local IP address for physical devices
+# Example: export const API_BASE_URL = 'http://192.168.1.100:3000/api'
+
+npm start          # Start Expo dev server
+# or
+expo start
+
+# Then:
+# - Scan QR code with Expo Go app (physical device)
+# - Press 'i' for iOS Simulator
+# - Press 'a' for Android Emulator
+```
+
+#### Finding Your Local IP
+```bash
+# macOS/Linux
+ifconfig | grep "inet "
+# or
+ipconfig getifaddr en0
+
+# Windows
+ipconfig
+# Look for IPv4 Address
 ```
 
 ### Docker Deployment
@@ -874,11 +978,21 @@ docker build -t final-project-backend .
 docker run -p 3000:3000 final-project-backend
 ```
 
-#### Frontend
+#### Web Frontend
 ```bash
 cd frontend
 docker build -t final-project-frontend .
 docker run -p 80:80 final-project-frontend
+```
+
+#### Full Stack with Docker Compose
+```bash
+# At project root
+docker-compose up -d
+
+# This will start:
+# - Backend API on port 3000
+# - Web Frontend on port 80
 ```
 
 ## Routes & Navigation
@@ -1574,22 +1688,816 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
+## Mobile Application (React Native Expo)
+
+### Overview
+
+The **mobile-app-customer** is a fully-featured React Native mobile application built with Expo that provides customers with a native mobile shopping experience. It connects to the same backend API and offers all essential e-commerce features including product browsing, shopping cart, order management, and live stream viewing.
+
+### Technology Stack
+
+**Core Technologies**:
+- **React Native**: 0.73.6 - Mobile framework
+- **Expo**: ~50.0.0 - Development platform and build tool
+- **React**: 18.2.0 - UI library
+
+**Navigation**:
+- **@react-navigation/native**: ^6.1.9 - Navigation container
+- **@react-navigation/stack**: ^6.3.20 - Stack navigator
+- **@react-navigation/bottom-tabs**: ^6.5.11 - Bottom tab navigation
+
+**State & Storage**:
+- **@react-native-async-storage/async-storage**: 1.21.0 - Local data persistence
+- **React Context API** - Global state management (AuthContext)
+
+**HTTP & Services**:
+- **axios**: ^1.6.2 - API communication
+
+**UI Components**:
+- **react-native-gesture-handler**: ~2.14.0 - Touch gestures
+- **react-native-safe-area-context**: 4.8.2 - Safe area handling
+- **react-native-screens**: ~3.29.0 - Native screen optimization
+- **react-native-vector-icons**: ^10.0.3 - Icon library
+- **expo-image-picker**: ~14.7.1 - Image selection
+- **expo-status-bar**: ~1.11.1 - Status bar control
+
+### Project Structure
+
+```
+mobile-app-customer/
+├── App.js                          # Main app entry with navigation
+├── package.json                    # Dependencies and scripts
+├── app.json                        # Expo configuration
+├── babel.config.js                 # Babel configuration
+├── eas.json                        # Expo Application Services config
+├── setup.sh                        # Automated setup script
+├── start-livestream.sh             # Livestream testing script
+├── create-assets.js                # Asset generation helper
+├── .env.example                    # Environment variables template
+├── README.md                       # Complete documentation
+├── assets/                         # App icons and splash screens
+│   ├── icon.png.placeholder       # App icon template
+│   ├── splash.png.placeholder     # Splash screen template
+│   └── README.md                  # Asset requirements guide
+├── md-files/                       # Additional documentation
+│   ├── CHECKLIST.md              # Development checklist
+│   ├── DEVELOPMENT.md            # Development guide
+│   ├── PROJECT_SUMMARY.md        # Project overview
+│   └── QUICKSTART.md             # Quick start guide
+└── src/
+    ├── constants/
+    │   └── index.js              # API URLs, colors, config
+    ├── contexts/
+    │   └── AuthContext.js        # Authentication context provider
+    ├── screens/
+    │   ├── LoginScreen.js        # User login
+    │   ├── RegisterScreen.js     # User registration
+    │   ├── HomeScreen.js         # Product browsing & search
+    │   ├── ProductDetailScreen.js # Product details & add to cart
+    │   ├── CartScreen.js         # Shopping cart & checkout
+    │   ├── OrdersScreen.js       # Order history
+    │   ├── OrderDetailScreen.js  # Order details
+    │   ├── ProfileScreen.js      # User profile & settings
+    │   └── LivestreamScreen.js   # Live stream viewing
+    ├── services/
+    │   ├── api.js               # Axios configuration & interceptors
+    │   ├── authService.js       # Authentication API calls
+    │   ├── productService.js    # Product API calls
+    │   ├── orderService.js      # Order API calls
+    │   └── livestreamService.js # Livestream API & WebSocket
+    └── utils/
+        └── storage.js           # AsyncStorage helper utilities
+```
+
+### Mobile App Features
+
+#### 1. Authentication & User Management
+
+**LoginScreen.js**:
+- Email/username and password authentication
+- Form validation
+- Token storage via AsyncStorage
+- Auto-login with saved tokens
+- Error handling with user feedback
+- Navigation to registration
+
+**RegisterScreen.js**:
+- Customer account creation
+- Form validation (username, email, password)
+- Password strength requirements
+- Email format validation
+- Automatic login after registration
+
+**AuthContext.js**:
+- Global authentication state management
+- Token persistence and retrieval
+- Auto-logout on token expiration
+- User session management
+- Protected route handling
+
+#### 2. Product Browsing & Discovery
+
+**HomeScreen.js**:
+- Product grid view with responsive layout
+- Real-time search functionality
+- Category filtering with chips
+- Pull-to-refresh to reload products
+- Loading states and skeleton screens
+- Navigation to product details
+- Cart badge with item count
+- Product images with fallback
+- Stock availability indicators
+
+**ProductDetailScreen.js**:
+- Full product information display
+- Product image gallery
+- Detailed description
+- Price and stock information
+- Beauty-specific attributes:
+  - Ingredients list
+  - Skin types compatibility
+  - Benefits and usage instructions
+  - Skin concerns addressed
+  - Product tags
+- Quantity selector with stock validation
+- Add to cart functionality
+- Related products (if available)
+- Share product option
+
+#### 3. Shopping Cart & Checkout
+
+**CartScreen.js**:
+- Cart items list with product images
+- Quantity adjustment (+/-)
+- Remove items from cart
+- Real-time price calculation
+- Stock validation before checkout
+- Persistent cart using AsyncStorage
+- Payment method selection:
+  - Cash on Delivery (COD)
+  - Online Payment
+- Shipping location options:
+  - Major cities
+  - Other locations
+- Order summary with:
+  - Subtotal
+  - Tax calculation
+  - Shipping fees
+  - Total price
+- Place order functionality
+- Empty cart state handling
+
+#### 4. Order Management
+
+**OrdersScreen.js**:
+- Complete order history
+- Order status badges with colors:
+  - Processing (Yellow)
+  - Confirmed (Blue)
+  - Shipping (Purple)
+  - Completed (Green)
+  - Cancelled (Red)
+- Order search functionality
+- Order date display
+- Total price for each order
+- Pull-to-refresh
+- Navigation to order details
+- Empty state handling
+
+**OrderDetailScreen.js**:
+- Order information:
+  - Order ID
+  - Order date
+  - Current status
+  - Payment method
+  - Payment status
+- Products in order:
+  - Product images
+  - Product names
+  - Quantities
+  - Individual prices
+- Price breakdown:
+  - Subtotal
+  - Tax
+  - Shipping fee
+  - Total price
+- Cancel order option (for processing status)
+- Order status timeline
+
+#### 5. Live Stream Viewing
+
+**LivestreamScreen.js**:
+- Real-time live stream viewing
+- WebSocket connection for live updates
+- Stream information display:
+  - Stream title and description
+  - Viewer count (real-time)
+  - Like count
+- Like/unlike functionality
+- Live chat feature:
+  - Send messages during stream
+  - View other viewers' messages
+  - Real-time chat updates
+  - Auto-scroll to latest messages
+- Pinned products section:
+  - Products featured during stream
+  - Quick view of product details
+  - Navigate to product detail
+  - Add to cart directly from stream
+- Past streams archive:
+  - View previous livestreams
+  - Stream thumbnails
+  - View counts and likes
+  - Date and duration
+- Pull-to-refresh
+- Connection status indicators
+- Offline state handling
+
+**livestreamService.js**:
+- WebSocket manager for real-time updates
+- Stream state synchronization
+- Chat message handling
+- Viewer count updates
+- Like/unlike management
+- Pinned products fetching
+- Session ID management
+- Automatic reconnection
+
+#### 6. User Profile & Settings
+
+**ProfileScreen.js**:
+- User information display:
+  - Username
+  - Email
+  - Account role
+- Quick stats:
+  - Total orders count
+  - Cart items count
+- Navigation shortcuts:
+  - View Orders
+  - View Cart
+- Settings options
+- Logout functionality
+- Session cleanup on logout
+
+### API Integration
+
+The mobile app connects to the backend API with the following endpoints:
+
+#### Authentication APIs
+```javascript
+POST /api/auth/login
+POST /api/auth/register
+GET /api/auth/verify (token validation)
+```
+
+#### Product APIs
+```javascript
+GET /api/products                    // Get all products
+GET /api/products/:id                // Get product details
+GET /api/products/search?q=query     // Search products
+GET /api/products/category/:id       // Filter by category
+```
+
+#### Category APIs
+```javascript
+GET /api/categories                  // Get all categories
+```
+
+#### Order APIs
+```javascript
+POST /api/orders                     // Create new order
+GET /api/orders/user/:userId         // Get user's orders
+GET /api/orders/:id                  // Get order details
+PUT /api/orders/:id/status           // Update order status
+DELETE /api/orders/:id               // Cancel order
+```
+
+#### Live Stream APIs
+```javascript
+GET /api/livestreams/active          // Get active stream
+GET /api/livestreams/past            // Get past streams
+GET /api/livestreams/:id             // Get stream details
+GET /api/livestreams/:id/products    // Get pinned products
+```
+
+#### WebSocket Events
+```javascript
+// Client sends
+register_customer                    // Register for updates
+chat_message                         // Send chat message
+toggle_like                          // Like/unlike stream
+
+// Client receives
+stream_started                       // Stream went live
+stream_stopped                       // Stream ended
+stream_update                        // Viewer/like count updated
+chat_message                         // New chat message
+pinned_products_updated             // Products updated
+```
+
+### Configuration
+
+#### API Base URL Configuration
+Edit `src/constants/index.js`:
+
+```javascript
+// For physical device testing (recommended)
+export const API_BASE_URL = 'http://192.168.1.100:3000/api';
+
+// For iOS Simulator
+export const API_BASE_URL = 'http://localhost:3000/api';
+
+// For Android Emulator
+export const API_BASE_URL = 'http://10.0.2.2:3000/api';
+```
+
+**Finding your local IP address**:
+- **macOS/Linux**: `ifconfig | grep "inet "` or `ipconfig getifaddr en0`
+- **Windows**: `ipconfig` (look for IPv4 Address)
+
+#### WebSocket Configuration
+```javascript
+const WS_BASE_URL = API_BASE_URL.replace('/api', '').replace('http', 'ws');
+```
+
+#### Color Theme
+```javascript
+export const COLORS = {
+  primary: '#4CAF50',      // Green
+  secondary: '#FFC107',    // Amber
+  accent: '#FF5722',       // Deep Orange
+  background: '#F5F5F5',   // Light Gray
+  white: '#FFFFFF',
+  black: '#000000',
+  gray: '#9E9E9E',
+  lightGray: '#E0E0E0',
+  success: '#4CAF50',
+  warning: '#FFC107',
+  error: '#F44336',
+  info: '#2196F3',
+};
+```
+
+### Running the Mobile App
+
+#### Prerequisites
+1. **Node.js** (v14 or higher)
+2. **npm** or **yarn**
+3. **Expo CLI**: `npm install -g expo-cli`
+4. **Expo Go app** installed on your iOS/Android device
+
+#### Setup & Installation
+
+**1. Navigate to mobile app directory:**
+```bash
+cd mobile-app-customer
+```
+
+**2. Install dependencies:**
+```bash
+npm install
+# or run automated setup
+./setup.sh
+```
+
+**3. Configure API endpoint:**
+Edit `src/constants/index.js` with your local IP address.
+
+**4. Start the backend server:**
+```bash
+cd ../backend
+npm start
+```
+
+**5. Start the Expo development server:**
+```bash
+cd ../mobile-app-customer
+npm start
+# or
+expo start
+```
+
+**6. Run on your device:**
+- **Physical Device**: Open Expo Go app and scan QR code
+- **iOS Simulator**: Press `i` in terminal
+- **Android Emulator**: Press `a` in terminal
+
+#### Available Scripts
+
+```bash
+npm start          # Start Expo dev server
+npm run android    # Run on Android device/emulator
+npm run ios        # Run on iOS device/simulator
+npm run web        # Run in web browser (limited features)
+```
+
+### Mobile App Architecture
+
+#### Navigation Structure
+
+```
+App
+├── AuthStack (Unauthenticated)
+│   ├── Login
+│   └── Register
+│
+└── MainTabs (Authenticated)
+    ├── Home (Stack)
+    │   ├── HomeMain
+    │   ├── ProductDetail
+    │   └── Cart
+    ├── Livestream
+    ├── Cart
+    ├── Orders (Stack)
+    │   ├── OrdersList
+    │   └── OrderDetail
+    └── Profile
+```
+
+#### State Management
+
+**Global State (AuthContext)**:
+- User authentication status
+- User profile information
+- JWT token management
+- Loading states
+
+**Local State (Component-level)**:
+- Products and categories
+- Cart items (persisted to AsyncStorage)
+- Order history
+- Live stream data
+- Form inputs
+
+**Persistent Storage (AsyncStorage)**:
+- JWT authentication token
+- Cart items
+- User preferences
+- Session data
+
+#### Service Layer Architecture
+
+**api.js** - Axios Configuration:
+- Base URL configuration
+- Request interceptors (add auth token)
+- Response interceptors (handle errors)
+- Error logging
+- Token refresh handling
+
+**authService.js**:
+```javascript
+- login(username, password)
+- register(username, email, password)
+- logout()
+- verifyToken()
+```
+
+**productService.js**:
+```javascript
+- getAllProducts()
+- getProductById(id)
+- searchProducts(query)
+- getProductsByCategory(categoryId)
+- getCategories()
+```
+
+**orderService.js**:
+```javascript
+- createOrder(orderData)
+- getUserOrders(userId)
+- getOrderById(orderId)
+- cancelOrder(orderId)
+```
+
+**livestreamService.js**:
+```javascript
+- getActiveStream()
+- getPastStreams()
+- getStreamById(id)
+- getPinnedProducts(streamId)
+- connectWebSocket()
+- disconnectWebSocket()
+- sendChatMessage(message)
+- toggleLike(streamId, userId)
+- registerCustomer(userId)
+```
+
+### Mobile App Features Comparison
+
+| Feature | Web Frontend | Mobile App | Notes |
+|---------|-------------|------------|-------|
+| Product Browsing | ✅ | ✅ | Native mobile UI |
+| Product Search | ✅ | ✅ | Optimized for mobile |
+| Shopping Cart | ✅ | ✅ | Persistent storage |
+| Checkout | ✅ | ✅ | Mobile-optimized forms |
+| Order History | ✅ | ✅ | Pull-to-refresh |
+| Live Stream Viewing | ✅ | ✅ | Native video support |
+| Live Chat | ✅ | ✅ | Real-time updates |
+| Product Reviews | ❌ | ❌ | Future enhancement |
+| Wishlist | ❌ | ❌ | Future enhancement |
+| Push Notifications | ❌ | ❌ | Future enhancement |
+| Offline Mode | ❌ | ⚠️ | Partial (cached data) |
+| Biometric Auth | ❌ | ❌ | Future enhancement |
+
+### Mobile App Security
+
+**Authentication Security**:
+- JWT token-based authentication
+- Secure token storage with AsyncStorage
+- Automatic token refresh
+- Session timeout handling
+- Logout with token cleanup
+
+**API Security**:
+- HTTPS required in production
+- Request/response validation
+- Error message sanitization
+- Rate limiting on backend
+- Input validation on all forms
+
+**Data Protection**:
+- Local data encryption (AsyncStorage)
+- Sensitive data not stored locally
+- Secure WebSocket connections (wss://)
+- No hardcoded credentials
+
+### Mobile App Testing
+
+#### Manual Testing Checklist
+
+**Authentication**:
+- [ ] Login with valid credentials
+- [ ] Login with invalid credentials
+- [ ] Register new account
+- [ ] Auto-login on app restart
+- [ ] Logout functionality
+
+**Product Browsing**:
+- [ ] Load products list
+- [ ] Search products
+- [ ] Filter by category
+- [ ] View product details
+- [ ] Pull-to-refresh
+
+**Shopping Cart**:
+- [ ] Add products to cart
+- [ ] Update quantities
+- [ ] Remove items
+- [ ] Cart persistence
+- [ ] Checkout process
+
+**Orders**:
+- [ ] Place order (COD)
+- [ ] Place order (Online)
+- [ ] View order history
+- [ ] View order details
+- [ ] Cancel pending order
+
+**Live Stream**:
+- [ ] View active stream
+- [ ] Send chat messages
+- [ ] Like/unlike stream
+- [ ] View pinned products
+- [ ] Navigate to products from stream
+- [ ] View past streams
+
+**Profile**:
+- [ ] View profile information
+- [ ] Navigate to orders
+- [ ] Navigate to cart
+- [ ] Logout
+
+### Troubleshooting
+
+#### Common Issues
+
+**1. Cannot connect to backend**
+```
+Solution:
+- Verify backend is running on port 3000
+- Check API_BASE_URL in src/constants/index.js
+- Ensure device and computer on same WiFi network
+- Try disabling firewall temporarily
+- Use local IP address (not localhost) for physical devices
+```
+
+**2. Images not loading**
+```
+Solution:
+- Verify backend serves static files from /uploads
+- Check image URLs in API responses
+- Ensure complete image path includes domain
+- Check network connectivity
+```
+
+**3. App crashes on startup**
+```
+Solution:
+- Clear Expo cache: expo start -c
+- Delete node_modules: rm -rf node_modules && npm install
+- Clear Metro bundler cache: npx react-native start --reset-cache
+- Check for conflicting dependencies
+```
+
+**4. WebSocket connection fails**
+```
+Solution:
+- Verify WebSocket URL format (ws:// not http://)
+- Check backend WebSocket server is running
+- Ensure no proxy blocking WebSocket
+- Check firewall settings
+```
+
+**5. Authentication token expired**
+```
+Solution:
+- Logout and login again
+- Clear AsyncStorage: AsyncStorage.clear()
+- Check token expiration time on backend
+- Implement token refresh logic
+```
+
+**6. Live stream not loading**
+```
+Solution:
+- Check if there's an active stream on backend
+- Verify WebSocket connection established
+- Check console for error messages
+- Try restarting the app
+```
+
+### Building for Production
+
+#### iOS Build (IPA)
+
+**Using EAS Build (Recommended)**:
+```bash
+# Install EAS CLI
+npm install -g eas-cli
+
+# Login to Expo account
+eas login
+
+# Configure build
+eas build:configure
+
+# Build for iOS
+eas build --platform ios
+```
+
+**Using Classic Build**:
+```bash
+expo build:ios
+```
+
+#### Android Build (APK/AAB)
+
+**Using EAS Build (Recommended)**:
+```bash
+# Build APK
+eas build --platform android --profile preview
+
+# Build AAB (for Play Store)
+eas build --platform android --profile production
+```
+
+**Using Classic Build**:
+```bash
+# APK
+expo build:android -t apk
+
+# AAB
+expo build:android -t app-bundle
+```
+
+#### Build Configuration (eas.json)
+```json
+{
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  }
+}
+```
+
+### Deployment
+
+#### App Store (iOS)
+1. Build IPA using EAS Build
+2. Upload to App Store Connect
+3. Complete app metadata
+4. Submit for review
+5. Publish after approval
+
+#### Google Play Store (Android)
+1. Build AAB using EAS Build
+2. Create app in Google Play Console
+3. Upload AAB file
+4. Complete store listing
+5. Submit for review
+6. Publish after approval
+
+### Performance Optimizations
+
+**Mobile App Optimizations**:
+1. **Image Loading**:
+   - Lazy loading for product images
+   - Image caching with Expo Image
+   - Compressed image formats
+   - Placeholder images
+
+2. **Data Fetching**:
+   - Pull-to-refresh for manual updates
+   - Cached API responses
+   - Pagination for large lists
+   - Background data sync
+
+3. **Navigation**:
+   - Native stack navigator for performance
+   - Lazy screen loading
+   - Screen optimization with react-native-screens
+
+4. **State Management**:
+   - Minimal re-renders with React.memo
+   - Efficient Context usage
+   - Local state for UI-only data
+
+5. **Bundle Size**:
+   - Code splitting
+   - Tree shaking unused code
+   - Optimized dependencies
+   - Asset optimization
+
+### Mobile App Monitoring
+
+**Error Tracking**:
+- Console logging for development
+- Error boundary components
+- API error handling
+- Network error handling
+
+**Analytics** (Future Enhancement):
+- User behavior tracking
+- Screen view analytics
+- Purchase funnel analysis
+- Crash reporting
+
+### Future Mobile App Enhancements
+
+- [ ] Push notifications for order updates
+- [ ] Biometric authentication (Face ID/Touch ID)
+- [ ] Product reviews and ratings
+- [ ] Wishlist functionality
+- [ ] Multiple delivery addresses
+- [ ] Payment gateway integration (Stripe/PayPal)
+- [ ] Social media login (Google/Facebook)
+- [ ] Dark mode support
+- [ ] Multi-language support (i18n)
+- [ ] Offline mode with sync
+- [ ] In-app chat with support
+- [ ] Product comparison feature
+- [ ] Barcode scanner for products
+- [ ] AR product preview
+- [ ] Voice search
+
 ## Future Enhancements
 
+### Web Platform
 - [ ] Payment gateway integration (Stripe/PayPal)
 - [ ] Advanced product search and filtering
 - [ ] Product reviews and ratings
 - [ ] Wishlist functionality
-- [ ] Push notifications
-- [ ] Mobile app development
 - [ ] Advanced analytics and reporting
 - [ ] Multi-vendor support
 - [ ] Social media integration
 - [ ] Automated inventory management
 
+### Mobile Platform
+- [ ] Push notifications
+- [ ] Biometric authentication
+- [ ] Offline mode with sync
+- [ ] In-app chat support
+- [ ] Dark mode
+- [ ] Multi-language support
+
 ## Contributing
 
 This is a university final year project (FYP). For questions or contributions, please contact the project maintainer.
+
+## Platforms
+
+- **Web Application**: Desktop and mobile web browsers
+- **Mobile Application**: iOS 12+ and Android 5.0+ (via React Native Expo)
+- **Backend API**: Cross-platform Node.js server
 
 ## License
 
@@ -1597,7 +2505,8 @@ This project is developed for educational purposes as part of a university final
 
 ---
 
-**Project Name**: Final Project - E-commerce Platform  
+**Project Name**: Final Project - WrenCos E-commerce Platform  
 **Version**: 1.0.0  
-**Last Updated**: November 1, 2025  
+**Platforms**: Web (Vue.js), Mobile (React Native Expo), Backend (Node.js/Express)  
+**Last Updated**: November 3, 2025  
 **Repository**: Truc4p/final-project
