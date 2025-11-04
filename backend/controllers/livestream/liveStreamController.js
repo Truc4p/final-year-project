@@ -342,13 +342,13 @@ exports.deleteLiveStream = async (req, res) => {
     
     // Add video file to deletion list if it exists
     if (livestream.videoUrl) {
-      const videoPath = path.join(__dirname, '..', 'uploads', 'livestreams', path.basename(livestream.videoUrl));
+      const videoPath = path.join(__dirname, '..', '..', 'uploads', 'livestreams', path.basename(livestream.videoUrl));
       filesToDelete.push(videoPath);
     }
     
     // Add thumbnail file to deletion list if it exists
     if (livestream.thumbnailUrl) {
-      const thumbnailPath = path.join(__dirname, '..', 'uploads', 'thumbnails', path.basename(livestream.thumbnailUrl));
+      const thumbnailPath = path.join(__dirname, '..', '..', 'uploads', 'thumbnails', path.basename(livestream.thumbnailUrl));
       filesToDelete.push(thumbnailPath);
     }
 
