@@ -56,25 +56,25 @@
                 :to="{ path: '/admin/email-marketing/subscribers' }" 
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                📧 Subscribers
+                Subscribers
               </router-link>
               <router-link 
                 :to="{ path: '/admin/email-marketing/templates' }" 
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                📄 Templates
+                Templates
               </router-link>
               <router-link 
                 :to="{ path: '/admin/email-marketing/campaigns' }" 
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                🚀 Campaigns
+                Campaigns
               </router-link>
               <router-link 
                 :to="{ path: '/admin/email-marketing/analytics' }" 
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                📊 Analytics
+                Analytics
               </router-link>
             </div>
           </div>

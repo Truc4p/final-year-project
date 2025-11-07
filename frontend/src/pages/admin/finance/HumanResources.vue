@@ -1084,7 +1084,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                             <input id="skillInput" type="text" placeholder="Add a skill..." class="form-input flex-1"
                               @keyup.enter="addSkill">
                             <button @click="addSkill" type="button"
-                              class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                              class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
                               Add
                             </button>
                           </div>
