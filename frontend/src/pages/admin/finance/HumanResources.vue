@@ -106,15 +106,15 @@ const employeeForm = ref({
 
 // Options
 const departments = [
-  { value: 'engineering', label: 'Engineering', icon: '💻' },
-  { value: 'marketing', label: 'Marketing', icon: '📢' },
-  { value: 'sales', label: 'Sales', icon: '💰' },
-  { value: 'finance', label: 'Finance', icon: '📊' },
-  { value: 'hr', label: 'Human Resources', icon: '👥' },
-  { value: 'operations', label: 'Operations', icon: '⚙️' },
-  { value: 'customer_service', label: 'Customer Service', icon: '🎧' },
-  { value: 'design', label: 'Design', icon: '🎨' },
-  { value: 'management', label: 'Management', icon: '👔' }
+  { value: 'engineering', label: 'Engineering' },
+  { value: 'marketing', label: 'Marketing' },
+  { value: 'sales', label: 'Sales' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'hr', label: 'Human Resources' },
+  { value: 'operations', label: 'Operations' },
+  { value: 'customer_service', label: 'Customer Service' },
+  { value: 'design', label: 'Design' },
+  { value: 'management', label: 'Management' }
 ];
 
 const employmentTypes = [
@@ -526,10 +526,6 @@ const getStatusClass = (status) => {
   return statusOptions.find(opt => opt.value === status)?.class || 'bg-gray-100 text-gray-800';
 };
 
-const getDepartmentIcon = (department) => {
-  return departments.find(dept => dept.value === department)?.icon || '👤';
-};
-
 const addSkill = () => {
   const skillInput = document.getElementById('skillInput');
   const skill = skillInput.value.trim();
@@ -613,17 +609,16 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
           <div class="border-b border-gray-200">
             <nav class="flex space-x-8 px-6" aria-label="Tabs">
               <button v-for="tab in [
-                { id: 'dashboard', name: 'Dashboard & Analytics', icon: '📊' },
-                { id: 'employees', name: 'Employee Directory', icon: '👥' },
-                { id: 'departments', name: 'Departments', icon: '🏢' },
-                { id: 'payroll', name: 'Payroll', icon: '💰' }
+                { id: 'dashboard', name: 'Dashboard & Analytics'},
+                { id: 'employees', name: 'Employee Directory' },
+                { id: 'departments', name: 'Departments' },
+                { id: 'payroll', name: 'Payroll' }
               ]" :key="tab.id" @click="activeTab = tab.id" :class="[
                 'py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2',
                 activeTab === tab.id
                   ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               ]">
-                <span>{{ tab.icon }}</span>
                 {{ tab.name }}
               </button>
             </nav>
@@ -710,7 +705,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
               <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 <!-- Department Breakdown Chart -->
                 <div class="card p-6">
-                  <h4 class="text-lg font-semibold text-secondary-900 mb-4">🏢 Employee Distribution by Department</h4>
+                  <h4 class="text-lg font-semibold text-secondary-900 mb-4">Employee Distribution by Department</h4>
                   <div v-if="hrAnalytics.departmentBreakdown?.length > 0" class="h-64">
                     <Doughnut :data="departmentChartData" :options="chartOptions" />
                   </div>
@@ -721,7 +716,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
 
                 <!-- Employment Type & Status -->
                 <div class="card p-6">
-                  <h4 class="text-lg font-semibold text-secondary-900 mb-4">👔 Employment Analysis</h4>
+                  <h4 class="text-lg font-semibold text-secondary-900 mb-4">Employment Analysis</h4>
                   <div class="space-y-4">
                     <!-- Employment Types -->
                     <div>
@@ -766,7 +761,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
 
                 <!-- Payroll by Department Chart -->
                 <div class="card p-6">
-                  <h4 class="text-lg font-semibold text-secondary-900 mb-4">💰 Department Payroll</h4>
+                  <h4 class="text-lg font-semibold text-secondary-900 mb-4">Department Payroll</h4>
                   <div v-if="departmentStats.length > 0" class="h-64">
                     <Bar :data="payrollChartData" :options="barChartOptions" />
                   </div>
@@ -780,11 +775,11 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
               <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Tenure & Salary Analysis -->
                 <div class="card p-6">
-                  <h4 class="text-lg font-semibold text-secondary-900 mb-4">📈 Workforce Analytics</h4>
+                  <h4 class="text-lg font-semibold text-secondary-900 mb-4">Workforce Analytics</h4>
                   <div class="space-y-4">
                     <!-- Tenure Distribution -->
                     <div>
-                      <h5 class="text-sm font-semibold text-gray-700 mb-2">⏱️ Tenure Distribution</h5>
+                      <h5 class="text-sm font-semibold text-gray-700 mb-2">Tenure Distribution</h5>
                       <div class="space-y-2">
                         <div v-for="range in [
                           { label: '< 1 year', min: 0, max: 1, color: 'bg-red-400' },
@@ -807,7 +802,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
 
                       <!-- Salary Range -->
                       <div class="border-t pt-3">
-                        <h5 class="text-sm font-semibold text-gray-700 mb-2">💰 Salary Distribution</h5>
+                        <h5 class="text-sm font-semibold text-gray-700 mb-2">Salary Distribution</h5>
                         <div class="space-y-2">
                           <div v-for="range in [
                             { label: '< $50K', min: 0, max: 50000, color: 'bg-red-400' },
@@ -832,7 +827,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
 
                     <!-- Department Analysis Table -->
                     <div class="card p-6">
-                      <h4 class="text-lg font-semibold text-secondary-900 mb-4">🏢 Department Performance</h4>
+                      <h4 class="text-lg font-semibold text-secondary-900 mb-4">Department Performance</h4>
                       <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                           <thead>
@@ -848,9 +843,8 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                               class="border-b border-gray-100">
                               <td class="py-2">
                                 <div class="flex items-center">
-                                  <span class="mr-1 text-sm">{{ getDepartmentIcon(dept.department) }}</span>
                                   <span class="text-xs font-medium truncate">
-                                    {{departments.find(d => d.value === dept.department)?.label?.substring(0, 10) ||
+                                    {{departments.find(d => d.value === dept.department)?.label ||
                                       dept.department}}
                                   </span>
                                 </div>
@@ -873,7 +867,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Recent Hires -->
                     <div class="card p-6">
-                      <h4 class="text-lg font-semibold text-secondary-900 mb-4">🆕 Recent Hires (Last 30 days)</h4>
+                      <h4 class="text-lg font-semibold text-secondary-900 mb-4">Recent Hires (Last 30 days)</h4>
                       <div v-if="hrAnalytics.recentHires?.length > 0" class="space-y-3 max-h-64 overflow-y-auto">
                         <div v-for="employee in hrAnalytics.recentHires" :key="employee._id"
                           class="border border-gray-200 rounded-lg p-4">
@@ -885,7 +879,6 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                               </div>
                               <div class="text-xs text-gray-500">Started: {{ formatDate(employee.startDate) }}</div>
                             </div>
-                            <span class="text-lg">{{ getDepartmentIcon(employee.department) }}</span>
                           </div>
                         </div>
                       </div>
@@ -896,7 +889,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
 
                     <!-- Upcoming Anniversaries -->
                     <div class="card p-6">
-                      <h4 class="text-lg font-semibold text-secondary-900 mb-4">🎉 Upcoming Anniversaries</h4>
+                      <h4 class="text-lg font-semibold text-secondary-900 mb-4">Upcoming Anniversaries</h4>
                       <div v-if="hrAnalytics.upcomingAnniversaries?.length > 0"
                         class="space-y-3 max-h-64 overflow-y-auto">
                         <div v-for="employee in hrAnalytics.upcomingAnniversaries" :key="employee._id"
@@ -924,7 +917,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
 
                   <!-- Performance Distribution (only show if data exists) -->
                   <div v-if="hrAnalytics.performanceStats?.length > 0" class="card p-6">
-                    <h4 class="text-lg font-semibold text-secondary-900 mb-4">⭐ Performance Ratings Distribution</h4>
+                    <h4 class="text-lg font-semibold text-secondary-900 mb-4">Performance Ratings Distribution</h4>
                     <div class="grid grid-cols-5 gap-4">
                       <div v-for="rating in [1, 2, 3, 4, 5]" :key="rating" class="text-center">
                         <div class="text-2xl font-bold mb-2"
@@ -997,7 +990,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                               <label class="block text-sm font-medium text-gray-700 mb-1">Department *</label>
                               <select v-model="employeeForm.department" class="form-select w-full" required>
                                 <option v-for="dept in departments" :key="dept.value" :value="dept.value">
-                                  {{ dept.icon }} {{ dept.label }}
+                                  {{ dept.label }}
                                 </option>
                               </select>
                             </div>
@@ -1206,7 +1199,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                       <select v-model="selectedDepartment" class="form-select w-48">
                         <option value="">All Departments</option>
                         <option v-for="dept in departments" :key="dept.value" :value="dept.value">
-                          {{ dept.icon }} {{ dept.label }}
+                          {{ dept.label }}
                         </option>
                       </select>
 
@@ -1274,7 +1267,6 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                               <div class="flex items-center">
-                                <span class="text-lg mr-2">{{ getDepartmentIcon(employee.department) }}</span>
                                 <span class="text-sm font-medium text-gray-900">
                                   {{departments.find(dept => dept.value === employee.department)?.label ||
                                     employee.department}}
@@ -1348,7 +1340,6 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                     <div v-for="dept in departmentStats" :key="dept.department" class="card p-6">
                       <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center">
-                          <span class="text-2xl mr-3">{{ getDepartmentIcon(dept.department) }}</span>
                           <div>
                             <h4 class="text-lg font-semibold text-gray-900">
                               {{departments.find(d => d.value === dept.department)?.label || dept.department}}
@@ -1412,12 +1403,11 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                         class="border border-gray-200 rounded-lg p-4">
                         <div class="flex items-center justify-between">
                           <div class="flex items-center">
-                            <span class="text-lg mr-2">{{ getDepartmentIcon(department) }}</span>
                             <span class="font-medium">{{departments.find(d => d.value === department)?.label ||
                               department
                             }}</span>
                           </div>
-                          <span class="font-bold text-lg">{{ formatCurrency(amount) }}</span>
+                          <span class="text-lg">{{ formatCurrency(amount) }}</span>
                         </div>
                       </div>
                     </div>
