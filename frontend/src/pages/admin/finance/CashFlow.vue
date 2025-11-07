@@ -83,22 +83,22 @@ const successMessage = ref('');
 const availableCategories = computed(() => {
   const allCategories = [
     // Income categories
-    { value: 'product_sales', label: 'Product Sales', shortLabel: 'Product Sales', icon: '🛍️', type: 'inflow' },
-    { value: 'service_revenue', label: 'Service Revenue', shortLabel: 'Services', icon: '⚙️', type: 'inflow' },
-    { value: 'investment_income', label: 'Investment Income', shortLabel: 'Investment', icon: '📈', type: 'inflow' },
-    { value: 'other_income', label: 'Other Income', shortLabel: 'Other Income', icon: '💎', type: 'inflow' },
-    
+    { value: 'product_sales', label: 'Product Sales', shortLabel: 'Product Sales', type: 'inflow' },
+    { value: 'service_revenue', label: 'Service Revenue', shortLabel: 'Services', type: 'inflow' },
+    { value: 'investment_income', label: 'Investment Income', shortLabel: 'Investment', type: 'inflow' },
+    { value: 'other_income', label: 'Other Income', shortLabel: 'Other Income', type: 'inflow' },
+
     // Expense categories
-    { value: 'operating_expenses', label: 'Operating Expenses', shortLabel: 'Operations', icon: '🏢', type: 'outflow' },
-    { value: 'cost_of_goods_sold', label: 'Cost of Goods Sold', shortLabel: 'COGS', icon: '📦', type: 'outflow' },
-    { value: 'payroll', label: 'Payroll', shortLabel: 'Payroll', icon: '👥', type: 'outflow' },
-    { value: 'marketing', label: 'Marketing', shortLabel: 'Marketing', icon: '📢', type: 'outflow' },
-    { value: 'taxes', label: 'Taxes', shortLabel: 'Taxes', icon: '🏛️', type: 'outflow' },
-    { value: 'rent', label: 'Rent', shortLabel: 'Rent', icon: '🏠', type: 'outflow' },
-    { value: 'utilities', label: 'Utilities', shortLabel: 'Utilities', icon: '⚡', type: 'outflow' },
-    { value: 'shipping_costs', label: 'Shipping Costs', shortLabel: 'Shipping', icon: '🚚', type: 'outflow' },
-    { value: 'refunds', label: 'Refunds', shortLabel: 'Refunds', icon: '↩️', type: 'outflow' },
-    { value: 'other_expenses', label: 'Other Expenses', shortLabel: 'Other', icon: '📝', type: 'outflow' }
+    { value: 'operating_expenses', label: 'Operating Expenses', shortLabel: 'Operations', type: 'outflow' },
+    { value: 'cost_of_goods_sold', label: 'Cost of Goods Sold', shortLabel: 'COGS', type: 'outflow' },
+    { value: 'payroll', label: 'Payroll', shortLabel: 'Payroll', type: 'outflow' },
+    { value: 'marketing', label: 'Marketing', shortLabel: 'Marketing', type: 'outflow' },
+    { value: 'taxes', label: 'Taxes', shortLabel: 'Taxes', type: 'outflow' },
+    { value: 'rent', label: 'Rent', shortLabel: 'Rent', type: 'outflow' },
+    { value: 'utilities', label: 'Utilities', shortLabel: 'Utilities', type: 'outflow' },
+    { value: 'shipping_costs', label: 'Shipping Costs', shortLabel: 'Shipping', type: 'outflow' },
+    { value: 'refunds', label: 'Refunds', shortLabel: 'Refunds', type: 'outflow' },
+    { value: 'other_expenses', label: 'Other Expenses', shortLabel: 'Other', type: 'outflow' }
   ];
   
   if (newTransaction.value.type === 'inflow') {
@@ -797,7 +797,7 @@ const copyToClipboard = async (text, event) => {
     // Show a brief success indication
     const button = event.target;
     const originalText = button.textContent;
-    button.textContent = '✅';
+    button.textContent = 'copied';
     setTimeout(() => {
       button.textContent = originalText;
     }, 1000);
@@ -923,7 +923,7 @@ onMounted(async () => {
                     d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                   </path>
                 </svg>
-                <span v-else>🔄</span>
+                <span v-else></span>
                 Sync Orders
               </button>
             </div>
@@ -1038,7 +1038,7 @@ onMounted(async () => {
 
         <!-- Cash Position Trend (Middle Section) -->
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-secondary-900 mb-4">💹 Cash Position Over Time</h3>
+          <h3 class="text-lg font-semibold text-secondary-900 mb-4">Cash Position Over Time</h3>
           <div class="h-72 mb-6">
             <Line :data="cashPositionChartData" :options="cashPositionChartOptions" />
           </div>
@@ -1046,7 +1046,7 @@ onMounted(async () => {
           <!-- Cash Balance Details Table -->
           <div class="mt-8">
             <div class="flex items-center justify-between mb-4">
-              <h4 class="text-md font-semibold text-secondary-900">📋 Cash Balance Details ({{ selectedPeriod }} days)</h4>
+              <h4 class="text-md font-semibold text-secondary-900">Cash Balance Details ({{ selectedPeriod }} days)</h4>
               <button
                 @click="showCashBalanceDetails = !showCashBalanceDetails"
                 class="px-3 py-1 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 text-secondary-700"
@@ -1250,7 +1250,7 @@ onMounted(async () => {
 
         <!-- Manual Transaction Entry -->
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-secondary-900 mb-4">➕ Add Manual Transaction</h3>
+          <h3 class="text-lg font-semibold text-secondary-900 mb-4">Add Manual Transaction</h3>
 
           <!-- Success Message -->
           <div v-if="successMessage" class="mb-4 p-3 bg-green-100 border border-green-400 text-success rounded-lg">
@@ -1277,7 +1277,7 @@ onMounted(async () => {
                       : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700'
                   ]"
                 >
-                  <span class="text-xl">💰</span>
+                  <span class="text-xl"></span>
                   Income
                 </button>
                 <button 
@@ -1290,7 +1290,7 @@ onMounted(async () => {
                       : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700'
                   ]"
                 >
-                  <span class="text-xl">💸</span>
+                  <span class="text-xl"></span>
                   Expense
                 </button>
               </div>
@@ -1316,7 +1316,6 @@ onMounted(async () => {
                       : 'bg-gray-50 hover:bg-green-50'
                   ]"
                 >
-                  <span class="text-lg">{{ cat.icon }}</span>
                   <span class="text-center leading-tight">{{ cat.shortLabel || cat.label }}</span>
                 </button>
               </div>
@@ -1335,7 +1334,6 @@ onMounted(async () => {
                       : 'bg-gray-50 hover:border-red-300 hover:bg-red-50'
                   ]"
                 >
-                  <span class="text-lg">{{ cat.icon }}</span>
                   <span class="text-center leading-tight">{{ cat.shortLabel || cat.label }}</span>
                 </button>
               </div>
@@ -1420,7 +1418,6 @@ onMounted(async () => {
                     d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                   </path>
                 </svg>
-                <span class="text-xl">{{ newTransaction.type === 'inflow' ? '💰' : '💸' }}</span>
                 {{ isSubmitting ? 'Adding...' : `Add ${newTransaction.type === 'inflow' ? 'Income' : 'Expense'}` }}
               </button>
 
@@ -1432,9 +1429,9 @@ onMounted(async () => {
           </form>
         </div>
 
-        <!-- 🐛 Transaction Debug Data -->
+        <!-- Transaction Debug Data -->
         <div v-if="debugData" class="card p-6">
-          <h3 class="text-lg font-semibold text-secondary-900 mb-4">🐛 Transaction Data ({{ selectedPeriod }} days)</h3>
+          <h3 class="text-lg font-semibold text-secondary-900 mb-4">Transaction Data ({{ selectedPeriod }} days)</h3>
           
           <!-- Summary Stats -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-6">
@@ -1489,14 +1486,14 @@ onMounted(async () => {
                           class="ml-2 text-gray-400 hover:text-gray-600 text-xs transition-colors duration-150"
                           title="Copy full ID to clipboard"
                         >
-                          📋
+                          copy
                         </button>
                       </div>
                     </td>
                     <td class="px-4 py-3 text-sm">
                       <span :class="tx.type === 'inflow' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
                             class="px-2 py-1 rounded-full text-xs font-medium">
-                        {{ tx.type === 'inflow' ? '💰 Inflow' : '💸 Outflow' }}
+                            {{ tx.type === 'inflow' ? 'Inflow' : 'Outflow' }}
                       </span>
                     </td>
                     <td class="px-4 py-3 text-sm font-semibold" :class="tx.type === 'inflow' ? 'text-green-600' : 'text-red-600'">
@@ -1508,7 +1505,7 @@ onMounted(async () => {
                     <td class="px-4 py-3 text-sm">
                       <span :class="tx.automated ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'"
                             class="px-2 py-1 rounded-full text-xs font-medium">
-                        {{ tx.automated ? '🤖 Auto' : '✋ Manual' }}
+                        {{ tx.automated ? 'Auto' : 'Manual' }}
                       </span>
                     </td>
                   </tr>
@@ -1518,9 +1515,9 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- 💰 Current Balance Breakdown -->
+        <!-- Current Balance Breakdown -->
         <div v-if="balanceDetails" class="card p-6">
-          <h3 class="text-lg font-semibold text-secondary-900 mb-4">💰 Current Balance Breakdown (${{ balanceDetails?.summary?.currentBalance?.toLocaleString() || 0 }})</h3>
+          <h3 class="text-lg font-semibold text-secondary-900 mb-4">Current Balance Breakdown (${{ balanceDetails?.summary?.currentBalance?.toLocaleString() || 0 }})</h3>
           
           <!-- Summary -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-6">
@@ -1549,7 +1546,7 @@ onMounted(async () => {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Inflows by Category -->
             <div>
-              <h4 class="text-lg font-semibold text-green-700 mb-3">💰 Inflows by Category</h4>
+              <h4 class="text-lg font-semibold text-green-700 mb-3">Inflows by Category</h4>
               <div class="space-y-2">
                 <div v-for="(data, category) in balanceDetails.inflowsByCategory" :key="category" 
                      class="bg-green-50 p-3 rounded-lg">
@@ -1564,7 +1561,7 @@ onMounted(async () => {
 
             <!-- Outflows by Category -->
             <div>
-              <h4 class="text-lg font-semibold text-red-700 mb-3">💸 Outflows by Category</h4>
+              <h4 class="text-lg font-semibold text-red-700 mb-3">Outflows by Category</h4>
               <div class="space-y-2">
                 <div v-for="(data, category) in balanceDetails.outflowsByCategory" :key="category" 
                      class="bg-red-50 p-3 rounded-lg">
@@ -1582,7 +1579,7 @@ onMounted(async () => {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- All Inflows -->
             <div>
-              <h4 class="text-lg font-semibold text-green-700 mb-3">📈 All Inflows</h4>
+              <h4 class="text-lg font-semibold text-green-700 mb-3">All Inflows</h4>
               <div class="space-y-2 max-h-96 overflow-y-auto">
                 <div v-for="tx in (balanceDetails.allInflows || balanceDetails.recentInflows)" :key="tx._id" 
                      class="bg-green-50 p-3 rounded-lg text-sm">
@@ -1599,7 +1596,7 @@ onMounted(async () => {
 
             <!-- All Outflows -->
             <div>
-              <h4 class="text-lg font-semibold text-red-700 mb-3">📉 All Outflows</h4>
+              <h4 class="text-lg font-semibold text-red-700 mb-3">All Outflows</h4>
               <div class="space-y-2 max-h-96 overflow-y-auto">
                 <div v-for="tx in (balanceDetails.allOutflows || balanceDetails.recentOutflows)" :key="tx._id" 
                      class="bg-red-50 p-3 rounded-lg text-sm">
@@ -1618,7 +1615,7 @@ onMounted(async () => {
 
         <!-- Inflows vs Outflows Chart -->
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-secondary-900 mb-4">📊 Cash Inflows vs Outflows</h3>
+          <h3 class="text-lg font-semibold text-secondary-900 mb-4">Cash Inflows vs Outflows</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div class="text-center">
               <div class="text-2xl font-bold text-success">{{ formattedTotalInflows }}</div>
@@ -1638,7 +1635,7 @@ onMounted(async () => {
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <!-- Inflow Categories -->
           <div class="card p-6">
-            <h3 class="text-lg font-semibold text-secondary-900 mb-4">💰 Inflow Categories</h3>
+            <h3 class="text-lg font-semibold text-secondary-900 mb-4">Inflow Categories</h3>
             <div v-if="categoryBreakdown.inflows.length > 0" class="h-64">
               <Doughnut :data="inflowCategoryChartData" :options="categoryChartOptions" />
             </div>
@@ -1649,7 +1646,7 @@ onMounted(async () => {
 
           <!-- Outflow Categories -->
           <div class="card p-6">
-            <h3 class="text-lg font-semibold text-secondary-900 mb-4">💸 Outflow Categories</h3>
+            <h3 class="text-lg font-semibold text-secondary-900 mb-4">Outflow Categories</h3>
             <div v-if="categoryBreakdown.outflows.length > 0" class="h-64">
               <Doughnut :data="outflowCategoryChartData" :options="categoryChartOptions" />
             </div>
@@ -1694,7 +1691,7 @@ onMounted(async () => {
 
         <!-- Key Metrics Summary -->
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-secondary-900 mb-4">📈 Key Performance Indicators</h3>
+          <h3 class="text-lg font-semibold text-secondary-900 mb-4">Key Performance Indicators</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="text-center">
               <div class="text-lg font-semibold text-secondary-900">Cash Conversion Cycle</div>
@@ -1737,7 +1734,7 @@ onMounted(async () => {
 
         <!-- Cash Flow Forecast -->
         <div class="card p-6">
-          <h3 class="text-lg font-semibold text-secondary-900 mb-4">🔮 3-Month Cash Flow Forecast</h3>
+          <h3 class="text-lg font-semibold text-secondary-900 mb-4">3-Month Cash Flow Forecast</h3>
           <div v-if="forecast.length > 0" class="h-72 mb-6">
             <Line :data="forecastChartData" :options="forecastChartOptions" />
           </div>
