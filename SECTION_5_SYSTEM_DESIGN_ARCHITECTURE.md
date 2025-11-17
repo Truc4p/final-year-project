@@ -101,20 +101,14 @@
 │                 │ - Analytics      │                   │
 │                 └──────────────────┘                   │
 │                                                        │
-│  ┌────────────────────────────────────────────┐       │
-│  │  Redis Cache                               │       │
-│  │  - Session Store                           │       │
-│  │  - Real-time Notifications                │       │
-│  │  - Live Stream Pub/Sub                    │       │
-│  └────────────────────────────────────────────┘       │
-│                                                        │
 └────────────────────────────────────────────────────────┘
 
 External Integrations:
-├─ Google Gemini API (AI recommendations)
+├─ Google Gemini API (AI conversational recommendations)
 ├─ Stripe/PayPal API (Payment processing)
-├─ AWS S3/Google Cloud Storage (File uploads)
-└─ SMTP Server (Email delivery)
+├─ AWS S3/Google Cloud Storage (File uploads - images, documents)
+├─ SMTP Server (Email delivery for campaigns, notifications)
+└─ JWT Token Service (Authentication & authorization)
 ```
 
 ---
