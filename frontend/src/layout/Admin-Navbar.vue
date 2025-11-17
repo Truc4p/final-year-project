@@ -25,13 +25,13 @@
             {{ t('users') }}
           </router-link>
           <router-link :to="{ path: '/admin/analytics' }" exact-active-class="router-link-exact-active" class="navbar-link">
-            Analytics
+            {{ t('analytics') }}
           </router-link>
           <router-link :to="{ path: '/admin/cashflow' }" exact-active-class="router-link-exact-active" class="navbar-link">
-            Cash Flow
+            {{ t('cashFlow') }}
           </router-link>
           <router-link :to="{ path: '/admin/hr' }" exact-active-class="router-link-exact-active" class="navbar-link">
-            Human Resources
+            {{ t('hr') }}
           </router-link>
           <router-link :to="{ path: '/admin/live-stream' }" exact-active-class="router-link-exact-active" class="navbar-link">
             {{ t('liveStream') }}
@@ -40,7 +40,7 @@
           <!-- Email Marketing Dropdown -->
           <div class="relative group">
             <div class="navbar-link flex items-center space-x-1 cursor-pointer">
-              <span>Email Marketing</span>
+              <span>{{ t('marketing') }}</span>
               <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>

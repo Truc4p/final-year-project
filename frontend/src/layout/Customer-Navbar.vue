@@ -20,10 +20,10 @@
             {{ t('profile') }}
           </router-link>
           <a href="http://localhost:5175" target="_blank" class="navbar-link">
-            Skin Study
+            {{ t('skinStudy') }}
           </a>
           <a href="http://localhost:5001" target="_blank" class="navbar-link">
-            Track Nutrition
+            {{ t('trackNutrition') }}
           </a>
           <router-link :to="{ path: '/customer/order-history' }" exact-active-class="router-link-exact-active"
             class="navbar-link">

@@ -3,6 +3,12 @@ import { createI18n } from 'vue-i18n';
 
 const messages = {
   en: {
+    skinStudy: 'Skin Study',
+    trackNutrition: 'Track Nutrition',
+    marketing: 'Marketing',
+    analytics: 'Analytics',
+    hr: 'Human Resources',
+    cashFlow: 'Cash Flow',
     welcomeMessage: 'Welcome to our website!',
     welcomeToWrenCos: 'Welcome to WrenCos',
     heroSubtitle: 'Discover our quality products at affordable prices',
@@ -182,6 +188,7 @@ const messages = {
     recordingWillLoad: 'Recording will load',
     
     // Admin Live Stream translations
+    
     adminLiveStream: 'Admin Live Stream',
     broadcastToCustomers: 'Broadcast to your customers',
     streamingLive: 'STREAMING LIVE',
@@ -226,6 +233,12 @@ const messages = {
     moveDown: 'Move Down'
   },
   vi: {
+    skinStudy: 'Nghiên cứu da',
+    trackNutrition: 'Theo dõi dinh dưỡng',
+    marketing: 'Tiếp thị',
+    analytics: 'Phân tích',
+    hr: 'Nhân sự',
+    cashFlow: 'Dòng tiền',
     welcomeMessage: 'Chào mừng bạn đến với trang web của chúng tôi!',
     welcomeToWrenCos: 'Chào mừng đến với WrenCos',
     heroSubtitle: 'Khám phá các sản phẩm chất lượng với giá cả phải chăng',
