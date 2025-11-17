@@ -50,6 +50,27 @@ This chapter establishes the theoretical and practical context for Wrencos throu
 
 **Significance and Impact:** The beauty e-commerce market, valued at USD 120 billion in 2024, demonstrates 15% compound annual growth projecting USD 200 billion by 2027 (Statista, 2024). However, growth concentrates among large enterprises; approximately 70% of SMEs utilize five to eight disconnected platforms incurring USD 500–3,000 monthly operational costs (Forrester, 2023). Beauty return rates exceed 40%, substantially higher than general e-commerce averages, indicating inadequate consumer confidence (NPD Group, 2023). Personalized recommendations achieve 15–20% conversion rates versus 5% for generic algorithms (Jiang et al., 2019). Live-streaming commerce remains more mature in Asia-Pacific, representing a growing but under-penetrated opportunity in Western markets: adoption in the U.S. and Europe is accelerating (Luo et al., 2023; Haidar, 2024), and although usage is lower than in China, early adopters in the West cite entertainment and real-time engagement as key motivations (McKinsey, 2023). The gap between accessible but limited platforms and expensive enterprise solutions represents significant market opportunity for integrated mid-market solutions.
 
+### 2.3 Critical Review of Existing Solutions
+
+**Competitive Landscape Analysis:** The beauty e-commerce market comprises solutions spanning accessibility-functionality trade-offs without adequately addressing SME-specific requirements. Four primary competitors represent distinct market segments and technological approaches.
+
+| Aspect | Shopify | WooCommerce | Adobe Commerce | Wrencos |
+|--------|---------|------------|-----------------|---------|
+| **Target Audience** | SMEs and startups globally | Technical developers, SMEs | Enterprise organisations | SMEs in beauty retail |
+| **Core Technology** | Proprietary cloud platform | Open-source PHP, self-hosted | Proprietary enterprise system | Node.js/Express, Vue.js, MongoDB |
+| **E-Commerce Foundation** | Full-featured | Flexible, requires integration | Comprehensive | Complete |
+| **Live Streaming** | Limited Amazon integration | None native | None native | Native WebSocket-based |
+| **AI Personalisation** | Third-party apps only | Third-party plugins | Advanced (costly) | Google Gemini integrated |
+| **Business Management** | Accounting apps separate | Separate plugins | Integrated | Integrated (finance, HR) |
+| **Accessibility** | High (USD 29–299/month) | Moderate (requires expertise) | Prohibitive (USD 100,000–500,000) | Affordable, full-featured |
+| **Beauty-Specific Features** | None | None | Generic | Skin-type-based recommendations |
+| **Key Strength** | Market leadership, simplicity | Flexibility, cost | Comprehensive enterprise features | Integrated beauty-focused ecosystem |
+| **Critical Weakness** | Feature fragmentation, limited AI | Technical complexity, integration burden | Excessive cost, complexity | Limited brand recognition |
+
+**Narrative Interpretation:** The comparison matrix reveals substantial market gaps. Shopify (BuiltWith, 2024; 28% market share) dominates SME accessibility through affordable pricing and intuitive interfaces; however, it fundamentally lacks integrated live streaming, native AI personalisation, and unified business management, forcing users to subscribe to multiple complementary platforms and creating operational fragmentation (Forrester, 2023). WooCommerce provides superior technical flexibility through open-source architecture but imposes substantial implementation burden—requiring technical expertise for customisation and ecosystem integration, rendering it inaccessible to non-technical business owners (Alkhayat et al., 2021). Adobe Commerce delivers enterprise-grade comprehensiveness, including advanced AI and business modules, but at prohibitive implementation costs of USD 100,000–500,000, effectively excluding SMEs (BuiltWith, 2024). Specialised beauty platforms (Sephora Virtual Artist, Proven Skincare) demonstrate technological sophistication in beauty-specific features but operate as proprietary ecosystems, restricting availability to independent beauty businesses. Live streaming platforms (Amazon Live, Taobao Live) achieve engagement success through real-time interactivity but operate within restrictive ecosystem constraints limiting merchant customisation (Luo et al., 2023).
+
+Wrencos addresses these identified gaps through deliberate integration. Unlike Shopify, which requires separate subscriptions for live streaming (Amazon integration) and AI capabilities (third-party apps), Wrencos unifies these functionalities within a single platform specifically engineered for beauty retail. Unlike WooCommerce, Wrencos eliminates implementation complexity through pre-built solutions for common SME requirements. Unlike Adobe Commerce, Wrencos achieves enterprise functionality at SME-accessible price points through cloud-native architecture and open-source component selection. Unlike specialised beauty platforms, Wrencos remains vendor-neutral and customisable. This positioning—integrated functionality, beauty-specific intelligence, SME-appropriate accessibility—creates competitive differentiation addressing documented market demand (McKinsey, 2021; Forrester, 2023) whilst avoiding direct competition with entrenched incumbents by targeting the underserved mid-market segment.
+
 ---
 
 ## References
@@ -60,11 +81,17 @@ Dholakia, U. M., Kahn, B. E., Reeves, R. J., & Rindfleisch, A. (2010). Consumer 
 
 Forrester. (2023). State of technology adoption for SMB retailers. Cambridge, MA: Forrester Research.
 
-Internal Market Research. (2024). Consumer preferences for live demonstrations and personalization in beauty e-commerce. Unpublished survey data.
+Alkhayat, G., Metwally, R. M., & Al-Dhanhani, S. (2021). The effect of social commerce on customer satisfaction and loyalty: The role of trust and user experience. *SAGE Open*, 11(1), 21582440211014396.
+
+BuiltWith. (2024). Content management system market share. Available at: https://trends.builtwith.com/cms
 
 Jiang, Z., Jain, S., Song, H. & Song, Y. (2019). Information asymmetry, disclosure and the cost of equity capital around earnings announcements. *Journal of Contemporary Accounting & Economics*, 15(3), 100137.
 
+Luo, X., Lim, W. M., Cheah, J.-H., Lim, X.-J. & Dwivedi, Y. K. (2023). Live streaming commerce: A review and research agenda. *Journal of Computer Information Systems*, 63(2), 1–18. doi: 10.1080/08874417.2023.2290574
+
 McKinsey. (2021). How to win in live shopping. New York: McKinsey & Company.
+
+McKinsey. (2023). Ready for prime time? The state of live commerce. New York: McKinsey & Company.
 
 Nilashi, M., Ibrahim, O., Bagherifard, K., Alizadeh, A., & Samad, S. (2019). Recommendation system for tourism using machine learning and sentiment analysis. *Journal of Computing in Civil Engineering*, 33(2), 04019003.
 
@@ -81,8 +108,6 @@ Zhang, X., Gao, S., Guo, H., & Liu, G. (2020). Understanding the acceptance of m
 Luo, X., Lim, W. M., Cheah, J.-H., Lim, X.-J. & Dwivedi, Y. K. (2023) ‘Live Streaming Commerce: A Review and Research Agenda’, Journal of Computer Information Systems. doi: 10.1080/08874417.2023.2290574.
 
 Haidar, M. (2024) Challenges and Opportunities of Live Stream Selling. [online] Available at: (DIVA portal) 
-
-McKinsey (2023) Ready for prime time? The state of live commerce. McKinsey & Company.
 
 ---
 
