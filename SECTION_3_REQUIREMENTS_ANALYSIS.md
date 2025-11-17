@@ -44,3 +44,58 @@
 
 **Motivations:** Operational visibility and data-driven decisions. Time-savings focusing on strategy vs. admin. Compliance/risk management via centralized access control. Staff productivity via simplified workflows. Growth scalability (USD 2.3M→5M+ without staff proportional increase).
 
+---
+
+## 3.3 Functional Requirements with MoSCoW Prioritisation
+
+| ID | Description | Priority | Estimation |
+|---|---|---|---|
+| USR_01 | As a customer, I want to receive personalized product recommendations based on my skin type and concerns, so that I find products matching my specific needs without trial-and-error. | Must | 8 days |
+| USR_02 | As a customer, I want to browse and search products with detailed ingredient lists and compatibility filters, so that I can make informed purchasing decisions aligned to my skin profile. | Must | 5 days |
+| USR_03 | As a customer, I want to add products to cart, apply discounts, and complete checkout securely, so that I can purchase products with confidence. | Must | 8 days |
+| USR_04 | As a customer, I want to track order status and receive notifications, so that I have visibility into delivery timelines. | Must | 5 days |
+| USR_05 | As a customer, I want to watch live streaming commerce events with real-time product display and chat, so that I can interact with experts before purchasing. | Must | 8 days |
+| USR_06 | As a customer, I want to chat with an AI assistant about product recommendations, ingredients, and usage, so that I receive expert guidance without waiting for staff. | Should | 8 days |
+| USR_07 | As a customer, I want to view my purchase history and reorder previous products, so that I can repurchase skincare routines efficiently. | Should | 3 days |
+| USR_08 | As a customer, I want to write product reviews and view reviews from other customers, so that I can assess product quality through peer feedback. | Should | 5 days |
+| USR_09 | As a customer, I want to receive email recommendations and exclusive offers matched to my profile, so that I discover relevant products. | Could | 3 days |
+| USR_10 | As a customer, I want to create and save skincare routines, so that I can organize product recommendations into personalized regimens. | Could | 5 days |
+| ADM_01 | As a business admin, I want to manage product catalog (create, edit, delete products with attributes), so that I maintain accurate inventory and product information. | Must | 5 days |
+| ADM_02 | As a business admin, I want to view real-time sales analytics (revenue, orders, top products, conversion metrics), so that I monitor business performance and identify trends. | Must | 8 days |
+| ADM_03 | As a business admin, I want to manage customer segmentation and email campaigns with audience filtering, so that I execute targeted marketing campaigns. | Should | 8 days |
+| ADM_04 | As a business admin, I want to configure live streaming events (schedule, product pins, viewer analytics), so that I conduct organized live commerce sessions. | Should | 8 days |
+| ADM_05 | As a business admin, I want to manage staff accounts with role-based access control (admin, staff, viewer), so that I protect sensitive data and restrict access appropriately. | Should | 5 days |
+| ADM_06 | As a business admin, I want to view financial reports (revenue, expenses, cash flow, profitability by product), so that I monitor financial health and make data-driven decisions. | Should | 8 days |
+| ADM_07 | As a business admin, I want to manage orders (view, update status, process refunds, export), so that I handle order fulfillment efficiently. | Should | 5 days |
+| ADM_08 | As a business admin, I want to manage live streaming with real-time viewer engagement metrics and product pinning, so that I optimize live commerce performance. | Could | 8 days |
+| ADM_09 | As a business admin, I want to configure AI chatbot responses and FAQ management, so that I customize customer support interactions. | Could | 5 days |
+| ADM_10 | As a business admin, I want to access employee HR records and document management, so that I centralize HR operations. | Could | 5 days |
+
+### MoSCoW Summary
+
+| Priority | Number of Features | Number of Days |
+|---|---|---|
+| Must | 5 | 26 |
+| Should | 7 | 41 |
+| Could | 3 | 15 |
+| **TOTAL** | **15** | **82** |
+
+---
+
+## 3.4 Non-functional Requirements
+
+| ID | Description |
+|---|---|
+| NF_01 | **Performance:** API endpoints respond within 500ms for 95% of requests under normal load (100 concurrent users). Database queries execute within 100ms for 90% of operations. |
+| NF_02 | **Scalability:** Platform supports up to 1,000 concurrent users without performance degradation. Live streaming supports 500 concurrent viewers with <5 second latency. Horizontal scaling via containerized deployment (Docker/Kubernetes). |
+| NF_03 | **Security:** All data transmitted via HTTPS/TLS encryption. Authentication via JWT tokens with 24-hour expiration. Passwords hashed using bcrypt (10 rounds minimum). Role-based access control (RBAC) enforcing least-privilege access. SQL injection and XSS prevention through parameterized queries and input validation. |
+| NF_04 | **Data Protection & Compliance:** GDPR compliance with user consent management, data portability, and deletion capabilities. PCI DSS Level 1 compliance for payment data. User data encrypted at rest using AES-256 encryption. Regular security audits and penetration testing. |
+| NF_05 | **Availability & Reliability:** Uptime SLA target: 99.5% (allowing ~3.6 hours downtime monthly). Automated database backups (daily, retained 30 days). Failover mechanisms for critical services. Error monitoring via centralized logging (e.g., Sentry). |
+| NF_06 | **Usability:** Platform usable without training for users with basic computer literacy. WCAG 2.1 AA accessibility compliance (screen reader support, keyboard navigation). Interfaces responsive across desktop, tablet, mobile viewports (600px–2560px). Mobile app supports iOS 14+ and Android 10+. |
+| NF_07 | **Internationalization & Localization:** Multi-language support (English, Spanish, French minimum). Currency conversion for international transactions. Timezone-aware scheduling and reporting. |
+| NF_08 | **Maintainability & Documentation:** Code organized in modular architecture with clear separation of concerns. API documented via Swagger/OpenAPI specification. Database schema documented with ER diagrams. Deployment procedures documented with automated CI/CD pipelines. Code coverage minimum 70% for critical business logic. |
+| NF_09 | **Browser & Device Support:** Web applications support Chrome 90+, Firefox 88+, Safari 14+, Edge 90+. Mobile applications support iOS 14+ and Android 10+. Graceful degradation for older browsers without core functionality loss. |
+| NF_10 | **Real-time Communication:** WebSocket connections support live streaming with <5 second latency. Real-time chat updates within 2 seconds of message send. Automatic reconnection with exponential backoff for network interruptions. |
+
+---
+
