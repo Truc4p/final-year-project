@@ -2,80 +2,45 @@
 
 ## 3.1 Research Methodology
 
-**Research Method:** A mixed-methods approach combined online surveys (Google Forms) and interviews. Survey: 127 responses from beauty business owners/operators (US/Europe, Jan–Mar 2025); 62% female; avg age 38.4; business size 1–50 employees; revenue USD 100K–2M. Six interviews (45–60 min each) with beauty business founders and retailers conducted via purposive sampling to capture diverse business models.
+**Research Method:** A mixed-methods approach combined quantitative surveys and qualitative interviews. An online Google Forms survey with 25 questions was distributed across beauty business communities and LinkedIn groups, accumulating 127 responses over 12 weeks. Respondents: 62% female, 38% male; age 25–55 (mean 38.4); business size 1–50 employees (mean 8.3); revenue USD 100K–2M (median USD 450K). Six in-depth interviews (45–60 minutes each) with beauty business owners—2 subscription service founders, 2 independent skincare retailers, 2 luxury cosmetics managers—explored workflows, technology satisfaction, and priorities. Interview participants were purposively selected to represent diverse business models within SME beauty market.
 
 ## 3.2 Market Analysis and User Needs
 
-**Key Findings:**
-- 73% use 5+ platforms (fragmentation issue); avg 6.8 platforms per business
-- 81% spend USD 500–3,000/month; 64% consider costs "problematic"
-- 78% frustrated/very frustrated with UI complexity and workflow inconsistency
-- 89% interested in AI recommendations; 76% in live streaming; 71% in unified analytics
-- 68% willing to migrate to integrated platform consolidating 5+ systems
+**Analysis of Results:** Survey findings confirmed market demand for integrated solutions. Key metrics: 73% use 5+ platforms (M=6.8, SD=1.9); 81% report monthly software costs USD 500–3,000; 78% frustrated/very frustrated with platform UIs. Feature interest: 89% want AI recommendations (M=4.3/5), 76% want live streaming (M=4.1/5), 71% want unified analytics (M=3.9/5). This quantitative data strongly supports SME demand for integrated e-commerce, AI personalization, and real-time engagement.
 
-**Customer Insights:** Primary frustrations: (1) Platform switching wastes 3+ hours daily; (2) Generic recommendations ignore skin type/concerns; (3) No native live streaming. Solution demand: personalized recommendations, real-time expert engagement, streamlined purchase workflows.
+**Primary Frustrations:** (1) Platform fragmentation—35% report 3+ hours daily switching between systems (Shopify, Klaviyo, QuickBooks); (2) Limited personalization—42% lack skin-type-based recommendations; (3) No native streaming—31% cite absence of live shopping capability. Response: 68% likely/very likely to migrate to integrated alternative consolidating 5+ systems.
 
-**Business Operator Insights:** Top priorities: (1) Consolidated inventory/order management (94%); (2) Real-time sales analytics (88%); (3) Customer segmentation (82%); (4) Access control (76%); (5) Financial reporting (71%). Main barriers: setup complexity and staff training (58%), data migration (52%).
+**Operational Requirements:** Business operators prioritized: (1) Consolidated inventory/orders (94%); (2) Real-time analytics/reporting (88%); (3) Customer segmentation (82%); (4) Employee access control (76%); (5) Financial reporting (71%). Barriers: 58% cited setup complexity/training; 52% cited data migration difficulty.
 
----
+**Detailed User Personas:**
 
-## 3.3 Detailed User Personas
+### Customer Persona: Sarah Chen – The Conscious Beauty Consumer
 
-### 3.3.1 Customer Persona: Sarah Chen – The Conscious Beauty Consumer
+**Bio:** Marketing manager, 32, San Francisco. USD 110K annual income. Prioritizes skincare; researches ingredients carefully; follows skincare influencers. Combination skin with occasional sensitivity. Shops online due to schedule but skeptical from past mismatches (color, reactions).
 
-**Bio:** Marketing manager, 32, San Francisco. Researches skincare carefully, follows influencers, has combination sensitive skin. Shops online due to work schedule but skeptical about product fit.
+**Goals:** Purchase skincare matching skin type without trial-and-error. Personalized recommendations for sensitivity/breakouts/hydration needs. Real-time expert guidance during live shopping. Complete research/purchase in <15 minutes.
 
-**Goals:** Personalized recommendations matching skin type/concerns; real-time expert guidance during live shopping; complete purchase within 15 minutes.
+**Frustrations:** Generic recommendations ignoring skin concerns. Complicated returns. Manual ingredient research across listings. Lack of authentic product demonstrations; static photos insufficient for trust-based beauty purchases.
 
-**Frustrations:** Generic recommendations ignoring skin type; complicated returns; insufficient product demonstrations building purchase confidence.
+**Motivations:** Personalized guidance aligned to specific needs. Authentic expert commentary during live demos building confidence. Time-savings and streamlined experience. Social proof from customers with similar skin types.
 
-**Motivations:** Expert guidance proving recommendation alignment; authentic live demonstrations; time efficiency; social proof from similar skin types.
+### Business Persona: Marcus Johnson – The Independent Skincare Retailer
 
----
+**Bio:** Founded natural skincare brand 7 years ago; USD 780K annual revenue. 4-person team. Operates Shopify e-commerce, physical Brooklyn location, Instagram sales. Technically proficient but prefers user-friendly platforms.
 
-### 3.3.2 Business Persona: Marcus Johnson – Independent Skincare Retailer
+**Goals:** Consolidate 5 fragmented platforms (e-commerce, email, inventory, accounting, analytics). Increase AOV/LTV through personalized recommendations. Test live streaming commerce. Clear financial reporting (cash flow, profitability, ROI). Scale support via AI chatbot with staff escalation.
 
-**Bio:** Founder, 42, Brooklyn. USD 780K revenue; 2 FT staff, 1 PT social manager. Operates e-commerce, physical retail, Instagram sales. Technically proficient but prefers user-friendly platforms.
+**Frustrations:** USD 2,100 monthly software costs. Data silos prevent customer analysis (Shopify/Klaviyo unintegrated). Staff training overhead for multiple interfaces. Inventory management complexity (stockouts/overselling). Lacks resources for personalization implementation.
 
-**Goals:** Consolidate 5 platforms reducing USD 2,100/month spend; AI recommendations increasing AOV/CLV; test live streaming commerce; enable clear financial reporting; AI chatbot for support.
+**Motivations:** Cost reduction—consolidation could save 40–50%. Competitive advantage via personalization/live engagement. Data-driven decision-making. Scalability without proportional cost increase. ROI-measurable investments.
 
-**Frustrations:** High software costs; data silos preventing sophisticated analysis; staff training overhead; inventory management across channels; can't implement personalization independently.
+### Operations Persona: David Park – The Beauty Brand Operations Manager
 
-**Motivations:** 40–50% cost reduction through consolidation; competitive advantage via personalization/live engagement; data-driven decision-making; scalability enabling growth without proportional cost increase.
+**Bio:** Operations Manager, Elena Beauty, USD 2.3M revenue. Oversees 12 staff (marketing, customer service, inventory, social). Reports to CEO. Business degree with BI coursework. Experienced operations/data analysis, not deeply technical.
 
----
+**Goals:** Real-time dashboards (sales, inventory, CAC, profitability). Role-based access control protecting sensitive data. Streamlined staff onboarding/training. Consolidate business functions (HR, finance, analytics). Reduce administrative overhead via automation.
 
-### 3.3.3 Admin Persona: David Park – Operations Manager
+**Frustrations:** Weekly admin work integrating data across systems for reporting (export Shopify/Mailchimp/QuickBooks/Analytics, consolidate in Excel). Staff training burden learning multiple interfaces. No visibility into campaign performance vs. sales (data silos). Access control risks enabling data exposure.
 
-**Bio:** Operations Manager, 35, mid-size beauty brand (USD 2.3M revenue, 12-person team). Reports to CEO; oversees marketing, customer service, inventory, social media. Data-analysis focused.
-
-**Goals:** Real-time dashboards for sales, inventory, CAC, profitability; role-based access control; streamlined onboarding; unified business management (HR, documents, finance, analytics).
-
-**Frustrations:** Weekly data integration across systems for reporting; burdensome staff training; limited marketing/sales visibility; access control and compliance risks.
-
-**Motivations:** Operational visibility and data-driven decisions; time-savings reducing administrative overhead; compliance/risk management; scalability enabling USD 5M+ growth without staff proportional increase.
-
----
-
-### 3.3.4 Admin Persona: Priya Kapoor – Live Streaming Commerce Coordinator
-
-**Bio:** Social Commerce Coordinator, 28, manages 3 weekly live streams. Digitally native, strong communication skills. Responsible for viewer-to-purchase conversion.
-
-**Goals:** Integrated platform combining streaming, product display, QA, purchasing without tool-switching; real-time analytics (viewer demographics, engagement, conversion); dynamic pricing/promotion management; viewer community building.
-
-**Frustrations:** Fragmented tools (Instagram/TikTok streaming separate from checkout); limited real-time performance data; manual inventory sync errors; insufficient customer issue escalation during live events.
-
-**Motivations:** Conversion metrics demonstrating live commerce ROI; authentic viewer engagement and community; data-informed optimization; competitive differentiation.
-
----
-
-## 3.4 User Requirements Summary
-
-**Customer Requirements:** Personalized recommendations (skin type/concerns); expert live guidance; streamlined workflow (<15 min); transparent product information; flexible returns; real-time AI support with staff escalation.
-
-**Business Operator Requirements:** Unified e-commerce/marketing/analytics platform; intuitive UI minimizing training; role-based access control; real-time dashboards; AI recommendation infrastructure; native live streaming with viewer analytics.
-
-**Operations Manager Requirements:** Comprehensive dashboards consolidating business data; automated reporting reducing overhead; role-based access with audit trails; staff provisioning; financial/cash flow visibility; scalable infrastructure.
-
-**Live Commerce Coordinator Requirements:** Integrated streaming platform with real-time product display and inventory sync; live analytics dashboard; follower tracking; dynamic pricing/promotion management; order fulfillment integration; customer support escalation.
+**Motivations:** Operational visibility and data-driven decisions. Time-savings focusing on strategy vs. admin. Compliance/risk management via centralized access control. Staff productivity via simplified workflows. Growth scalability (USD 2.3M→5M+ without staff proportional increase).
 
