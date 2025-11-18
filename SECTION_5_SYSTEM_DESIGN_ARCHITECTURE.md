@@ -33,8 +33,8 @@
 ┌─────────────────────────────────────────────────────────────────────┐
 │                          External Systems                           │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Google Gemini │ VNPay │ AWS/GCP   │ SMTP Provider                  │
-│   (AI Engine)  │  (Payments)       │ (Cloud)   │  (Email)           │
+│  Google Gemini        │ VNPay      │ AWS/GCP   │ SMTP Provider      │
+│   (AI Engine)         │(Payments)  │ (Cloud)   │  (Email)           │
 │        │              │            │           │                    │
 │        └──────────────┼────────────┼───────────┘                    │
 │                       │            │                                │
@@ -51,6 +51,39 @@
 │    └──────┘       └──────┘     └──────┘          └──────┘           │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+**Explanation:**
+
+The System Context Diagram provides the highest-level view of the Wrencos platform and its interactions with external systems and users. It establishes the system boundary and shows how different actors interact with the core platform.
+
+**External Systems (Integration Points):**
+
+| System | Purpose | Key Functions |
+|---|---|---|
+| **Google Gemini (AI Engine)** | Artificial intelligence integration | Provides conversational AI for product recommendations, handles customer inquiries, delivers personalized suggestions |
+| **VNPay (Payments)** | Payment processing gateway | Processes transactions, handles order checkout authorization, manages refunds and payment reconciliation |
+| **AWS/GCP (Cloud)** | Infrastructure and storage | Hosts platform applications, stores product images and user avatars, provides scalability and reliability |
+| **SMTP Provider (Email)** | Email communication service | Sends transactional emails (order confirmations, password resets), delivers marketing campaigns to segmented customers |
+
+**Central System:**
+
+The **Wrencos Platform** acts as the integrated hub coordinating all business logic, user interactions, and external service integrations. It consolidates fragmented operations into a unified system.
+
+**User Types and Their Roles:**
+
+| User Type | Primary Interface | Key Responsibilities |
+|---|---|---|
+| **Web Portal** | Customer-facing website (Vue.js) | Browse products, receive AI recommendations, attend livestreams, manage shopping cart, checkout |
+| **Mobile App** | Mobile application (React Native) | Shop on-the-go, view personalized recommendations, participate in livestreams, track orders |
+| **Admin Web** | Administrative dashboard | Manage product catalog, view analytics and financial reports, configure marketing campaigns, schedule livestreams |
+| **Staff Panel** | Staff operations interface | Conduct livestreams, respond to AI chat escalations, manage orders, update inventory status |
+
+**System Characteristics:**
+
+- **Boundary Definition**: Clearly separates internal Wrencos systems (inside platform box) from external third-party services (top section)
+- **Abstraction Level**: High-level view without internal architecture details—suitable for stakeholder communication
+- **Integration Pattern**: Wrencos maintains operational independence; external services enhance functionality but none are mandatory for core operations
+- **Data Flow**: External systems provide specialized services while user interfaces interact with the unified platform
 
 #### Container Diagram (Level 2)
 ```
