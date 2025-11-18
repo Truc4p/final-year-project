@@ -151,7 +151,7 @@ The **Wrencos Platform** acts as the integrated hub coordinating all business lo
 │ • Google Gemini API (AI Engine)          │
 │ • VNPay API (Payment Gateway)            │
 │ • SMTP Server (Email Delivery)           │
-│ • Multer (File Upload Handler)           │
+│ • AWS/GCP (File Storage & Hosting)       │
 └──────────────────────────────────────────┘
 ```
 **Backend Services Summary:**
