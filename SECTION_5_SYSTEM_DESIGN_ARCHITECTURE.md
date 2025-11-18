@@ -30,26 +30,37 @@
 
 #### System Context Diagram (Level 1)
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                          External Systems                           │
-├─────────────────────────────────────────────────────────────────────┤
-│  Google Gemini        │ VNPay      │ AWS/GCP   │ SMTP Provider      │
-│   (AI Engine)         │(Payments)  │ (Cloud)   │  (Email)           │
-│        │              │            │           │                    │
-│        └──────────────┼────────────┼───────────┘                    │
-│                       │            │                                │
-│                ┌──────▼────────────▼────────┐                       │
-│                │   Wrencos Platform         │                       │
-│                │   (Integrated E-Commerce)  │                       │
-│                └──────▲────────────┬────────┘                       │
-│                       │            │                                │
-│        ┌──────────────┼────────────┼─────────────────┐              │
-│        │              │            │                 │              │
-│    ┌───▼──┐       ┌───▼──┐     ┌───▼──┐          ┌───▼──┐           │
-│    │ Web  │       │Mobile│     │ Admin│          │Staff │           │
-│    │Portal│       │ App  │     │ Web  │          │Panel │           │
-│    └──────┘       └──────┘     └──────┘          └──────┘           │
-└─────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                         External Systems                                 │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐           │
+│  │  Google Gemini  │  │     VNPay       │  │   SMTP Server   │           │
+│  │  (AI Engine)    │  │   (Payments)    │  │    (Email)      │           │
+│  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘           │
+│           │                    │                    │                    │
+│           └────────────────────┼────────────────────┘                    │
+│                                │                                         │
+│                        ┌───────▼────────┐                                │
+│                        │   Wrencos      │                                │
+│                        │   Platform     │                                │
+│                        │  (E-Commerce)  │                                │
+│                        └───────▲────────┘                                │
+│                                │                                         │
+│                  ┌─────────────┼─────────────┐                           │
+│                  │             │             │                           │
+│              ┌───▼───┐     ┌───▼───┐     ┌───▼────┐                      │
+│              │  Web  │     │Mobile │     │ Admin  │                      │
+│              │Portal │     │ App   │     │  Web   │                      │
+│              │(Cust) │     │(Cust) │     │(Admin) │                      │
+│              └───────┘     └───────┘     └────────┘                      │
+│                                                                          │
+│  ┌──────────────────────────────────────────────────────────────────┐    │
+│  │              AWS/GCP (Cloud Infrastructure)                      │    │
+│  │  • Application Hosting  • File Storage  • Database Backups       │    │
+│  └──────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Explanation:**
@@ -71,12 +82,10 @@ The **Wrencos Platform** acts as the integrated hub coordinating all business lo
 
 **User Types and Their Roles:**
 
-| User Type | Primary Interface | Key Responsibilities |
+| User Role | Primary Interface | Key Responsibilities |
 |---|---|---|
-| **Web Portal** | Customer-facing website (Vue.js) | Browse products, receive AI recommendations, attend livestreams, manage shopping cart, checkout |
-| **Mobile App** | Mobile application (React Native) | Shop on-the-go, view personalized recommendations, participate in livestreams, track orders |
-| **Admin Web** | Administrative dashboard | Manage product catalog, view analytics and financial reports, configure marketing campaigns, schedule livestreams |
-| **Staff Panel** | Staff operations interface | Conduct livestreams, respond to AI chat escalations, manage orders, update inventory status |
+| **Customer** | Web Portal (Vue.js) + Mobile App (React Native) | Browse products, receive AI recommendations, attend livestreams, manage shopping cart, checkout, track orders, participate in chat |
+| **Admin** | Administrative Dashboard (Web) | Manage product catalog, view analytics and financial reports, configure marketing campaigns, schedule and conduct livestreams, manage orders, update inventory, handle staff/admin operations, respond to escalated customer inquiries |
 
 **System Characteristics:**
 
