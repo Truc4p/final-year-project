@@ -31,24 +31,24 @@
 #### System Context Diagram (Level 1)
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                          External Systems                            │
+│                          External Systems                           │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Google Gemini │ Stripe/PayPal │ AWS/GCP │ SMTP Provider           │
-│   (AI Engine)  │  (Payments)   │ (Cloud) │  (Email)               │
-│        │              │            │         │                       │
-│        └──────────────┼────────────┼─────────┘                       │
-│                       │            │                                  │
-│                ┌──────▼────────────▼────────┐                        │
-│                │   Wrencos Platform         │                        │
-│                │   (Integrated E-Commerce)  │                        │
-│                └──────▲────────────┬────────┘                        │
-│                       │            │                                  │
+│  Google Gemini │ VNPay │ AWS/GCP   │ SMTP Provider                  │
+│   (AI Engine)  │  (Payments)       │ (Cloud)   │  (Email)           │
+│        │              │            │           │                    │
+│        └──────────────┼────────────┼───────────┘                    │
+│                       │            │                                │
+│                ┌──────▼────────────▼────────┐                       │
+│                │   Wrencos Platform         │                       │
+│                │   (Integrated E-Commerce)  │                       │
+│                └──────▲────────────┬────────┘                       │
+│                       │            │                                │
 │        ┌──────────────┼────────────┼─────────────────┐              │
 │        │              │            │                 │              │
-│    ┌───▼──┐      ┌───▼──┐    ┌───▼──┐          ┌───▼──┐           │
-│    │ Web  │      │Mobile│    │ Admin│          │Staff │           │
-│    │Portal│      │ App  │    │ Web  │          │Panel │           │
-│    └──────┘      └──────┘    └──────┘          └──────┘           │
+│    ┌───▼──┐       ┌───▼──┐     ┌───▼──┐          ┌───▼──┐           │
+│    │ Web  │       │Mobile│     │ Admin│          │Staff │           │
+│    │Portal│       │ App  │     │ Web  │          │Panel │           │
+│    └──────┘       └──────┘     └──────┘          └──────┘           │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -117,9 +117,9 @@ External Integrations:
 
 | Category | Technology | Version | Justification | References |
 |---|---|---|---|---|
-| **Frontend Web** | Vue.js | 3.x | Progressive framework with intuitive Composition API; lower learning curve than React; superior code organization for rapid development. | Biørn-Hansen et al. (2018); Majchrzak et al. (2020) |
-| **Frontend Build** | Vite | 5.x | Instant hot module replacement accelerating development velocity; superior performance vs. Webpack. | Vite Docs (2024) |
-| **Frontend Styling** | Tailwind CSS | 3.x | Utility-first CSS framework enabling rapid UI development without writing custom CSS; reduces development time. | Tailwind Docs (2024) |
+| **Frontend Web** | Vue.js | 3.5.12 | Progressive framework with intuitive Composition API; lower learning curve than React; superior code organization for rapid development. | Biørn-Hansen et al. (2018); Majchrzak et al. (2020) |
+| **Frontend Build** | Vite | 5.4.10 | Instant hot module replacement accelerating development velocity; superior performance vs. Webpack. | Vite Docs (2024) |
+| **Frontend Styling** | Tailwind CSS | 3.4.14 | Utility-first CSS framework enabling rapid UI development without writing custom CSS; reduces development time. | Tailwind Docs (2024) |
 | **Frontend Charting** | Chart.js & Vue-ChartJS | 4.5.0 | Lightweight charting library for analytics dashboards; integrates seamlessly with Vue.js. | Chart.js Docs (2024) |
 | **Frontend Internationalization** | Vue-i18n | 11.0.0-beta.1 | Multi-language support for global market reach; enables customer interface localization. | Vue-i18n Docs (2024) |
 | **Frontend HTTP Client** | Axios | 1.7.7 | Promise-based HTTP client for API communication; superior error handling and request interception. | Axios Docs (2024) |
@@ -131,7 +131,7 @@ External Integrations:
 | **Mobile Media Picker** | Expo Image Picker | 14.7.1 | Unified API for accessing device camera roll and camera; simplifies photo upload workflows. | Expo Docs (2024) |
 | **Backend Runtime** | Node.js | 18+ LTS | Event-driven I/O architecture naturally accommodates concurrent WebSocket connections; Netflix achieved 70% startup time improvement. | Netflix Tech Blog (2023); Tilkov & Vinoski (2010) |
 | **Backend Framework** | Express.js | 4.19.2 | Minimal middleware abstraction enabling rapid API endpoint development; full control over real-time infrastructure. | Express Docs (2024) |
-| **Database** | MongoDB Atlas | 6.x+ | Document-oriented NoSQL supporting schema flexibility for iterative development; accommodates varied beauty product attributes without migrations. | Abadi & Stonebraker (2009) |
+| **Database** | MongoDB Atlas | 8.0+ | Document-oriented NoSQL supporting schema flexibility for iterative development; accommodates varied beauty product attributes without migrations. | Abadi & Stonebraker (2009) |
 | **Database ORM** | Mongoose | 8.5.2 | Schema validation and type safety for MongoDB; reduces boilerplate; simplifies data model management. | Mongoose Docs (2024) |
 | **HTTP Client** | Axios | 1.12.2 | Promise-based HTTP client for external API integration (Google Gemini, payment gateways, email services). | Axios Docs (2024) |
 | **Body Parser** | body-parser | 1.20.2 | Middleware for parsing request bodies (JSON, URL-encoded); essential for API request handling. | Body-parser Docs (2024) |
@@ -188,19 +188,19 @@ External Integrations:
          │                  │ createdAt        │
          │                  └──────┬───────────┘
          │                         │
-    ┌────┴──────────┐          ┌───┴───────────┐
-    │                │          │               │
-┌───▼─────────────┐  │  ┌──────▼────────────┐  │
+    ┌────┴───────────┐         ┌───┴───────────┐
+    │                │         │               │
+┌───▼─────────────┐  │  ┌──────▼───────────┐  │
 │   Order         │  │  │ CartItem         │  │
 ├─────────────────┤  │  ├──────────────────┤  │
 │ _id (PK)        │  │  │ _id (PK)         │  │
-│ userId (FK)────┼──┘  │ userId (FK)──┐   │  │
+│ userId (FK) ────┼──┘  │ userId (FK)──┐   │  │
 │ items[]         │     │ productId(FK)┼───┘  │
 │ totalPrice      │     │ quantity     │      │
 │ status          │     │ addedAt      │      │
 │ createdAt       │     └──────────────┘      │
-│ updatedAt       │                          │
-└─────────────────┘                          │
+│ updatedAt       │                           │
+└─────────────────┘                           │
 
 ┌────────────────────┐  ┌──────────────────┐
 │   LiveStream       │  │  StreamViewer    │
