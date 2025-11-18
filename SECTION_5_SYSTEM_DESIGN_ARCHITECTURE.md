@@ -73,8 +73,8 @@ The System Context Diagram provides the highest-level view of the Wrencos platfo
 |---|---|---|
 | **Google Gemini (AI Engine)** | Artificial intelligence integration | Provides conversational AI for product recommendations, handles customer inquiries, delivers personalized suggestions |
 | **VNPay (Payments)** | Payment processing gateway | Processes transactions, handles order checkout authorization, manages refunds and payment reconciliation |
-| **AWS/GCP (Cloud)** | Infrastructure and storage | Hosts platform applications, stores product images and user avatars, provides scalability and reliability |
-| **SMTP Provider (Email)** | Email communication service | Sends transactional emails (order confirmations, password resets), delivers marketing campaigns to segmented customers |
+| **SMTP Server (Email)** | Email communication service | Sends transactional emails (order confirmations, password resets), delivers marketing campaigns to segmented customers |
+| **AWS/GCP (Cloud Infrastructure)** | Infrastructure and storage | Hosts platform applications, stores product images and user avatars, provides scalability and reliability |
 
 **Central System:**
 
@@ -89,10 +89,12 @@ The **Wrencos Platform** acts as the integrated hub coordinating all business lo
 
 **System Characteristics:**
 
-- **Boundary Definition**: Clearly separates internal Wrencos systems (inside platform box) from external third-party services (top section)
-- **Abstraction Level**: High-level view without internal architecture details—suitable for stakeholder communication
-- **Integration Pattern**: Wrencos maintains operational independence; external services enhance functionality but none are mandatory for core operations
-- **Data Flow**: External systems provide specialized services while user interfaces interact with the unified platform
+| Characteristic | Description |
+|---|---|
+| **Boundary Definition** | Clearly separates internal Wrencos systems (inside platform box) from external third-party services (top section) |
+| **Abstraction Level** | High-level view without internal architecture details—suitable for stakeholder communication |
+| **Integration Pattern** | Wrencos maintains operational independence; external services enhance functionality but none are mandatory for core operations |
+| **Data Flow** | External systems provide specialized services while user interfaces interact with the unified platform |
 
 #### Container Diagram (Level 2)
 ```
