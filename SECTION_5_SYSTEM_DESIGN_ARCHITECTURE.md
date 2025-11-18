@@ -405,6 +405,45 @@ The backend services layer handles all business logic, data persistence, and ext
 └─────────────────────────────────────────────────────────────┘
 ```
 
+**AUTH SERVICE - Central Hub for All Services:**
+
+The User entity is the foundational entity referenced by all other services through Foreign Key (FK) relationships. Here's how each service uses userId FK:
+
+| Service | Entity | FK Field | Purpose | Cardinality |
+|---|---|---|---|---|
+| **E-Commerce** | Order | userId | Links orders to customer who placed them | 1:N |
+| **Live Streaming** | LiveStream | creatorId (FK→User) | Links livestreams to admin who created them | 1:N |
+| **Analytics** | (Data aggregation) | userId | Tracks user behavior and purchase patterns | - |
+| **Marketing** | EmailCampaign | creatorId (FK→User) | Links campaigns to admin who created them | 1:N |
+| **Marketing** | NewsletterSubscription | userId | Tracks which users subscribed to newsletters | 1:N |
+| **HR** | (Admin-only) | - | Accessed by admin users only (via role check) | - |
+| **Finance** | (Admin-only) | - | Accessed by admin users only (via role check) | - |
+| **Communication** | ChatConversation | userId + assignedStaff | Customer userId (nullable for guests); staff userId for assignment | 1:N |
+
+**Key Design Patterns:**
+
+1. **All services depend on User (Auth Service)**
+   - User is the central identity provider
+   - No service can function without authenticating a User
+   - Role-based access control (admin, customer) determined by User.role
+
+2. **userId FK appears in multiple forms:**
+   - **Direct reference:** `userId` field (customer in orders, newsletter subscriptions)
+   - **Creator reference:** `creatorId` field (admin who created campaigns, livestreams)
+   - **Assignment reference:** `assignedStaff` field (staff assigned to customer support chats)
+   - **Optional/Nullable:** `userId` in ChatConversation (allows anonymous guest chats)
+
+3. **One-to-Many (1:N) relationships from User:**
+   - 1 User → Many Orders (customer places multiple orders)
+   - 1 User → Many LiveStreams (staff conducts multiple streams)
+   - 1 User → Many EmailCampaigns (admin creates multiple campaigns)
+   - 1 User → Many ChatConversations (customer/guest has multiple chats)
+
+**Authentication Flow Across All Services:**
+Every request: Frontend → REST API Gateway → Auth Middleware (verifies JWT token) → Extracts userId → Service uses userId to access user-specific data
+
+This ensures all services maintain data isolation and respect role-based access control.
+
 ---
 
 ####  E-COMMERCE SERVICE
@@ -417,7 +456,7 @@ The backend services layer handles all business logic, data persistence, and ext
 │  │       Category         │           │       Product          │  │
 │  ├────────────────────────┤           ├────────────────────────┤  │
 │  │ _id (PK)               │ 1:N       │ _id (PK)               │  │
-│  │ name                   │ ─────────►│ name                   │  │
+│  │ name                   │──────────►│ name                   │  │
 │  │ description            │           │ description            │  │
 │  │ createdAt              │           │ price                  │  │
 │  └────────────────────────┘           │ ingredients[]          │  │
@@ -451,7 +490,6 @@ The backend services layer handles all business logic, data persistence, and ext
 │                                        │ createdAt              │ │
 │                                        └────────────────────────┘ │
 │                                                                   │
-│                                                                   │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
@@ -483,47 +521,78 @@ The diagram shows three key relationships between entities:
 
 ---
 
-#### 📺 LIVESTREAM SERVICE
+####  LIVESTREAM SERVICE
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│                  LIVESTREAM SERVICE                                │
-│                                                                    │
+┌───────────────────────────────────────────────────────────────────┐
+│                  LIVESTREAM SERVICE                               │
+│                                                                   │
 │  ┌────────────────────────────────────────────────────────────┐   │
-│  │                   LiveStream                              │   │
+│  │                   LiveStream                               │   │
 │  ├────────────────────────────────────────────────────────────┤   │
-│  │ _id (PK)                                                  │   │
+│  │ _id (PK)                                                   │   │
 │  │ title                                                      │   │
 │  │ description                                                │   │
-│  │ creatorId (FK → User)                                     │   │
+│  │ creatorId (FK → User)                                      │   │
 │  │ startTime                                                  │   │
 │  │ endTime                                                    │   │
 │  │ videoUrl                                                   │   │
-│  │ streamUrl (for active streams)                            │   │
+│  │ streamUrl                                                  │   │
 │  │ thumbnailUrl                                               │   │
-│  │ duration (seconds)                                         │   │
+│  │ duration                                                   │   │
 │  │ viewCount                                                  │   │
 │  │ likes                                                      │   │
-│  │ likedBy[] (user IDs)                                      │   │
+│  │ likedBy[]                                                  │   │
 │  │ maxViewers                                                 │   │
-│  │ quality (480p/720p/1080p/4K)                             │   │
+│  │ quality                                                    │   │
 │  │ isActive                                                   │   │
 │  │ isRecorded                                                 │   │
 │  │ categories[]                                               │   │
-│  │ chatMessages[] (embedded array)                           │   │
+│  │ tags[]                                                     │   │
+│  │ chatMessages[] (embedded)                                  │   │
 │  │   ├─ username                                              │   │
 │  │   ├─ message                                               │   │
 │  │   ├─ timestamp                                             │   │
 │  │   └─ isAdmin                                               │   │
+│  │ pinnedProducts[] (embedded)                                │   │
+│  │   ├─ productId (FK → Product)                              │   │
+│  │   ├─ pinnedAt                                              │   │
+│  │   ├─ displayOrder                                          │   │
+│  │   └─ isActive                                              │   │
 │  │ createdAt                                                  │   │
 │  │ updatedAt                                                  │   │
 │  └────────────────────────────────────────────────────────────┘   │
-│                                                                    │
-│  Note: chatMessages[] is embedded (not separate collection)       │
-│  Note: Viewers tracked via viewCount, not separate records       │
-│                                                                    │
-└────────────────────────────────────────────────────────────────────┘
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
 ```
+
+**LIVESTREAM SERVICE - Field Explanations:**
+
+| Field | Type | Purpose | Details |
+|---|---|---|---|
+| **_id** | ObjectId (PK) | Unique livestream identifier | Primary key for database |
+| **title** | String | Stream name/title | Required field, displayed on stream list |
+| **description** | String | Stream details | Content describing the livestream |
+| **creatorId** | ObjectId (FK→User) | Admin/staff who created stream | 1:N relationship with User; determines ownership |
+| **startTime** | Date | Stream start timestamp | When the livestream began |
+| **endTime** | Date | Stream end timestamp | When the livestream concluded (null if active) |
+| **videoUrl** | String | Recorded video location | URL to stored video after stream ends |
+| **streamUrl** | String | Live streaming URL | Active stream endpoint (used during broadcast) |
+| **thumbnailUrl** | String | Preview image | Cover image shown in stream listings |
+| **duration** | Number | Stream length | Total duration in seconds |
+| **viewCount** | Number | Total viewers | Incremented each time a user views the stream |
+| **likes** | Number | Total likes count | Number of viewers who liked the stream |
+| **likedBy[]** | String array | User IDs/Session IDs | Stores IDs of users/sessions that liked the stream |
+| **maxViewers** | Number | Peak concurrent viewers | Highest viewer count during the stream |
+| **quality** | String (enum) | Video resolution | Values: 480p, 720p, 1080p, 4K |
+| **isActive** | Boolean | Stream status | True if stream is currently live, false if ended |
+| **isRecorded** | Boolean | Recording status | True if stream was recorded for playback |
+| **categories[]** | String array | Stream categories | Categorizes stream type (e.g., "beauty", "skincare") |
+| **tags[]** | String array | Search tags | Keywords for stream discoverability |
+| **chatMessages[]** | Embedded array | Real-time chat | Contains {username, message, timestamp, isAdmin} |
+| **pinnedProducts[]** | Embedded array | Promoted products | Contains {productId (FK→Product), pinnedAt, displayOrder, isActive} |
+| **createdAt** | Date | Creation timestamp | When livestream record was created |
+| **updatedAt** | Date | Last modified timestamp | When livestream record was last updated |
 
 ---
 
