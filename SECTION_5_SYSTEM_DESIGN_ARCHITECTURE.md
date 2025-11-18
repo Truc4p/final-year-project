@@ -87,73 +87,237 @@ The **Wrencos Platform** acts as the integrated hub coordinating all business lo
 | **Customer** | Web Portal (Vue.js) + Mobile App (React Native) | Browse products, receive AI recommendations, attend livestreams, manage shopping cart, checkout, track orders, participate in chat |
 | **Admin** | Administrative Dashboard (Web) | Manage product catalog, view analytics and financial reports, configure marketing campaigns, schedule and conduct livestreams, manage orders, update inventory, handle staff/admin operations, respond to escalated customer inquiries |
 
-**System Characteristics:**
-
-| Characteristic | Description |
-|---|---|
-| **Boundary Definition** | Clearly separates internal Wrencos systems (inside platform box) from external third-party services (top section) |
-| **Abstraction Level** | High-level view without internal architecture details—suitable for stakeholder communication |
-| **Integration Pattern** | Wrencos maintains operational independence; external services enhance functionality but none are mandatory for core operations |
-| **Data Flow** | External systems provide specialized services while user interfaces interact with the unified platform |
-
 #### Container Diagram (Level 2)
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                     Wrencos Platform                           │
-├────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐      ┌──────────────────┐               │
-│  │  Web Frontend   │      │   Mobile App     │               │
-│  │  (Vue.js)       │◄────►│  (React Native)  │               │
-│  │  Customer/Admin │      │                  │               │
-│  └────────┬────────┘      └────────┬─────────┘               │
-│           │                        │                         │
-│           └────────────┬───────────┘                         │
-│                        │                                     │
-│            ┌───────────▼────────────┐                       │
-│            │  REST API Gateway      │                       │
-│            │  (Express.js)          │                       │
-│            │  - Authentication      │                       │
-│            │  - Authorization (JWT) │                       │
-│            │  - Request Routing     │                       │
-│            └───────────┬────────────┘                       │
-│                        │                                     │
-│    ┌───────────────────┼───────────────────┐               │
-│    │                   │                   │               │
-│ ┌──▼────────┐  ┌──────▼─────┐  ┌──────────▼──┐            │
-│ │ E-Commerce│  │   Live     │  │  Analytics  │            │
-│ │ Service   │  │  Streaming │  │  Service    │            │
-│ │ - Catalog │  │  Service   │  │ - Dashboards│            │
-│ │ - Cart    │  │ - WebSocket│  │ - Reports   │            │
-│ │ - Orders  │  │ - Chat     │  │ - Metrics   │            │
-│ └────┬──────┘  └──────┬─────┘  └──────┬──────┘            │
-│      │                │               │                   │
-│ ┌────▼────────┐  ┌────▼─────┐  ┌────▼─────────┐          │
-│ │ AI Service  │  │  Email   │  │ Admin/Finance│          │
-│ │ - Gemini AI │  │ Service  │  │ - RBAC      │          │
-│ │ - Responses │  │ - Campaigns│ │ - Reports   │          │
-│ │ - History   │  │ - Segmentation│           │          │
-│ └──────┬──────┘  └──────┬───┘  └────┬────────┘          │
-│        │                │          │                    │
-│        └────────────┬───┴──────────┘                    │
-│                     │                                   │
-│                 ┌───▼──────────────┐                   │
-│                 │  MongoDB Atlas   │                   │
-│                 │  Database        │                   │
-│                 │ - Products       │                   │
-│                 │ - Users/Orders   │                   │
-│                 │ - Streams/Chat   │                   │
-│                 │ - Analytics      │                   │
-│                 └──────────────────┘                   │
-│                                                        │
-└────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                        Wrencos Platform                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌──────────────────────┐              ┌─────────────────────┐    │
+│  │   Web Frontend       │              │   Mobile App        │    │
+│  │   (Vue.js)           │              │   (React Native)    │    │
+│  │ - Customer Portal    │              │ - Customer Interface│    │
+│  │ - Admin Dashboard    │              │ - Shopping & Orders │    │
+│  └──────────┬───────────┘              └────────────┬────────┘    │
+│             │                                       │              │
+│             └──────────────────┬────────────────────┘              │
+│                                │                                   │
+│                ┌───────────────▼────────────────┐                │
+│                │  REST API Gateway              │                │
+│                │  (Express.js + Node.js)        │                │
+│                │  • Authentication (JWT)        │                │
+│                │  • Authorization (Role-based)  │                │
+│                │  • Request Routing & Validation│                │
+│                │  • Error Handling              │                │
+│                └───────────────┬────────────────┘                │
+│                                │                                 │
+│    ┌───────────────────────────▼────────────────────────┐       │
+│    │      Backend Services Layer                        │       │
+│    ├────────────────────────────────────────────────────┤       │
+│    │    ┌─────────┐ ┌─────────┐ ┌─────────┐           │ │       │
+│    │    │E-Comm.  │ │Live     │ │Analytics│         │ │       │
+│    │  │ │Service  │ │Stream   │ │Service  │         │ │       │
+│    │  │ │         │ │Service  │ │         │         │ │       │
+│    │  │ └─────────┘ └─────────┘ └─────────┘         │ │       │
+│    │  │ ┌─────────┐ ┌─────────┐ ┌─────────┐         │ │       │
+│    │  │ │  Email  │ │Marketing│ │   HR    │         │ │       │
+│    │  │ │Service  │ │Service  │ │Service  │         │ │       │
+│    │  │ │         │ │         │ │         │         │ │       │
+│    │  │ └─────────┘ └─────────┘ └─────────┘         │ │       │
+│    │  │ ┌─────────┐ ┌─────────┐ ┌────────────────────┐ │
+│    │  │ │ Finance │ │  Auth   │ │ Communication      │ │
+│    │  │ │Service  │ │Service  │ │ • Chat with AI     │ │
+│    │  │ │         │ │         │ │ • Chat with staff  │ │
+│    │  │ └─────────┘ └─────────┘ │ • FAQs             │ │
+│    │  │                         └────────────────────┘ │      │
+│    └────────────────────┬─────────────────────────────┘       │
+│                         │                                      │
+│                ┌────────▼─────────────┐                       │
+│                │  MongoDB Atlas       │                       │
+│                │  Database            │                       │
+│                │  • Users & Auth      │                       │
+│                │  • Products & Orders │                       │
+│                │  • Live Streams      │                       │
+│                │  • Email Campaigns   │                       │
+│                │  • HR & Finance Data │                       │
+│                │  • Chat & Analytics  │                       │
+│                └──────────────────────┘                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 
-External Integrations:
-├─ Google Gemini API (AI conversational recommendations)
-├─ Stripe/PayPal API (Payment processing)
-├─ AWS S3/Google Cloud Storage (File uploads - images, documents)
-├─ SMTP Server (Email delivery for campaigns, notifications)
-└─ JWT Token Service (Authentication & authorization)
+┌──────────────────────────────────────────┐
+│     External Service Integrations         │
+├──────────────────────────────────────────┤
+│ • Google Gemini API (AI Engine)          │
+│ • VNPay API (Payment Gateway)            │
+│ • SMTP Server (Email Delivery)           │
+│ • Multer (File Upload Handler)           │
+└──────────────────────────────────────────┘
 ```
+**Backend Services Summary:**
+
+| Service | Primary Models | Core Functions |
+|---|---|---|
+| **Service** | **Primary Models** | **Core Functions** |
+|---|---|---|
+| **E-Commerce** | Product, Category, Order | Catalog management, shopping cart, order processing, payment integration |
+| **Live Streaming** | LiveStream | Real-time streaming, live chat, product showcase, viewer management |
+| **Analytics** | (Aggregates data from other services) | Sales reports, customer analytics, dashboard metrics, business intelligence |
+| **Email** | EmailTemplate, EmailCampaign, EmailSegment | Email campaign management, template design, subscriber segmentation, bulk sending |
+| **Marketing** | EmailCampaign, EmailTemplate, EmailSegment, EmailAnalytics, NewsletterSubscription | Campaign orchestration, audience segmentation, email analytics, newsletter management |
+| **HR** | Employee | Employee records, staff management, permissions and access control |
+| **Finance** | BusinessExpense, CashFlowTransaction | Expense tracking, cash flow reporting, financial analytics |
+| **Auth** | User | User registration, login, authentication, role-based access control |
+| **Communication** | ChatConversation, FAQ | AI-powered chatbot (Google Gemini), product/FAQ recommendations, customer support chat, staff escalation |
+
+**Key Data Flow:**
+- Web Frontend ──HTTP──► REST API ──► Services ──► Database
+- Mobile App ──HTTP──► REST API ──► Services ──► Database
+- Both frontends communicate ONLY through the REST API Gateway
+- Services do NOT communicate directly with frontends
+- All services share MongoDB Atlas as the single source of truth
+
+**Architecture Layers Explained:**
+
+| Layer | Components | Responsibility |
+|---|---|---|
+| **Frontend Layer** | Web Frontend (Vue.js), Mobile App (React Native) | User interfaces for customers and admins; handles UI/UX, state management, form validation |
+| **Backend Layer (API Gateway)** | REST API Gateway (Express.js) | Centralized entry point; handles request routing, CORS, rate limiting, request/response parsing; applies auth middleware to protected routes |
+| **Backend Layer (Services)** | 8 Backend Services (E-Commerce, Live Streaming, Analytics, Email, Marketing, HR, Finance, **Auth**, Communication) | Business logic implementation; handles specific domain operations and data persistence |
+| **Data Layer** | MongoDB Atlas Database | Persists all application data; managed through Mongoose ORM for schema validation and data integrity |
+
+---
+
+### REST API Gateway vs Auth Service: Architecture Clarification
+
+**Important Note:** The **REST API Gateway** and **Auth Service** are **two different components** that work together:
+
+| Component | Responsibility | Technology | Functions |
+|---|---|---|---|
+| **REST API Gateway** (Express.js middleware layer) | Route management, middleware orchestration, cross-cutting concerns | Express.js, body-parser, CORS, rate-limit | ✓ HTTP request routing<br>✓ CORS handling<br>✓ Rate limiting<br>✓ Body parsing<br>✓ JWT token verification (auth middleware)<br>✓ Request/response handling |
+| **Auth Service** (Business logic layer) | User identity management, authentication operations | Node.js, JWT library, bcryptjs | ✓ User registration<br>✓ User login<br>✓ JWT token generation<br>✓ Password hashing<br>✓ Role management<br>✓ User profile queries |
+
+**How They Work Together:**
+
+1. **User Registration/Login** (Auth Service):
+   - Customer sends credentials → `/auth/register` or `/auth/login` (Auth Service routes)
+   - Auth Controller validates, hashes password, queries User model, generates JWT token
+   - Token returned to frontend
+
+2. **Protected Requests** (REST API Gateway + Auth Service):
+   - Customer includes JWT in header → Any protected endpoint
+   - REST API Gateway applies **auth middleware** (verifies JWT signature, extracts user ID)
+   - Auth middleware passes user info to backend service handler
+   - Service processes request with authenticated user context
+
+3. **Data Flow**:
+   ```
+   Frontend (has JWT token)
+      ↓
+   REST API Gateway
+      ↓ (applies auth middleware)
+   Auth Middleware (verifies JWT)
+      ↓ (extracts user context)
+   Other Services (e.g., E-Commerce, Chat)
+      ↓ (processes business logic)
+   Database Query
+      ↓ (returns result)
+   Response to Frontend
+   ```
+
+**Key Difference:**
+- **REST API Gateway = Infrastructure/Middleware** (how requests are routed and processed)
+- **Auth Service = Business Logic** (what happens with authentication operations)
+
+Both are **necessary and separate** - removing either breaks the system:
+- Without REST API Gateway: No routing, no middleware execution
+- Without Auth Service: No user management, no JWT generation
+
+---
+
+### 8 Backend Services: Detailed Breakdown
+
+**Architecture Overview:**
+The backend services layer handles all business logic, data persistence, and external service integrations. Each service is independent but may interact with others through the shared database and REST API Gateway. All services follow the same architectural pattern:
+- **Routes** → **Controllers** → **Models** → **Database (MongoDB)**
+
+**Service Descriptions:**
+
+| Service | Responsibility | Key Models | Key Routes | External Dependencies |
+|---|---|---|---|---|
+| **E-Commerce Service** | Product catalog, inventory, order management | Product, Category, Order | `/products`, `/orders`, `/categories`, `/payments` | VNPay (payment processing), Cloud Storage (product images) |
+| **Live Streaming Service** | Video streaming coordination, event management | LiveStream, Viewer | `/livestreams`, `/live` | WebSocket server, Cloud storage (video), CDN |
+| **Analytics Service** | Sales reports, traffic analysis, performance metrics | Analytics data | `/analytics`, `/reports` | None (internal data aggregation) |
+| **Email Service** | Transactional and marketing emails | EmailTemplate, EmailSegment, EmailCampaign | `/emails`, `/campaigns` | SMTP Server, Email provider |
+| **Marketing Service** | Campaign management, email marketing, promotions | EmailCampaign, EmailSegment, Newsletter | `/marketing`, `/segments`, `/newsletters` | Email Service |
+| **HR Service** | Employee management, payroll, attendance | Staff, Attendance, Payroll | `/hr`, `/staff`, `/attendance` | None (internal) |
+| **Finance Service** | Expense tracking, cash flow analysis, reporting | BusinessExpense, CashFlowTransaction | `/finance`, `/expenses`, `/cash-flow` | None (internal) |
+| **Auth Service** | User registration, login, token generation, password management | User | `/auth/register`, `/auth/login`, `/users` | JWT library, bcryptjs for password hashing |
+| **Communication Service** | Customer chat, FAQ management, AI-powered support | ChatConversation, FAQ | `/chat`, `/faqs` | Google Gemini API (for AI-powered responses) |
+
+**Communication Service & AI Integration:**
+
+**Important Note:** There is **NO separate "AI Service"** in the architecture. **AI functionality is fully integrated into the Communication Service** as one of its features.
+
+| Aspect | Details |
+|---|---|
+| **Service Structure** | Single Communication Service with AI as an integrated feature |
+| **Primary Responsibility** | Manage all customer communication channels (chat, FAQs, AI responses) |
+| **Models Used** | ChatConversation, FAQ (stores all conversations including AI responses) |
+| **Key Features** | • FAQ management (predefined Q&A)<br>• Customer chat interface<br>• Staff escalation system<br>• Conversation history tracking<br>• AI-powered responses (Google Gemini integration)<br>• Product recommendation engine<br>• Semantic search (FAQs + Products) |
+| **Data Flow** | Customer → REST API Gateway → `/chat/ai` endpoint → Communication Service → Google Gemini API + Product/FAQ database search → Response → ChatConversation model → MongoDB → Back to customer |
+| **Routes Available** | **Customer Routes:**<br>`/chat/faqs` (GET all FAQs)<br>`/chat/faq/:id/answer` (GET specific answer)<br>`/chat/ai` (POST - AI-powered chat)<br>`/chat/staff/connect` (POST - escalate to staff)<br>`/chat/staff/message` (POST - send message to staff)<br>`/chat/staff/messages/:sessionId` (GET - receive staff replies)<br><br>**Admin/Staff Routes** (requires authentication):<br>`/chat/admin/faq` (POST/PUT/DELETE - FAQ management)<br>`/chat/admin/active-chats` (GET - view all customer chats)<br>`/chat/admin/messages/:sessionId` (GET - view customer messages)<br>`/chat/admin/reply` (POST - staff replies to customer) |
+
+**How Communication Service + AI Work Together:**
+
+**Customer Chat Flow (3 Pathways):**
+
+1. **FAQ Pathway** (Self-service):
+   - Customer queries FAQs → `/chat/faqs` or `/chat/faq/:id/answer`
+   - Communication Service retrieves predefined answers
+   - No human intervention needed
+
+2. **AI Pathway** (AI-powered support):
+   - Customer sends message → `/chat/ai` endpoint
+   - REST API Gateway applies auth middleware → validates JWT, extracts user context
+   - Communication Service processes:
+     - Searches FAQ database for relevant predefined answers
+     - Searches Product database for matching products
+     - Sends message + context + conversation history to Google Gemini API
+   - Gemini generates intelligent response → Product recommendations, FAQ references
+   - Communication Service saves conversation → ChatConversation model stores both message and AI response
+   - Returns complete response → Related products, FAQ suggestions, intent classification, AI-generated answer
+
+3. **Staff Escalation Pathway** (Human support):
+   - Customer initiates escalation → `/chat/staff/connect` (creates staff chat session)
+   - Customer sends message → `/chat/staff/message` (sends to staff queue)
+   - REST API Gateway validates authentication → extracts user context
+   - Communication Service routes message to staff
+   - Staff/Admin view pending chats → `/chat/admin/active-chats` (staff only)
+   - Staff/Admin reads customer message → `/chat/admin/messages/:sessionId` (staff only)
+   - Staff/Admin replies to customer → `/chat/admin/reply` (staff only)
+   - Customer retrieves staff response → `/chat/staff/messages/:sessionId` (polls for new messages)
+   - Communication Service saves entire conversation → ChatConversation model
+
+**Role-Based Access Control:**
+
+| Route Pattern | Accessible By | Purpose |
+|---|---|---|
+| `/chat/faqs`, `/chat/faq/:id/answer` | ✅ Customers (no auth needed) | Self-service FAQ lookup |
+| `/chat/ai` | ✅ Customers (optional auth) | AI-powered chat |
+| `/chat/staff/connect`, `/chat/staff/message`, `/chat/staff/messages/:sessionId` | ✅ Customers (optional auth) | Escalate to staff, communicate with staff |
+| `/chat/admin/*` | ✅ Staff/Admin only (JWT required) | Manage FAQs, view chats, reply to customers |
+
+**Authentication Requirements:**
+- Customer routes: Optional authentication (but recommended for escalation and history tracking)
+- Admin routes: Mandatory authentication + admin/staff role verification via JWT
+
+**Why This Architecture:**
+- **Single responsibility** → Communication Service owns all communication logic (chat, FAQs, AI)
+- **Clear integration** → Google Gemini API is consumed as a dependency, not a separate service
+- **Scalability** → Communication Service can be scaled independently; Google Gemini API handles AI computations
+- **Flexibility** → Easy to add new AI features (voice chat, recommendation refinement) without creating new services
+
 
 ---
 
