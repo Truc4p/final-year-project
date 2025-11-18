@@ -93,60 +93,60 @@ The **Wrencos Platform** acts as the integrated hub coordinating all business lo
 │                        Wrencos Platform                             │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ┌──────────────────────┐              ┌─────────────────────┐    │
-│  │   Web Frontend       │              │   Mobile App        │    │
-│  │   (Vue.js)           │              │   (React Native)    │    │
-│  │ - Customer Portal    │              │ - Customer Interface│    │
-│  │ - Admin Dashboard    │              │ - Shopping & Orders │    │
-│  └──────────┬───────────┘              └────────────┬────────┘    │
-│             │                                       │              │
-│             └──────────────────┬────────────────────┘              │
-│                                │                                   │
-│                ┌───────────────▼────────────────┐                │
-│                │  REST API Gateway              │                │
-│                │  (Express.js + Node.js)        │                │
-│                │  • Authentication (JWT)        │                │
-│                │  • Authorization (Role-based)  │                │
-│                │  • Request Routing & Validation│                │
-│                │  • Error Handling              │                │
-│                └───────────────┬────────────────┘                │
-│                                │                                 │
-│    ┌───────────────────────────▼────────────────────────┐       │
-│    │      Backend Services Layer                        │       │
-│    ├────────────────────────────────────────────────────┤       │
-│    │    ┌─────────┐ ┌─────────┐ ┌─────────┐           │ │       │
-│    │    │E-Comm.  │ │Live     │ │Analytics│         │ │       │
-│    │  │ │Service  │ │Stream   │ │Service  │         │ │       │
-│    │  │ │         │ │Service  │ │         │         │ │       │
-│    │  │ └─────────┘ └─────────┘ └─────────┘         │ │       │
-│    │  │ ┌─────────┐ ┌─────────┐ ┌─────────┐         │ │       │
-│    │  │ │  Email  │ │Marketing│ │   HR    │         │ │       │
-│    │  │ │Service  │ │Service  │ │Service  │         │ │       │
-│    │  │ │         │ │         │ │         │         │ │       │
-│    │  │ └─────────┘ └─────────┘ └─────────┘         │ │       │
-│    │  │ ┌─────────┐ ┌─────────┐ ┌────────────────────┐ │
-│    │  │ │ Finance │ │  Auth   │ │ Communication      │ │
-│    │  │ │Service  │ │Service  │ │ • Chat with AI     │ │
-│    │  │ │         │ │         │ │ • Chat with staff  │ │
-│    │  │ └─────────┘ └─────────┘ │ • FAQs             │ │
-│    │  │                         └────────────────────┘ │      │
-│    └────────────────────┬─────────────────────────────┘       │
-│                         │                                      │
-│                ┌────────▼─────────────┐                       │
-│                │  MongoDB Atlas       │                       │
-│                │  Database            │                       │
-│                │  • Users & Auth      │                       │
-│                │  • Products & Orders │                       │
-│                │  • Live Streams      │                       │
-│                │  • Email Campaigns   │                       │
-│                │  • HR & Finance Data │                       │
-│                │  • Chat & Analytics  │                       │
-│                └──────────────────────┘                       │
+│  ┌──────────────────────┐              ┌─────────────────────┐      │
+│  │   Web Frontend       │              │   Mobile App        │      │
+│  │   (Vue.js)           │              │   (React Native)    │      │
+│  │ - Customer Portal    │              │ - Customer Interface│      │
+│  │ - Admin Dashboard    │              │ - Shopping & Orders │      │
+│  └──────────┬───────────┘              └────────────┬────────┘      │
+│             │                                       │               │
+│             └──────────────────┬────────────────────┘               │
+│                                │                                    │
+│                ┌───────────────▼────────────────┐                   │
+│                │  REST API Gateway              │                   │
+│                │  (Express.js + Node.js)        │                   │
+│                │  • Authentication (JWT)        │                   │
+│                │  • Authorization (Role-based)  │                   │
+│                │  • Request Routing & Validation│                   │
+│                │  • Error Handling              │                   │
+│                └───────────────┬────────────────┘                   │
+│                                │                                    │
+│    ┌───────────────────────────▼────────────────────────┐           │
+│    │      Backend Services Layer                        │           │
+│    ├────────────────────────────────────────────────────┤           │
+│    │    ┌─────────┐ ┌─────────┐ ┌─────────┐             │           │
+│    │    │E-Comm.  │ │Live     │ │Analytics│             │           │
+│    │    │Service  │ │Stream   │ │Service  │             │           │
+│    │    │         │ │Service  │ │         │             │           │
+│    │    └─────────┘ └─────────┘ └─────────┘             │           │
+│    │    ┌─────────┐ ┌─────────┐ ┌─────────┐             │           │
+│    │    │  Email  │ │Marketing│ │   HR    │             │           │
+│    │    │Service  │ │Service  │ │Service  │             │           │
+│    │    │         │ │         │ │         │             │           │
+│    │    └─────────┘ └─────────┘ └─────────┘             │           │
+│    │    ┌─────────┐ ┌─────────┐ ┌───────────────┐       │           │
+│    │    │ Finance │ │  Auth   │ │ Communication │       │           │
+│    │    │Service  │ │Service  │ │   Service     │       │           │ 
+│    │    │         │ │         │ └───────────────┘       │           │             
+│    │    └─────────┘ └─────────┘                         │           │    
+│    │                                                    │           │   
+│    └────────────────────┬───────────────────────────────┘           │
+│                         │                                           │
+│                ┌────────▼─────────────┐                             │
+│                │  MongoDB Atlas       │                             │
+│                │  Database            │                             │
+│                │  • Users & Auth      │                             │
+│                │  • Products & Orders │                             │
+│                │  • Live Streams      │                             │
+│                │  • Email Campaigns   │                             │
+│                │  • HR & Finance Data │                             │
+│                │  • Chat & Analytics  │                             │
+│                └──────────────────────┘                             │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────┐
-│     External Service Integrations         │
+│     External Service Integrations        │
 ├──────────────────────────────────────────┤
 │ • Google Gemini API (AI Engine)          │
 │ • VNPay API (Payment Gateway)            │
@@ -156,8 +156,7 @@ The **Wrencos Platform** acts as the integrated hub coordinating all business lo
 ```
 **Backend Services Summary:**
 
-| Service | Primary Models | Core Functions |
-|---|---|---|
+
 | **Service** | **Primary Models** | **Core Functions** |
 |---|---|---|
 | **E-Commerce** | Product, Category, Order | Catalog management, shopping cart, order processing, payment integration |
@@ -168,7 +167,7 @@ The **Wrencos Platform** acts as the integrated hub coordinating all business lo
 | **HR** | Employee | Employee records, staff management, permissions and access control |
 | **Finance** | BusinessExpense, CashFlowTransaction | Expense tracking, cash flow reporting, financial analytics |
 | **Auth** | User | User registration, login, authentication, role-based access control |
-| **Communication** | ChatConversation, FAQ | AI-powered chatbot (Google Gemini), product/FAQ recommendations, customer support chat, staff escalation |
+| **Communication** | ChatConversation, FAQ | **Three distinct features:** (1) FAQ management (predefined Q&A lookup), (2) AI-powered chatbot (Google Gemini integration with product recommendations), (3) Customer support escalation (route to staff with live chat) |
 
 **Key Data Flow:**
 - Web Frontend ──HTTP──► REST API ──► Services ──► Database
@@ -301,16 +300,22 @@ The backend services layer handles all business logic, data persistence, and ext
 
 **Role-Based Access Control:**
 
-| Route Pattern | Accessible By | Purpose |
-|---|---|---|
-| `/chat/faqs`, `/chat/faq/:id/answer` | ✅ Customers (no auth needed) | Self-service FAQ lookup |
-| `/chat/ai` | ✅ Customers (optional auth) | AI-powered chat |
-| `/chat/staff/connect`, `/chat/staff/message`, `/chat/staff/messages/:sessionId` | ✅ Customers (optional auth) | Escalate to staff, communicate with staff |
-| `/chat/admin/*` | ✅ Staff/Admin only (JWT required) | Manage FAQs, view chats, reply to customers |
+| Route Pattern | Auth Requirement | Behavior | Purpose |
+|---|---|---|---|
+| `/chat/faqs`, `/chat/faq/:id/answer` | **None** | Accessible to anyone (guest or logged-in) | Self-service FAQ lookup |
+| `/chat/ai` | **Optional** | Works for guests (req.user = null) or authenticated users; personalization enabled if user is logged in | AI-powered chat with optional user context |
+| `/chat/staff/connect`, `/chat/staff/message`, `/chat/staff/messages/:sessionId` | **Optional** | Works for guests or authenticated users; session tracking enhanced if user is logged in | Escalate to staff, communicate with staff |
+| `/chat/admin/*` (FAQ management, view chats, reply) | **Required** (staff/admin role) | 401 Unauthorized if no valid token; verified on every request | Manage FAQs, view all customer chats, reply to customers |
 
-**Authentication Requirements:**
-- Customer routes: Optional authentication (but recommended for escalation and history tracking)
-- Admin routes: Mandatory authentication + admin/staff role verification via JWT
+**Authentication Behavior Explained:**
+
+- **No Auth (`/chat/faqs`):** Token is never checked. Request accepted regardless of authentication status. Used for public, read-only operations.
+
+- **Optional Auth (`/chat/ai`, `/chat/staff/*`):** Token is checked IF provided, but request succeeds even without one. Enables two modes:
+  - **Authenticated mode:** User info available in req.user → Can personalize responses, track conversation history with user account
+  - **Anonymous mode:** No user info (req.user = null) → Generic responses, session-based tracking only
+
+- **Required Auth (`/chat/admin/*`):** Token MUST be present and valid. Request rejected with 401 error if missing or invalid. Staff-only operations require role verification.
 
 **Why This Architecture:**
 - **Single responsibility** → Communication Service owns all communication logic (chat, FAQs, AI)
