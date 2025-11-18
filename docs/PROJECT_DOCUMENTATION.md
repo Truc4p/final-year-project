@@ -1912,7 +1912,7 @@ Functional requirements define what the system must do—the features, capabilit
 **Should Have**
 
 **FR-PAY-002: Online Payment Integration**
-- System should integrate with payment gateway (Stripe/PayPal)
+- System should integrate with payment gateway (VNPay)
 - Customers should be able to pay with credit/debit cards
 - Payment confirmation should create order
 - Acceptance Criteria: Online payments process successfully; funds are received
