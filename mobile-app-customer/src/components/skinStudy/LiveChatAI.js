@@ -135,6 +135,25 @@ const LiveChatAI = ({ navigation, route }) => {
       setIsActionInProgress(true);
       console.log('🎤 Starting recording...');
       
+      // Request audio recording permission first
+      console.log('🔐 Requesting audio recording permission...');
+      const { status } = await Audio.requestPermissionsAsync();
+      console.log('🔐 Permission status:', status);
+      
+      if (status !== 'granted') {
+        console.error('❌ Audio recording permission denied');
+        Alert.alert(
+          'Permission Required',
+          'Please allow microphone access in your device settings to use voice chat.',
+          [{ text: 'OK' }]
+        );
+        setIsRecording(false);
+        setIsActionInProgress(false);
+        return;
+      }
+      
+      console.log('✅ Permission granted, proceeding with recording');
+      
       // Set UI state immediately for instant feedback
       setIsRecording(true);
       
