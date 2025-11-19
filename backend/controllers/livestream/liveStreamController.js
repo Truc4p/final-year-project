@@ -65,7 +65,7 @@ exports.createLiveStream = async (req, res) => {
       tags: tags ? tags.split(',').map(t => t.trim()) : [],
       isActive: true,
       startTime: new Date(),
-      createdBy: req.user ? req.user._id : null
+      createdBy: req.user ? req.user.id : null
     });
 
     await liveStream.save();

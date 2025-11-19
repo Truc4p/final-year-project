@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,19 +16,42 @@ import { COLORS } from '../constants';
 import livestreamService from '../services/livestreamService';
 
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkExistingToken();
+  }, []);
+
+  const checkExistingToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('adminToken');
+      const userData = await AsyncStorage.getItem('adminUser');
+      
+      if (token && userData) {
+        console.log('🔑 Found existing token, auto-logging in...');
+        // Navigate directly to main screen
+        navigation.replace('Main');
+      } else {
+        console.log('🔑 No existing token found');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error checking token:', error);
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please enter email and password');
+    if (!username.trim() || !password.trim()) {
+      Alert.alert('Error', 'Please enter username and password');
       return;
     }
 
     setLoading(true);
     try {
-      const response = await livestreamService.login(email, password);
+      const response = await livestreamService.login(username, password);
       
       // Save token and user data
       await AsyncStorage.setItem('adminToken', response.token);
@@ -46,6 +69,18 @@ export default function LoginScreen({ navigation }) {
       setLoading(false);
     }
   };
+
+  // Show loading while checking for existing token
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Checking credentials...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -65,13 +100,12 @@ export default function LoginScreen({ navigation }) {
         {/* Login Form */}
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>Username</Text>
             <TextInput
               style={styles.input}
-              placeholder="admin@example.com"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
+              placeholder="Enter username"
+              value={username}
+              onChangeText={setUsername}
               autoCapitalize="none"
               autoCorrect={false}
               editable={!loading}
@@ -197,5 +231,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textSecondary,
     textAlign: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: COLORS.textSecondary,
   },
 });

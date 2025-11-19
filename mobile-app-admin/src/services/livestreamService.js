@@ -89,11 +89,20 @@ class LivestreamService {
   }
 
   // API Calls
-  async login(email, password) {
+  async login(username, password) {
     try {
-      const response = await api.post('/auth/login', { email, password });
-      if (response.data.token && response.data.user?.role === 'admin') {
-        return response.data;
+      const response = await api.post('/auth/login', { username, password });
+      console.log('Login response:', response.data);
+      
+      // Check if user has admin role
+      if (response.data.token && response.data.role === 'admin') {
+        return {
+          token: response.data.token,
+          user: {
+            id: response.data.userId,
+            role: response.data.role
+          }
+        };
       } else {
         throw new Error('Not authorized as admin');
       }

@@ -13,8 +13,7 @@ import {
   SafeAreaView,
   Dimensions,
 } from 'react-native';
-import { Camera } from 'expo-camera';
-import { Audio, Video } from 'expo-av';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, API_BASE_URL } from '../constants';
@@ -23,9 +22,15 @@ import livestreamService from '../services/livestreamService';
 const { width, height } = Dimensions.get('window');
 
 export default function LivestreamScreen({ navigation }) {
+  console.log('🚀 LivestreamScreen component initialized');
+  
   // Camera and permissions
-  const [hasPermission, setHasPermission] = useState(null);
-  const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [cameraFacing, setCameraFacing] = useState('back');
+  
+  console.log('📷 Initial permission state:', permission);
+  console.log('📷 Initial cameraFacing:', cameraFacing, 'Type:', typeof cameraFacing);
+  
   const [isRecording, setIsRecording] = useState(false);
   const cameraRef = useRef(null);
   const [recording, setRecording] = useState(null);
@@ -56,6 +61,7 @@ export default function LivestreamScreen({ navigation }) {
   const timerRef = useRef(null);
 
   useEffect(() => {
+    checkAuthStatus();
     requestPermissions();
     loadProducts();
     initializeWebSocket();
@@ -65,6 +71,13 @@ export default function LivestreamScreen({ navigation }) {
       livestreamService.disconnectWebSocket();
     };
   }, []);
+
+  const checkAuthStatus = async () => {
+    const token = await AsyncStorage.getItem('adminToken');
+    if (!token) {
+      navigation.replace('Login');
+    }
+  };
 
   useEffect(() => {
     if (isStreaming) {
@@ -84,11 +97,8 @@ export default function LivestreamScreen({ navigation }) {
   }, [isStreaming]);
 
   const requestPermissions = async () => {
-    const { status: cameraStatus } = await Camera.requestCameraPermissionsAsync();
-    const { status: audioStatus } = await Audio.requestPermissionsAsync();
-    const { status: mediaStatus } = await MediaLibrary.requestPermissionsAsync();
-    
-    setHasPermission(cameraStatus === 'granted' && audioStatus === 'granted');
+    await requestPermission();
+    await MediaLibrary.requestPermissionsAsync();
   };
 
   const initializeWebSocket = async () => {
@@ -152,7 +162,7 @@ export default function LivestreamScreen({ navigation }) {
       const response = await livestreamService.createLivestream({
         title: streamTitle,
         description: streamDescription,
-        quality: 'medium',
+        quality: '720p',
         streamUrl: `mobile-stream-${Date.now()}`,
       });
 
@@ -175,29 +185,42 @@ export default function LivestreamScreen({ navigation }) {
   };
 
   const startRecording = async () => {
+    console.log('🔴 Start recording called, isRecording:', isRecording);
     if (cameraRef.current && !isRecording) {
       try {
         setIsRecording(true);
-        const video = await cameraRef.current.recordAsync({
-          quality: Camera.Constants.VideoQuality['720p'],
-          maxDuration: 7200, // 2 hours max
-        });
+        console.log('🎬 Starting camera recording...');
+        const video = await cameraRef.current.recordAsync();
         setRecording(video);
-        console.log('Recording saved:', video.uri);
+        console.log('✅ Recording saved:', video.uri);
       } catch (error) {
-        console.error('Error recording:', error);
-        setIsRecording(false);
+        console.error('❌ Error recording:', error);
+        
+        // If simulator error, continue streaming without recording
+        if (error.message.includes('simulator')) {
+          console.log('⚠️ Running on simulator - streaming without video recording');
+          Alert.alert(
+            'Simulator Limitation',
+            'Video recording is not supported on iOS Simulator. The livestream will continue without recording. Test on a physical device for full functionality.',
+            [{ text: 'OK' }]
+          );
+          // Keep isRecording true to maintain streaming state
+        } else {
+          setIsRecording(false);
+        }
       }
     }
   };
 
   const stopRecording = async () => {
+    console.log('⏹️ Stop recording called, isRecording:', isRecording);
     if (cameraRef.current && isRecording) {
       try {
         cameraRef.current.stopRecording();
         setIsRecording(false);
+        console.log('✅ Recording stopped');
       } catch (error) {
-        console.error('Error stopping recording:', error);
+        console.error('❌ Error stopping recording:', error);
       }
     }
   };
@@ -277,11 +300,12 @@ export default function LivestreamScreen({ navigation }) {
   };
 
   const flipCamera = () => {
-    setCameraType(
-      cameraType === Camera.Constants.Type.back
-        ? Camera.Constants.Type.front
-        : Camera.Constants.Type.back
-    );
+    console.log('🔄 Flipping camera from:', cameraFacing);
+    setCameraFacing(current => {
+      const newFacing = current === 'back' ? 'front' : 'back';
+      console.log('🔄 Camera flipped to:', newFacing);
+      return newFacing;
+    });
   };
 
   const handleLogout = async () => {
@@ -313,7 +337,8 @@ export default function LivestreamScreen({ navigation }) {
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (hasPermission === null) {
+  if (!permission) {
+    console.log('⏳ Permission object is null, waiting...');
     return (
       <View style={styles.centerContainer}>
         <Text>Requesting permissions...</Text>
@@ -321,11 +346,15 @@ export default function LivestreamScreen({ navigation }) {
     );
   }
 
-  if (hasPermission === false) {
+  console.log('📷 Camera permission status:', permission);
+  console.log('📷 Camera facing:', cameraFacing, 'Type:', typeof cameraFacing);
+
+  if (!permission.granted) {
+    console.log('❌ Camera permission not granted');
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>No access to camera or microphone</Text>
-        <TouchableOpacity style={styles.button} onPress={requestPermissions}>
+        <Text style={styles.errorText}>No access to camera</Text>
+        <TouchableOpacity style={styles.button} onPress={requestPermission}>
           <Text style={styles.buttonText}>Grant Permissions</Text>
         </TouchableOpacity>
       </View>
@@ -336,11 +365,12 @@ export default function LivestreamScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       {/* Camera Preview */}
       <View style={styles.cameraContainer}>
-        <Camera
+        {console.log('🎥 Rendering CameraView with facing:', cameraFacing, 'Type:', typeof cameraFacing)}
+        <CameraView
           ref={cameraRef}
           style={styles.camera}
-          type={cameraType}
-          ratio="16:9"
+          facing={cameraFacing}
+          mode="video"
         >
           {/* Top Overlay */}
           <View style={styles.topOverlay}>
@@ -396,7 +426,7 @@ export default function LivestreamScreen({ navigation }) {
               <Text style={styles.productsButtonText}>🛍️</Text>
             </TouchableOpacity>
           </View>
-        </Camera>
+        </CameraView>
       </View>
 
       {/* Chat Section */}

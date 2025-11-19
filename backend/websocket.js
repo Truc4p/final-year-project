@@ -110,6 +110,24 @@ class WebSocketManager {
         await this.broadcastStreamStatus(data);
         break;
         
+      case 'start_stream':
+        // Mobile admin starts streaming
+        console.log('📱 Mobile stream started:', data);
+        await this.broadcastStreamStatus({ 
+          type: 'stream_started', 
+          streamData: data.streamData || { streamId: data.streamId }
+        });
+        break;
+        
+      case 'stop_stream':
+        // Mobile admin stops streaming
+        console.log('📱 Mobile stream stopped:', data);
+        await this.broadcastStreamStatus({ 
+          type: 'stream_stopped', 
+          streamData: { streamId: data.streamId }
+        });
+        break;
+        
       case 'stream_update':
         await this.broadcastStreamUpdate(data);
         break;
