@@ -1,4 +1,44 @@
 PODS:
+  - AgoraIrisRTC_iOS (4.4.0-build.6)
+  - AgoraRtcEngine_iOS (4.4.0):
+    - AgoraRtcEngine_iOS/AIAEC (= 4.4.0)
+    - AgoraRtcEngine_iOS/AIAECLL (= 4.4.0)
+    - AgoraRtcEngine_iOS/AINS (= 4.4.0)
+    - AgoraRtcEngine_iOS/AINSLL (= 4.4.0)
+    - AgoraRtcEngine_iOS/AudioBeauty (= 4.4.0)
+    - AgoraRtcEngine_iOS/ClearVision (= 4.4.0)
+    - AgoraRtcEngine_iOS/ContentInspect (= 4.4.0)
+    - AgoraRtcEngine_iOS/FaceCapture (= 4.4.0)
+    - AgoraRtcEngine_iOS/FaceDetection (= 4.4.0)
+    - AgoraRtcEngine_iOS/LipSync (= 4.4.0)
+    - AgoraRtcEngine_iOS/ReplayKit (= 4.4.0)
+    - AgoraRtcEngine_iOS/RtcBasic (= 4.4.0)
+    - AgoraRtcEngine_iOS/SpatialAudio (= 4.4.0)
+    - AgoraRtcEngine_iOS/VideoAv1CodecDec (= 4.4.0)
+    - AgoraRtcEngine_iOS/VideoAv1CodecEnc (= 4.4.0)
+    - AgoraRtcEngine_iOS/VideoCodecDec (= 4.4.0)
+    - AgoraRtcEngine_iOS/VideoCodecEnc (= 4.4.0)
+    - AgoraRtcEngine_iOS/VirtualBackground (= 4.4.0)
+    - AgoraRtcEngine_iOS/VQA (= 4.4.0)
+  - AgoraRtcEngine_iOS/AIAEC (4.4.0)
+  - AgoraRtcEngine_iOS/AIAECLL (4.4.0)
+  - AgoraRtcEngine_iOS/AINS (4.4.0)
+  - AgoraRtcEngine_iOS/AINSLL (4.4.0)
+  - AgoraRtcEngine_iOS/AudioBeauty (4.4.0)
+  - AgoraRtcEngine_iOS/ClearVision (4.4.0)
+  - AgoraRtcEngine_iOS/ContentInspect (4.4.0)
+  - AgoraRtcEngine_iOS/FaceCapture (4.4.0)
+  - AgoraRtcEngine_iOS/FaceDetection (4.4.0)
+  - AgoraRtcEngine_iOS/LipSync (4.4.0)
+  - AgoraRtcEngine_iOS/ReplayKit (4.4.0)
+  - AgoraRtcEngine_iOS/RtcBasic (4.4.0)
+  - AgoraRtcEngine_iOS/SpatialAudio (4.4.0)
+  - AgoraRtcEngine_iOS/VideoAv1CodecDec (4.4.0)
+  - AgoraRtcEngine_iOS/VideoAv1CodecEnc (4.4.0)
+  - AgoraRtcEngine_iOS/VideoCodecDec (4.4.0)
+  - AgoraRtcEngine_iOS/VideoCodecEnc (4.4.0)
+  - AgoraRtcEngine_iOS/VirtualBackground (4.4.0)
+  - AgoraRtcEngine_iOS/VQA (4.4.0)
   - boost (1.83.0)
   - DoubleConversion (1.1.6)
   - EXAV (13.10.6):
@@ -913,6 +953,12 @@ PODS:
   - React-Mapbuffer (0.73.6):
     - glog
     - React-debug
+  - react-native-agora (4.4.0):
+    - AgoraIrisRTC_iOS (= 4.4.0-build.6)
+    - AgoraRtcEngine_iOS (= 4.4.0)
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
+    - React-Core
   - react-native-render-html (6.3.4):
     - React-Core
   - react-native-safe-area-context (4.8.2):
@@ -1142,6 +1188,7 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector-modern`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
+  - react-native-agora (from `../node_modules/react-native-agora`)
   - react-native-render-html (from `../node_modules/react-native-render-html`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
@@ -1172,6 +1219,8 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - AgoraIrisRTC_iOS
+    - AgoraRtcEngine_iOS
     - fmt
     - libevent
     - SocketRocket
@@ -1252,6 +1301,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/logger"
   React-Mapbuffer:
     :path: "../node_modules/react-native/ReactCommon"
+  react-native-agora:
+    :path: "../node_modules/react-native-agora"
   react-native-render-html:
     :path: "../node_modules/react-native-render-html"
   react-native-safe-area-context:
@@ -1308,6 +1359,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  AgoraIrisRTC_iOS: f8756246f576b7fd4ac4cc405451f5203d7808ab
+  AgoraRtcEngine_iOS: 8f579495aafaf383346241a419718e9775723493
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   EXAV: e160fec51bf6bc41c3b6f7e4c72ea9fd36860cd6
@@ -1347,6 +1400,7 @@ SPEC CHECKSUMS:
   React-jsinspector: 85583ef014ce53d731a98c66a0e24496f7a83066
   React-logger: 55764cd993880c6f887505854581c9faf68feff2
   React-Mapbuffer: 15dfcfeb4428d8799cce75e7fe85b18b706029e0
+  react-native-agora: 1dfbdbc843b2a0cea380db666f83b11aadbe46f1
   react-native-render-html: 5afc4751f1a98621b3009432ef84c47019dcb2bd
   react-native-safe-area-context: bf9d9d58f0f6726d4a6257088044c2595017579d
   React-nativeconfig: b4d4e9901d4cabb57be63053fd2aa6086eb3c85f

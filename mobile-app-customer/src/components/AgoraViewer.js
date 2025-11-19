@@ -8,6 +8,7 @@ import {
   VideoSourceType,
 } from 'react-native-agora';
 import { AGORA_APP_ID, getChannelName } from '../constants/agora';
+import api from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -84,6 +85,15 @@ export default function AgoraViewer({ streamId, isLive }) {
       const channelName = getChannelName(streamId);
       console.log('📡 [Viewer] Joining channel:', channelName);
 
+      // Fetch Agora token from backend
+      console.log('🔑 [Viewer] Fetching Agora token...');
+      const tokenResponse = await api.post('/livestreams/agora/token', {
+        channelName,
+        uid: 0, // Viewer uses uid 0
+      });
+      const { token } = tokenResponse.data;
+      console.log('✅ [Viewer] Got Agora token');
+
       // Set channel profile to live broadcasting
       agoraEngine.current.setChannelProfile(
         ChannelProfileType.ChannelProfileLiveBroadcasting
@@ -92,8 +102,8 @@ export default function AgoraViewer({ streamId, isLive }) {
       // Set client role to audience
       agoraEngine.current.setClientRole(ClientRoleType.ClientRoleAudience);
 
-      // Join channel with no token (testing mode)
-      await agoraEngine.current.joinChannel('', channelName, 0, {
+      // Join channel with token
+      await agoraEngine.current.joinChannel(token, channelName, 0, {
         clientRoleType: ClientRoleType.ClientRoleAudience,
       });
 
