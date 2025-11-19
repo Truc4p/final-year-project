@@ -19,12 +19,10 @@
             class="navbar-link">
             {{ t('profile') }}
           </router-link>
-          <a href="http://localhost:5175" target="_blank" class="navbar-link">
+          <router-link :to="{ path: '/customer/skin-study' }" exact-active-class="router-link-exact-active"
+            class="navbar-link">
             {{ t('skinStudy') }}
-          </a>
-          <a href="http://localhost:5001" target="_blank" class="navbar-link">
-            {{ t('trackNutrition') }}
-          </a>
+          </router-link>
           <router-link :to="{ path: '/customer/order-history' }" exact-active-class="router-link-exact-active"
             class="navbar-link">
             {{ t('orderHistory') }}
@@ -89,14 +87,10 @@
           class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
           {{ t('profile') }}
         </router-link>
-        <a href="http://localhost:5175" target="_blank"
+        <router-link :to="{ path: '/customer/skin-study' }" exact-active-class="router-link-exact-active"
           class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-          Skin Study
-        </a>
-        <a href="http://localhost:5001" target="_blank"
-          class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-          Track Nutrition
-        </a>
+          {{ t('skinStudy') }}
+        </router-link>
         <router-link :to="{ path: '/customer/order-history' }" exact-active-class="router-link-exact-active"
           class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
           {{ t('orderHistory') }}

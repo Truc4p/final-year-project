@@ -1,53 +1,116 @@
-/* Modern color palette for enhanced UI/UX */
+/* Enhanced Color Palette - Matching skin-study */
 :root {
+  /* Modern Pink Color Palette */
+  --primary-50: #FDFBF7;
+  --primary-100: #FDF6F0; 
+  --primary-200: #F8EAE1;
+  --primary-300: #F0D7CC;
+  --primary-400: #E4BCC0;
+  --primary-500: #C97F98;
+  --primary-600: #A44A6B;
+  --primary-700: #8C3154;
+  --primary-800: #7F2548;
+  --primary-900: #671C39;
+  --primary-950: #3E0E21;
+
+  /* Legacy color mappings for compatibility */
+  --primary-color: var(--primary-600);
+  --primary-dark: var(--primary-800);
+  --primary-light: var(--primary-400);
+  
+  /* Text Colors - Matching skin-study */
+  --text-primary: var(--primary-950);
+  --text-secondary: var(--primary-800);
+  --text-light: var(--primary-700);
+  --text-muted: var(--primary-600);
+  --text-inverse: #ffffff;
+  --text-dark: var(--primary-950);
+  
+  /* Background Colors */
+  --background: #ffffff;
+  --background-light: var(--primary-50);
+  --background-accent: var(--primary-100);
+  
+  /* Border Colors */
+  --border-color: var(--primary-200);
+  --border-light: var(--primary-100);
+  --border-dark: var(--primary-300);
+  
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+  
+  /* Spacing */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  
+  /* Legacy compatibility */
   --vt-c-white: #ffffff;
   --vt-c-white-soft: #f8fafc;
   --vt-c-white-mute: #f1f5f9;
-
   --vt-c-black: #0f172a;
   --vt-c-black-soft: #1e293b;
   --vt-c-black-mute: #334155;
-
   --vt-c-indigo: #8C3154;
   --vt-c-primary: #A44A6B;
-
-  --vt-c-divider-light-1: rgba(15, 118, 110, 0.29);
-  --vt-c-divider-light-2: rgba(15, 118, 110, 0.12);
-  --vt-c-divider-dark-1: rgba(148, 163, 184, 0.65);
-  --vt-c-divider-dark-2: rgba(148, 163, 184, 0.48);
-
-  --vt-c-text-light-1: var(--vt-c-primary);
-  --vt-c-text-light-2: rgba(51, 65, 85, 0.78);
-  --vt-c-text-dark-1: var(--vt-c-white);
-  --vt-c-text-dark-2: rgba(248, 250, 252, 0.87);
-}
-
-/* semantic color variables for this project */
-:root {
-  --color-background: var(--vt-c-white);
-  --color-background-soft: var(--vt-c-white-soft);
-  --color-background-mute: var(--vt-c-white-mute);
-
-  --color-border: var(--vt-c-divider-light-2);
-  --color-border-hover: var(--vt-c-divider-light-1);
-
-  --color-heading: var(--vt-c-text-light-1);
-  --color-text: var(--vt-c-text-light-2);
-
+  --color-background: var(--background);
+  --color-background-soft: var(--background-light);
+  --color-background-mute: var(--background-accent);
+  --color-border: var(--border-color);
+  --color-border-hover: var(--border-dark);
+  --color-heading: var(--text-primary);
+  --color-text: var(--text-secondary);
   --section-gap: 160px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --background: var(--primary-950);
+    --background-light: var(--primary-900);
+    --background-accent: var(--primary-800);
+    --text-primary: var(--primary-50);
+    --text-secondary: var(--primary-100);
+    --text-light: var(--primary-200);
+    --border-color: var(--primary-800);
+    --border-light: var(--primary-700);
     --color-background: var(--vt-c-black);
     --color-background-soft: var(--vt-c-black-soft);
     --color-background-mute: var(--vt-c-black-mute);
-
-    --color-border: var(--vt-c-divider-dark-2);
-    --color-border-hover: var(--vt-c-divider-dark-1);
-
-    --color-heading: var(--vt-c-text-dark-1);
-    --color-text: var(--vt-c-text-dark-2);
+    --color-border: var(--primary-800);
+    --color-border-hover: var(--primary-700);
+    --color-heading: var(--primary-50);
+    --color-text: var(--primary-100);
   }
 }
 
@@ -61,28 +124,69 @@
 
 body {
   min-height: 100vh;
-  color: var(--color-text);
-  background: var(--color-background);
-  transition:
-    color 0.5s,
-    background-color 0.5s;
-  line-height: 1.6;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    'Fira Sans',
-    'Droid Sans',
-    'Helvetica Neue',
-    sans-serif;
-  font-size: 16px;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  color: var(--text-primary);
+  background-color: var(--background);
+  line-height: var(--line-height-normal);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'rlig' 1, 'calt' 1;
+  transition: color 0.5s, background-color 0.5s;
+}
+
+/* Typography - Matching skin-study */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+h1 {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-extrabold);
+}
+
+h2 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+}
+
+h3 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+h4 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+h5 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+h6 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+}
+
+p {
+  margin-bottom: var(--spacing-4);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-dark);
 }

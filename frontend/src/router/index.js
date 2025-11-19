@@ -64,6 +64,9 @@ import Profile from '@/pages/customer/account/Profile.vue';
 import LiveStream from '@/pages/customer/live-stream/LiveStream.vue';
 import LiveStreamWatch from '@/pages/customer/live-stream/LiveStreamWatch.vue';
 
+// Customer - Skin Study
+import SkinStudy from '@/pages/customer/skin-study/AIDermatologyExpert.vue';
+
 // Admin - Live Stream
 import AdminLiveStream from '@/pages/admin/live-stream/AdminLiveStream.vue';
 
@@ -137,6 +140,7 @@ const routes = [
       { path: "order-history", component: OrderHistory },
       { path: "live-stream", component: LiveStream },
       { path: "live-stream/watch/:id", component: LiveStreamWatch },
+      { path: "skin-study", component: SkinStudy },
       { path: "profile", component: Profile },
       { path: "orders/delete/:id", component: DeleteOrder },
 

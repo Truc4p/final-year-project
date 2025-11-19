@@ -458,7 +458,7 @@ onMounted(async () => {
 
 /* Quick action buttons */
 .quick-action-btn {
-  @apply flex items-center space-x-3 w-full p-4 text-left bg-gray-50 hover:bg-teal-50 rounded-xl transition-all duration-200 text-gray-700 hover:text-teal-700;
+  @apply flex items-center space-x-3 w-full p-4 text-left bg-primary-50 hover:bg-primary-100 rounded-xl transition-all duration-200 text-gray-700 hover:text-primary-700;
 }
 
 .quick-action-btn:hover {

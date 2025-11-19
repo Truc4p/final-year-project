@@ -22,6 +22,7 @@ const newsletterRoutes = require("./routes/marketing/newsletterRoutes");
 const emailCampaignRoutes = require("./routes/marketing/emailCampaignRoutes");
 const emailTemplateRoutes = require("./routes/marketing/emailTemplateRoutes");
 const emailSegmentRoutes = require("./routes/marketing/emailSegmentRoutes");
+const aiDermatologyExpertRoutes = require("./routes/skin-study/aiDermatologyExpert");
 
 const connectDB = require("./db");
 const path = require("path"); // Import the path module
@@ -68,6 +69,7 @@ app.use("/newsletter", newsletterRoutes);
 app.use("/email-campaigns", emailCampaignRoutes);
 app.use("/email-templates", emailTemplateRoutes);
 app.use("/email-segments", emailSegmentRoutes);
+app.use("/api/ai-dermatology-expert", aiDermatologyExpertRoutes);
 
 // Define a route for the root URL
 app.get('/', (req, res) => {

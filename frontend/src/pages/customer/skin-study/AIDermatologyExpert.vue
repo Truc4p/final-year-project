@@ -1,0 +1,2093 @@
+<template>
+    <div class="ai-dermatology-expert">
+        <!-- History Sidebar -->
+        <div class="history-sidebar" :class="{ 'open': sidebarOpen }">
+            <div class="sidebar-header">
+                <h3>Chat History</h3>
+                <button @click="toggleSidebar" class="close-sidebar-btn">✕</button>
+            </div>
+
+            <!-- Search Input -->
+            <div class="sidebar-search">
+                <input v-model="searchQuery" type="text" placeholder="Search conversations..." class="search-input" />
+                <span v-if="searchQuery" @click="searchQuery = ''" class="clear-search">✕</span>
+            </div>
+
+            <div class="sidebar-content">
+                <div v-if="filteredChatSessions.length === 0 && !searchQuery" class="no-history">
+                    <p>No chat history yet</p>
+                </div>
+                <div v-else-if="filteredChatSessions.length === 0 && searchQuery" class="no-history">
+                    <p>No results found for "{{ searchQuery }}"</p>
+                </div>
+                <div v-else class="chat-sessions-list">
+                    <div v-for="session in filteredChatSessions" :key="session.id" @click="loadChatSession(session.id)"
+                        class="chat-session-item" :class="{ 'active': session.id === currentSessionId }">
+                        <div class="session-info">
+                            <div class="session-title">{{ session.title }}</div>
+                            <div class="session-date">{{ formatSessionDate(session.timestamp) }}</div>
+                            <div class="session-preview">{{ session.preview }}</div>
+                        </div>
+                        <button @click.stop="deleteChatSession(session.id)" class="delete-session-btn"
+                            title="Delete this conversation">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overlay for mobile -->
+        <div v-if="sidebarOpen" @click="toggleSidebar" class="sidebar-overlay"></div>
+
+        <!-- Chat Container -->
+        <div class="chat-container" ref="chatContainer">
+            <!-- Welcome Message -->
+            <div v-if="messages.length === 0" class="welcome-section">
+                <div class="welcome-card">
+                    <div class="welcome-header">
+                        <h1>AI Dermatology Expert</h1>
+                        <p class="description">Your virtual skincare consultant powered by advanced AI technology</p>
+                    </div>
+
+                    <!-- Important Disclaimer -->
+                    <div class="welcome-disclaimer">
+                        <h3>Important Notice</h3>
+                        <p>This AI assistant provides <strong>educational information and general skincare guidance
+                                only</strong>. It does not:</p>
+                        <ul>
+                            <li>Provide medical diagnosis or treatment</li>
+                            <li>Replace consultation with qualified dermatologists</li>
+                            <li>Offer emergency medical advice</li>
+                        </ul>
+                        <p class="disclaimer-highlight">
+                            <strong>Seek immediate medical attention if you experience:</strong> severe pain, rapid
+                            changes, signs of infection, severe allergic reactions, or suspicious skin changes.
+                        </p>
+                    </div>
+
+                    <!-- Sample Questions by Category -->
+                    <div class="sample-questions-section">
+                        <h2>Explore Sample Topics</h2>
+                        <p class="section-description">Select a category to explore sample questions</p>
+                        
+                        <div class="category-container">
+                            <!-- Category 1 -->
+                            <div class="question-category" :class="{ 'expanded': expandedCategory === 1 }">
+                                <div class="category-header" @click="toggleCategory(1)">
+                                    <h3 class="category-title">1. Fundamentals of Cosmetic Dermatology</h3>
+                                    <span class="toggle-icon">{{ expandedCategory === 1 ? '−' : '+' }}</span>
+                                </div>
+                                <p class="category-description">Core principles, skin structure, and classification systems.</p>
+                                <div v-if="expandedCategory === 1" class="questions-list">
+                                    <button @click="askSampleQuestion('What are the different types of chemical peels and how do they work?')" class="sample-question-btn">What are the different types of chemical peels and how do they work?</button>
+                                    <button @click="askSampleQuestion('What is the difference between superficial, medium, and deep chemical peels?')" class="sample-question-btn">What is the difference between superficial, medium, and deep chemical peels?</button>
+                                    <button @click="askSampleQuestion('What is the histology of the skin and how does it relate to aging?')" class="sample-question-btn">What is the histology of the skin and how does it relate to aging?</button>
+                                    <button @click="askSampleQuestion('How do different ethnicities experience skin aging differently?')" class="sample-question-btn">How do different ethnicities experience skin aging differently?</button>
+                                    <button @click="askSampleQuestion('What is the Fitzpatrick skin type classification and why is it important?')" class="sample-question-btn">What is the Fitzpatrick skin type classification and why is it important?</button>
+                                    <button @click="askSampleQuestion('How do dermatologists assess skin type and condition?')" class="sample-question-btn">How do dermatologists assess skin type and condition?</button>
+                                    <button @click="askSampleQuestion('What is the skin barrier function and why is it important?')" class="sample-question-btn">What is the skin barrier function and why is it important?</button>
+                                    <button @click="askSampleQuestion('What factors contribute to premature skin aging?')" class="sample-question-btn">What factors contribute to premature skin aging?</button>
+                                </div>
+                            </div>
+
+                            <!-- Category 2 -->
+                            <div class="question-category" :class="{ 'expanded': expandedCategory === 2 }">
+                                <div class="category-header" @click="toggleCategory(2)">
+                                    <h3 class="category-title">2. Skincare Science & Active Ingredients</h3>
+                                    <span class="toggle-icon">{{ expandedCategory === 2 ? '−' : '+' }}</span>
+                                </div>
+                                <p class="category-description">Focused on ingredients, mechanisms, and interactions.</p>
+                                <div v-if="expandedCategory === 2" class="questions-list">
+                                    <button @click="askSampleQuestion('What ingredients should I look for in an anti-aging serum?')" class="sample-question-btn">What ingredients should I look for in an anti-aging serum?</button>
+                                    <button @click="askSampleQuestion('How does retinol work and what are the best practices for using it?')" class="sample-question-btn">How does retinol work and what are the best practices for using it?</button>
+                                    <button @click="askSampleQuestion('What is the difference between chemical and physical sunscreens?')" class="sample-question-btn">What is the difference between chemical and physical sunscreens?</button>
+                                    <button @click="askSampleQuestion('Can you explain what peptides do in skincare products?')" class="sample-question-btn">Can you explain what peptides do in skincare products?</button>
+                                    <button @click="askSampleQuestion('How does vitamin C benefit the skin and how should it be formulated?')" class="sample-question-btn">How does vitamin C benefit the skin and how should it be formulated?</button>
+                                    <button @click="askSampleQuestion('What concentration of niacinamide is most effective?')" class="sample-question-btn">What concentration of niacinamide is most effective?</button>
+                                    <button @click="askSampleQuestion('Can you explain the benefits of hyaluronic acid?')" class="sample-question-btn">Can you explain the benefits of hyaluronic acid?</button>
+                                    <button @click="askSampleQuestion('What are the benefits of ceramides for the skin barrier?')" class="sample-question-btn">What are the benefits of ceramides for the skin barrier?</button>
+                                    <button @click="askSampleQuestion('Can I use retinol and vitamin C together?')" class="sample-question-btn">Can I use retinol and vitamin C together?</button>
+                                    <button @click="askSampleQuestion('What ingredients should not be mixed in a skincare routine?')" class="sample-question-btn">What ingredients should not be mixed in a skincare routine?</button>
+                                    <button @click="askSampleQuestion('How do antioxidants protect the skin from free radical damage?')" class="sample-question-btn">How do antioxidants protect the skin from free radical damage?</button>
+                                </div>
+                            </div>
+
+                            <!-- Category 3 -->
+                            <div class="question-category" :class="{ 'expanded': expandedCategory === 3 }">
+                                <div class="category-header" @click="toggleCategory(3)">
+                                    <h3 class="category-title">3. Chemical Peels & Exfoliative Procedures</h3>
+                                    <span class="toggle-icon">{{ expandedCategory === 3 ? '−' : '+' }}</span>
+                                </div>
+                                <p class="category-description">Mechanisms, preparation, safety, and complications.</p>
+                                <div v-if="expandedCategory === 3" class="questions-list">
+                                    <button @click="askSampleQuestion('How should I prepare my skin before getting a chemical peel?')" class="sample-question-btn">How should I prepare my skin before getting a chemical peel?</button>
+                                    <button @click="askSampleQuestion('What are the potential side effects and complications of chemical peels?')" class="sample-question-btn">What are the potential side effects and complications of chemical peels?</button>
+                                    <button @click="askSampleQuestion('Can you explain the mechanism of action of glycolic acid peels?')" class="sample-question-btn">Can you explain the mechanism of action of glycolic acid peels?</button>
+                                    <button @click="askSampleQuestion('What are the contraindications for TCA peels?')" class="sample-question-btn">What are the contraindications for TCA peels?</button>
+                                    <button @click="askSampleQuestion('How do you treat post-inflammatory hyperpigmentation after a peel?')" class="sample-question-btn">How do you treat post-inflammatory hyperpigmentation after a peel?</button>
+                                    <button @click="askSampleQuestion('How should I care for my skin after a medium-depth chemical peel?')" class="sample-question-btn">How should I care for my skin after a medium-depth chemical peel?</button>
+                                </div>
+                            </div>
+
+                            <!-- Category 4 -->
+                            <div class="question-category" :class="{ 'expanded': expandedCategory === 4 }">
+                                <div class="category-header" @click="toggleCategory(4)">
+                                    <h3 class="category-title">4. Energy-Based and Aesthetic Procedures</h3>
+                                    <span class="toggle-icon">{{ expandedCategory === 4 ? '−' : '+' }}</span>
+                                </div>
+                                <p class="category-description">Lasers, radiofrequency, microneedling, fillers, and related techniques.</p>
+                                <div v-if="expandedCategory === 4" class="questions-list">
+                                    <button @click="askSampleQuestion('What types of lasers are used for hair removal and how do they work?')" class="sample-question-btn">What types of lasers are used for hair removal and how do they work?</button>
+                                    <button @click="askSampleQuestion('Can you explain fractional CO₂ laser resurfacing?')" class="sample-question-btn">Can you explain fractional CO₂ laser resurfacing?</button>
+                                    <button @click="askSampleQuestion('What is IPL therapy used for?')" class="sample-question-btn">What is IPL therapy used for?</button>
+                                    <button @click="askSampleQuestion('How do lasers treat pigmentation issues like melasma?')" class="sample-question-btn">How do lasers treat pigmentation issues like melasma?</button>
+                                    <button @click="askSampleQuestion('What are the risks of laser treatments for darker skin tones?')" class="sample-question-btn">What are the risks of laser treatments for darker skin tones?</button>
+                                    <button @click="askSampleQuestion('How do I choose the right laser treatment for acne scars?')" class="sample-question-btn">How do I choose the right laser treatment for acne scars?</button>
+                                    <button @click="askSampleQuestion('What is the recovery time for ablative vs non-ablative laser treatments?')" class="sample-question-btn">What is the recovery time for ablative vs non-ablative laser treatments?</button>
+                                    <button @click="askSampleQuestion('Can lasers treat vascular lesions like spider veins?')" class="sample-question-btn">Can lasers treat vascular lesions like spider veins?</button>
+                                    <button @click="askSampleQuestion('What is microdermabrasion and how does it benefit the skin?')" class="sample-question-btn">What is microdermabrasion and how does it benefit the skin?</button>
+                                    <button @click="askSampleQuestion('How does microneedling stimulate collagen production?')" class="sample-question-btn">How does microneedling stimulate collagen production?</button>
+                                    <button @click="askSampleQuestion('What are dermal fillers and what areas can they be used on?')" class="sample-question-btn">What are dermal fillers and what areas can they be used on?</button>
+                                    <button @click="askSampleQuestion('What is the difference between Botox and fillers?')" class="sample-question-btn">What is the difference between Botox and fillers?</button>
+                                    <button @click="askSampleQuestion('What is thread lifting and how long do results last?')" class="sample-question-btn">What is thread lifting and how long do results last?</button>
+                                    <button @click="askSampleQuestion('How does radiofrequency treatment work for skin rejuvenation?')" class="sample-question-btn">How does radiofrequency treatment work for skin rejuvenation?</button>
+                                    <button @click="askSampleQuestion('What are the principles of facial volume restoration?')" class="sample-question-btn">What are the principles of facial volume restoration?</button>
+                                    <button @click="askSampleQuestion('How do you assess and treat facial asymmetry?')" class="sample-question-btn">How do you assess and treat facial asymmetry?</button>
+                                </div>
+                            </div>
+
+                            <!-- Category 5 -->
+                            <div class="question-category" :class="{ 'expanded': expandedCategory === 5 }">
+                                <div class="category-header" @click="toggleCategory(5)">
+                                    <h3 class="category-title">5. Cosmetics, Cosmeceuticals, and Skin Reactions</h3>
+                                    <span class="toggle-icon">{{ expandedCategory === 5 ? '−' : '+' }}</span>
+                                </div>
+                                <p class="category-description">Product classification, sensitivities, and ingredient safety.</p>
+                                <div v-if="expandedCategory === 5" class="questions-list">
+                                    <button @click="askSampleQuestion('What is the difference between cosmetics and cosmeceuticals?')" class="sample-question-btn">What is the difference between cosmetics and cosmeceuticals?</button>
+                                    <button @click="askSampleQuestion('What causes contact dermatitis from cosmetics?')" class="sample-question-btn">What causes contact dermatitis from cosmetics?</button>
+                                    <button @click="askSampleQuestion('How can I identify if I am allergic to a skincare ingredient?')" class="sample-question-btn">How can I identify if I'm allergic to a skincare ingredient?</button>
+                                    <button @click="askSampleQuestion('What ingredients are most likely to cause skin sensitization?')" class="sample-question-btn">What ingredients are most likely to cause skin sensitization?</button>
+                                    <button @click="askSampleQuestion('How do I treat cosmetic-induced acne (acne cosmetica)?')" class="sample-question-btn">How do I treat cosmetic-induced acne (acne cosmetica)?</button>
+                                    <button @click="askSampleQuestion('What should I do if my skin becomes red and irritated after using a new product?')" class="sample-question-btn">What should I do if my skin becomes red and irritated after using a new product?</button>
+                                    <button @click="askSampleQuestion('How can I rebuild my damaged skin barrier?')" class="sample-question-btn">How can I rebuild my damaged skin barrier?</button>
+                                    <button @click="askSampleQuestion('What causes perioral dermatitis and how is it treated?')" class="sample-question-btn">What causes perioral dermatitis and how is it treated?</button>
+                                    <button @click="askSampleQuestion('Can makeup cause or worsen skin conditions?')" class="sample-question-btn">Can makeup cause or worsen skin conditions?</button>
+                                </div>
+                            </div>
+
+                            <!-- Category 6 -->
+                            <div class="question-category" :class="{ 'expanded': expandedCategory === 6 }">
+                                <div class="category-header" @click="toggleCategory(6)">
+                                    <h3 class="category-title">6. Pathophysiology & Treatment of Skin Conditions</h3>
+                                    <span class="toggle-icon">{{ expandedCategory === 6 ? '−' : '+' }}</span>
+                                </div>
+                                <p class="category-description">Acne, rosacea, melasma, dermatitis, pigmentation, and related disorders.</p>
+                                <div v-if="expandedCategory === 6" class="questions-list">
+                                    <button @click="askSampleQuestion('What is a comprehensive treatment plan for rosacea?')" class="sample-question-btn">What is a comprehensive treatment plan for rosacea?</button>
+                                    <button @click="askSampleQuestion('How should melasma be treated in different skin types?')" class="sample-question-btn">How should melasma be treated in different skin types?</button>
+                                    <button @click="askSampleQuestion('What are the best approaches for treating adult acne?')" class="sample-question-btn">What are the best approaches for treating adult acne?</button>
+                                    <button @click="askSampleQuestion('How does hormonal acne differ from teenage acne?')" class="sample-question-btn">How does hormonal acne differ from teenage acne?</button>
+                                    <button @click="askSampleQuestion('What are the best treatments for hyperpigmentation?')" class="sample-question-btn">What are the best treatments for hyperpigmentation?</button>
+                                    <button @click="askSampleQuestion('How do you treat keratosis pilaris effectively?')" class="sample-question-btn">How do you treat keratosis pilaris effectively?</button>
+                                    <button @click="askSampleQuestion('What causes seborrheic dermatitis and how is it managed?')" class="sample-question-btn">What causes seborrheic dermatitis and how is it managed?</button>
+                                    <button @click="askSampleQuestion('Can diet affect skin conditions like acne and eczema?')" class="sample-question-btn">Can diet affect skin conditions like acne and eczema?</button>
+                                </div>
+                            </div>
+
+                            <!-- Category 7 -->
+                            <div class="question-category" :class="{ 'expanded': expandedCategory === 7 }">
+                                <div class="category-header" @click="toggleCategory(7)">
+                                    <h3 class="category-title">7. Holistic & Preventive Dermatology</h3>
+                                    <span class="toggle-icon">{{ expandedCategory === 7 ? '−' : '+' }}</span>
+                                </div>
+                                <p class="category-description">Lifestyle, nutrition, environment, and long-term care.</p>
+                                <div v-if="expandedCategory === 7" class="questions-list">
+                                    <button @click="askSampleQuestion('How does lifestyle affect skin aging and appearance?')" class="sample-question-btn">How does lifestyle affect skin aging and appearance?</button>
+                                    <button @click="askSampleQuestion('What role does nutrition play in skin health?')" class="sample-question-btn">What role does nutrition play in skin health?</button>
+                                    <button @click="askSampleQuestion('How does sleep affect skin regeneration?')" class="sample-question-btn">How does sleep affect skin regeneration?</button>
+                                    <button @click="askSampleQuestion('What are the effects of stress on skin conditions?')" class="sample-question-btn">What are the effects of stress on skin conditions?</button>
+                                    <button @click="askSampleQuestion('How can I prevent premature aging of my skin?')" class="sample-question-btn">How can I prevent premature aging of my skin?</button>
+                                    <button @click="askSampleQuestion('What are the most important steps in a daily skincare routine?')" class="sample-question-btn">What are the most important steps in a daily skincare routine?</button>
+                                    <button @click="askSampleQuestion('What is a good anti-aging skincare routine for someone in their 30s?')" class="sample-question-btn">What is a good anti-aging skincare routine for someone in their 30s?</button>
+                                    <button @click="askSampleQuestion('How does pollution affect skin health and how can I protect against it?')" class="sample-question-btn">How does pollution affect skin health and how can I protect against it?</button>
+                                </div>
+                            </div>
+
+                            <!-- Category 8 -->
+                            <div class="question-category" :class="{ 'expanded': expandedCategory === 8 }">
+                                <div class="category-header" @click="toggleCategory(8)">
+                                    <h3 class="category-title">8. Advanced Science & Mechanisms of Aging</h3>
+                                    <span class="toggle-icon">{{ expandedCategory === 8 ? '−' : '+' }}</span>
+                                </div>
+                                <p class="category-description">Cellular and molecular dermatology concepts.</p>
+                                <div v-if="expandedCategory === 8" class="questions-list">
+                                    <button @click="askSampleQuestion('What is the molecular mechanism of collagen degradation in aging skin?')" class="sample-question-btn">What is the molecular mechanism of collagen degradation in aging skin?</button>
+                                    <button @click="askSampleQuestion('How do different wavelengths of light affect the skin?')" class="sample-question-btn">How do different wavelengths of light affect the skin?</button>
+                                    <button @click="askSampleQuestion('What is the role of matrix metalloproteinases (MMPs) in skin aging?')" class="sample-question-btn">What is the role of matrix metalloproteinases (MMPs) in skin aging?</button>
+                                    <button @click="askSampleQuestion('Can you explain the difference between chronological and photoaging?')" class="sample-question-btn">Can you explain the difference between chronological and photoaging?</button>
+                                    <button @click="askSampleQuestion('How do growth factors work in anti-aging skincare?')" class="sample-question-btn">How do growth factors work in anti-aging skincare?</button>
+                                    <button @click="askSampleQuestion('What is the role of the skin microbiome in skin health?')" class="sample-question-btn">What is the role of the skin microbiome in skin health?</button>
+                                    <button @click="askSampleQuestion('Can you explain what transepidermal water loss (TEWL) means?')" class="sample-question-btn">Can you explain what transepidermal water loss (TEWL) means?</button>
+                                </div>
+                            </div>
+
+                            <!-- Category 9 -->
+                            <div class="question-category" :class="{ 'expanded': expandedCategory === 9 }">
+                                <div class="category-header" @click="toggleCategory(9)">
+                                    <h3 class="category-title">9. Clinical Scenarios & Integrated Care</h3>
+                                    <span class="toggle-icon">{{ expandedCategory === 9 ? '−' : '+' }}</span>
+                                </div>
+                                <p class="category-description">Case-based, multidisciplinary, and personalized treatment planning.</p>
+                                <div v-if="expandedCategory === 9" class="questions-list">
+                                    <button @click="askSampleQuestion('I have acne scars, hyperpigmentation, and fine lines. What comprehensive treatment approach would you recommend?')" class="sample-question-btn">I have acne scars, hyperpigmentation, and fine lines. What comprehensive treatment approach would you recommend?</button>
+                                    <button @click="askSampleQuestion('How do I combine professional treatments (like lasers and peels) with at-home skincare?')" class="sample-question-btn">How do I combine professional treatments (like lasers and peels) with at-home skincare?</button>
+                                    <button @click="askSampleQuestion('What is the best protocol for treating photoaging in Asian skin?')" class="sample-question-btn">What is the best protocol for treating photoaging in Asian skin?</button>
+                                    <button @click="askSampleQuestion('Can you create a complete skincare routine for sensitive, acne-prone skin?')" class="sample-question-btn">Can you create a complete skincare routine for sensitive, acne-prone skin?</button>
+                                    <button @click="askSampleQuestion('I am 45 with sun damage, wrinkles, and brown spots. What treatments should I consider?')" class="sample-question-btn">I'm 45 with sun damage, wrinkles, and brown spots. What treatments should I consider?</button>
+                                    <button @click="askSampleQuestion('What is the best treatment sequence for someone wanting to address multiple concerns?')" class="sample-question-btn">What's the best treatment sequence for someone wanting to address multiple concerns?</button>
+                                    <button @click="askSampleQuestion('How long should I wait between different cosmetic procedures?')" class="sample-question-btn">How long should I wait between different cosmetic procedures?</button>
+                                    <button @click="askSampleQuestion('Can you explain the layering order for skincare products?')" class="sample-question-btn">Can you explain the layering order for skincare products?</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="messages-list">
+                <div v-for="(message, index) in messages" :key="index" class="message" :class="message.role">
+                    <div class="message-content">
+                        <div v-if="message.image" class="message-image">
+                            <img :src="message.image" alt="Uploaded skin image" />
+                        </div>
+                        <div class="message-text" v-html="formatMessage(message.content)"></div>
+                        <div class="message-time">{{ formatTime(message.timestamp) }}</div>
+                    </div>
+                </div>
+
+                <!-- Loading indicator -->
+                <div v-if="isLoading" class="message assistant">
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-container">
+            <!-- Hidden file input -->
+            <input type="file" ref="imageInput" @change="handleImageSelect" accept="image/*" style="display: none" />
+
+            <!-- Chat Action Buttons -->
+            <div v-if="messages.length > 0" class="chat-actions">
+                <button @click="toggleSidebar" class="action-button history-btn">
+                    History
+                </button>
+                <button @click="startNewChat" class="action-button new-chat-btn">
+                    New Chat
+                </button>
+                <button @click="clearChat" class="action-button clear-chat-btn">
+                    Clear Chat
+                </button>
+            </div>
+
+            <!-- Image Preview -->
+            <div v-if="imagePreviewUrl" class="image-preview-container">
+                <div class="image-preview">
+                    <img :src="imagePreviewUrl" alt="Selected image" />
+                    <button @click="removeImage" class="remove-image-btn">✕</button>
+                </div>
+            </div>
+
+            <div class="input-wrapper">
+                <button @click="triggerImageUpload" class="image-upload-btn" title="Upload skin image">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <textarea v-model="userInput" @keydown.enter.prevent="handleEnter"
+                    placeholder="Ask me about skincare, cosmetics, or upload a skin image for analysis..."
+                    class="chat-input" rows="1" ref="textInput"></textarea>
+                <button @click="sendMessage" :disabled="(!userInput.trim() && !selectedImage) || isLoading"
+                    class="send-button">
+                    <span v-if="!isLoading">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 21l21-9L2 3v7l15 2l-15 2z" fill="white" />
+                        </svg>
+                    </span>
+                    <span v-else class="loading-spinner"></span>
+                </button>
+            </div>
+            
+            <!-- Input Disclaimer -->
+            <div class="input-disclaimer">
+                AI Dermatology Expert can make mistakes. Check important info.
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import api from '@/services/api'
+import { marked } from 'marked'
+
+// Configure marked for better rendering
+marked.setOptions({
+    breaks: true,
+    gfm: true, // GitHub Flavored Markdown
+    headerIds: false,
+    mangle: false
+})
+
+export default {
+    name: 'AIDermatologyExpert',
+    data() {
+        return {
+            userInput: '',
+            messages: [],
+            isLoading: false,
+            sampleQuestions: [
+                "What's a good routine for oily skin?",
+                "How do I reduce wrinkles naturally?",
+                "What ingredients should I avoid for sensitive skin?",
+                "Can you recommend products for acne-prone skin?",
+                "How often should I exfoliate?"
+            ],
+            // Chat history management
+            currentSessionId: null,
+            chatSessions: [],
+            sidebarOpen: false,
+            searchQuery: '',
+            // Image upload
+            selectedImage: null,
+            imagePreviewUrl: null,
+            // Disclaimers and safety
+            urgentCareKeywords: ['pain', 'severe', 'infection', 'pus', 'bleeding', 'swelling', 'emergency', 'urgent', 'spreading', 'fever', 'allergic reaction', 'burning', 'blistering'],
+            // Sample questions categories
+            expandedCategory: null
+        }
+    },
+
+    computed: {
+        sortedChatSessions() {
+            return [...this.chatSessions].sort((a, b) =>
+                new Date(b.timestamp) - new Date(a.timestamp)
+            )
+        },
+
+        filteredChatSessions() {
+            if (!this.searchQuery.trim()) {
+                return this.sortedChatSessions
+            }
+
+            const query = this.searchQuery.toLowerCase().trim()
+            return this.sortedChatSessions.filter(session => {
+                // Search in title
+                if (session.title.toLowerCase().includes(query)) {
+                    return true
+                }
+
+                // Search in preview
+                if (session.preview.toLowerCase().includes(query)) {
+                    return true
+                }
+
+                // Search in messages
+                if (session.messages && session.messages.some(msg =>
+                    msg.content.toLowerCase().includes(query)
+                )) {
+                    return true
+                }
+
+                return false
+            })
+        }
+    },
+
+    mounted() {
+        this.loadAllSessions()
+        this.loadCurrentSession()
+        this.adjustTextareaHeight()
+    },
+
+    beforeUnmount() {
+        // Clean up any blob URLs when component is destroyed
+        this.cleanupBlobUrls()
+        if (this.imagePreviewUrl) {
+            URL.revokeObjectURL(this.imagePreviewUrl)
+        }
+    },
+
+    watch: {
+        messages: {
+            handler() {
+                this.saveCurrentSession()
+                this.$nextTick(() => {
+                    this.scrollToBottom()
+                })
+            },
+            deep: true
+        },
+        userInput() {
+            this.adjustTextareaHeight()
+        }
+    },
+
+    methods: {
+        detectUrgentCare(message) {
+            const lowerMessage = message.toLowerCase()
+            return this.urgentCareKeywords.some(keyword => lowerMessage.includes(keyword))
+        },
+
+        getUrgentCareWarning() {
+            return `\n\n---\n\n⚠️ **IMPORTANT MEDICAL NOTICE**\n\nYour message suggests you may be experiencing a condition that requires immediate medical attention.\n\n**Please seek professional medical care if you have:**\n- Severe or worsening pain\n- Signs of infection (pus, warmth, spreading redness)\n- Sudden or rapid skin changes\n- Severe allergic reactions (difficulty breathing, swelling)\n- Persistent bleeding or open wounds\n- Fever accompanying skin symptoms\n- Suspicious moles or skin growths\n\n**Contact:**\n- Your dermatologist or primary care physician\n- Emergency services (911) for severe symptoms\n- Urgent care clinic for same-day evaluation\n\nThis AI cannot diagnose emergencies or replace emergency medical care.`
+        },
+
+        adjustTextareaHeight() {
+            this.$nextTick(() => {
+                const textarea = this.$refs.textInput
+                if (textarea) {
+                    textarea.style.height = 'auto'
+                    textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px'
+                }
+            })
+        },
+
+        handleImageSelect(event) {
+            const file = event.target.files[0]
+            if (file && file.type.startsWith('image/')) {
+                this.selectedImage = file
+                this.imagePreviewUrl = URL.createObjectURL(file)
+            }
+        },
+
+        removeImage() {
+            this.selectedImage = null
+            if (this.imagePreviewUrl) {
+                URL.revokeObjectURL(this.imagePreviewUrl)
+                this.imagePreviewUrl = null
+            }
+            // Reset file input
+            const fileInput = this.$refs.imageInput
+            if (fileInput) {
+                fileInput.value = ''
+            }
+        },
+
+        triggerImageUpload() {
+            this.$refs.imageInput.click()
+        },
+
+        handleEnter(event) {
+            if (!event.shiftKey) {
+                this.sendMessage()
+            }
+        },
+
+        async sendMessage() {
+            if ((!this.userInput.trim() && !this.selectedImage) || this.isLoading) return
+
+            // Keep a copy of the image preview URL for the message
+            const imagePreview = this.imagePreviewUrl
+
+            const userMessage = {
+                role: 'user',
+                content: this.userInput.trim() || 'Please analyze this skin image',
+                timestamp: new Date(),
+                image: imagePreview // Store preview URL for display
+            }
+
+            console.log('📤 Sending user message:', userMessage.content)
+            this.messages.push(userMessage)
+
+            const messageToSend = this.userInput.trim() || 'Please analyze this skin image'
+            const imageToSend = this.selectedImage
+
+            this.userInput = ''
+
+            // Clear the input preview, but don't revoke the blob yet
+            this.selectedImage = null
+            this.imagePreviewUrl = null
+            const fileInput = this.$refs.imageInput
+            if (fileInput) {
+                fileInput.value = ''
+            }
+
+            this.isLoading = true
+
+            try {
+                await this.getAIResponse(messageToSend, imageToSend)
+            } catch (error) {
+                console.error('❌ Error getting AI response:', error)
+                this.messages.push({
+                    role: 'assistant',
+                    content: "I apologize, but I'm having trouble responding right now. Please try again in a moment.",
+                    timestamp: new Date()
+                })
+            } finally {
+                this.isLoading = false
+            }
+        },
+
+        async getAIResponse(userMessage, imageFile = null) {
+            try {
+                console.log('🔍 Preparing API request...')
+                console.log('📚 User query:', userMessage)
+                console.log('�️ Image attached:', !!imageFile)
+                console.log('�📝 Conversation history (last 10 messages):', this.messages.slice(-10))
+
+                if (imageFile) {
+                    // Use FormData for image upload
+                    const formData = new FormData()
+                    formData.append('message', userMessage)
+                    formData.append('image', imageFile)
+                    formData.append('conversationHistory', JSON.stringify(this.messages.slice(-10)))
+
+                    console.log('📤 Sending image analysis request to /ai-dermatology-expert/analyze-skin')
+
+                    const response = await api.post('/ai-dermatology-expert/analyze-skin', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    })
+
+                    console.log('✅ Received image analysis response:', response.data)
+
+                    // Add urgent care warning if needed
+                    let responseContent = response.data.response
+                    if (this.detectUrgentCare(userMessage)) {
+                        responseContent += this.getUrgentCareWarning()
+                    }
+
+                    this.messages.push({
+                        role: 'assistant',
+                        content: responseContent,
+                        sources: response.data.sources,
+                        timestamp: new Date()
+                    })
+                } else {
+                    // Regular text-only request
+                    const requestData = {
+                        message: userMessage,
+                        conversationHistory: this.messages.slice(-10)
+                    }
+
+                    console.log('📤 Sending request to /ai-dermatology-expert/chat:', requestData)
+
+                    const response = await api.post('/ai-dermatology-expert/chat', requestData)
+
+                    console.log('✅ Received API response:', response.data)
+                    console.log('📚 Using RAG context for query:', userMessage)
+                    console.log('💡 AI Response:', response.data.response)
+
+                    if (response.data.sources) {
+                        console.log('📖 Sources used:', response.data.sources)
+                    }
+
+                    // Add urgent care warning if needed
+                    let responseContent = response.data.response
+                    if (this.detectUrgentCare(userMessage)) {
+                        responseContent += this.getUrgentCareWarning()
+                    }
+
+                    this.messages.push({
+                        role: 'assistant',
+                        content: responseContent,
+                        sources: response.data.sources,
+                        timestamp: new Date()
+                    })
+                }
+            } catch (error) {
+                console.error('❌ Error calling AI API:', error)
+                console.error('❌ Error details:', error.response?.data || error.message)
+
+                // Check for specific error types
+                const errorDetails = error.response?.data
+                let errorMessage = ''
+
+                if (errorDetails?.details?.includes('429') || errorDetails?.details?.includes('rate limit')) {
+                    errorMessage = '\n\n*⚠️ The AI service is currently rate-limited. Please wait a moment and try again. Using offline knowledge base for now.*'
+                } else if (errorDetails?.details?.includes('overloaded')) {
+                    errorMessage = '\n\n*⚠️ The AI service is currently experiencing high traffic. Please try again shortly. Using offline knowledge base for now.*'
+                } else {
+                    errorMessage = '\n\n*⚠️ Unable to connect to AI service. Using offline knowledge base. For best results, ensure backend is running.*'
+                }
+
+                // Fallback to local response if API fails
+                console.log('⚠️ Falling back to local response')
+                let response = this.generateContextualResponse(userMessage)
+
+                // Add urgent care warning if needed for fallback response
+                if (this.detectUrgentCare(userMessage)) {
+                    response += this.getUrgentCareWarning()
+                }
+
+                this.messages.push({
+                    role: 'assistant',
+                    content: response + errorMessage,
+                    timestamp: new Date()
+                })
+            }
+        },
+
+        generateContextualResponse(message) {
+            console.log('🔄 Generating contextual fallback response for:', message)
+            const lowerMessage = message.toLowerCase()
+
+            // Image analysis fallback
+            if (lowerMessage.includes('analyze') || lowerMessage.includes('wrong') || lowerMessage.includes('image')) {
+                console.log('✅ Matched pattern: image analysis')
+                return `I'm unable to analyze the image right now, but here's some general guidance:
+
+**Common Skin Concerns:**
+
+**Acne:**
+- Characterized by pimples, blackheads, whiteheads
+- Treatment: Gentle cleansing, salicylic acid, benzoyl peroxide
+- Consider: Retinoids for persistent acne
+
+**Scarring:**
+- Can be from previous acne or injuries
+- Treatment: Vitamin C serum, retinol, niacinamide
+- Professional: Chemical peels, microneedling, laser therapy
+
+**Hyperpigmentation:**
+- Dark spots or uneven skin tone
+- Treatment: Vitamin C, niacinamide, alpha arbutin
+- Essential: Daily SPF 30+
+
+**Texture Issues:**
+- Rough or uneven skin surface
+- Treatment: Regular gentle exfoliation (AHA/BHA)
+- Consider: Retinol for long-term improvement
+
+**General Recommendations:**
+1. Establish a gentle cleansing routine
+2. Use sunscreen daily (SPF 30+)
+3. Keep skin hydrated
+4. Be patient - skin improvements take 4-12 weeks
+5. For persistent concerns, consult a dermatologist
+
+Would you like specific product recommendations for any of these concerns?`
+            }
+
+            // Skincare routine responses
+            if (lowerMessage.includes('routine') && lowerMessage.includes('oily')) {
+                console.log('✅ Matched pattern: oily skin routine')
+                return `For oily skin, I recommend a balanced routine:
+
+**Morning:**
+1. Gentle foaming cleanser
+2. Toner with salicylic acid or niacinamide
+3. Lightweight, oil-free moisturizer
+4. Broad-spectrum SPF 30+
+
+**Evening:**
+1. Oil-based cleanser (double cleanse)
+2. Gentle foaming cleanser
+3. Treatment (like BHA or retinol)
+4. Lightweight moisturizer
+
+**Key ingredients to look for:**
+- Niacinamide (reduces oil production)
+- Salicylic acid (unclogs pores)
+- Hyaluronic acid (hydration without oil)
+
+Would you like product recommendations or have questions about specific products?`
+            }
+
+            if (lowerMessage.includes('wrinkle') || lowerMessage.includes('anti-aging')) {
+                console.log('✅ Matched pattern: wrinkles/anti-aging')
+                return `To reduce wrinkles naturally and effectively:
+
+**Top Recommendations:**
+1. **Retinol/Retinoids** - The gold standard for anti-aging
+2. **Vitamin C** - Antioxidant protection and collagen production
+3. **Peptides** - Support skin structure and firmness
+4. **Sunscreen** - Daily SPF 30+ is crucial!
+
+**Natural approaches:**
+- Stay hydrated (drink water)
+- Get adequate sleep (7-9 hours)
+- Facial massage to improve circulation
+- Antioxidant-rich diet
+- Avoid smoking and excess alcohol
+
+**Gentle exfoliation** with AHAs (glycolic, lactic acid) can also help improve skin texture.
+
+Start slowly with active ingredients and build tolerance. Would you like specific product recommendations?`
+            }
+
+            if (lowerMessage.includes('sensitive skin') || lowerMessage.includes('avoid')) {
+                console.log('✅ Matched pattern: sensitive skin')
+                return `For sensitive skin, **avoid these common irritants:**
+
+**❌ Ingredients to avoid:**
+- Fragrance (parfum)
+- Denatured alcohol
+- Essential oils
+- Harsh sulfates (SLS)
+- High-concentration acids
+- Physical exfoliants
+
+**✅ Look for instead:**
+- Ceramides
+- Centella Asiatica
+- Colloidal oatmeal
+- Hyaluronic acid
+- Niacinamide (low %)
+- Squalane
+
+**Tips:**
+- Patch test new products
+- Introduce one product at a time
+- Choose fragrance-free formulas
+- Use lukewarm water (not hot)
+
+What specific concerns do you have with your sensitive skin?`
+            }
+
+            if (lowerMessage.includes('acne') || lowerMessage.includes('breakout')) {
+                console.log('✅ Matched pattern: acne/breakouts')
+                return `For acne-prone skin, here's my recommendation:
+
+**Key Ingredients:**
+1. **Salicylic Acid (BHA)** - Unclogs pores, 2% is ideal
+2. **Benzoyl Peroxide** - Kills acne bacteria
+3. **Niacinamide** - Reduces inflammation and oil
+4. **Retinoids** - Prevents clogged pores
+
+**Product Types:**
+- Gentle, non-comedogenic cleanser
+- BHA toner or treatment
+- Lightweight, oil-free moisturizer
+- Spot treatment for active breakouts
+- Always use SPF!
+
+**Important tips:**
+- Don't over-dry your skin
+- Be patient (6-8 weeks for results)
+- Avoid touching your face
+- Change pillowcases regularly
+- Consider seeing a dermatologist for persistent acne concerns
+
+Would you like specific product recommendations or have questions about acne scarring?`
+            }
+
+            if (lowerMessage.includes('exfoliate') || lowerMessage.includes('exfoliation')) {
+                console.log('✅ Matched pattern: exfoliation')
+                return `**Exfoliation Guidelines:**
+
+**How often:**
+- **Normal skin:** 2-3 times per week
+- **Oily/resilient skin:** 3-4 times per week
+- **Dry/sensitive skin:** 1-2 times per week
+- **Mature skin:** 2-3 times per week (gentle)
+
+**Types of exfoliation:**
+
+**Chemical (preferred):**
+- AHAs (glycolic, lactic) - for surface/dry skin
+- BHAs (salicylic) - for oily/acne-prone skin
+- PHAs - gentlest option for sensitive skin
+
+**Physical:**
+- Use very gentle options
+- Avoid harsh scrubs with large particles
+
+**Important rules:**
+- Don't combine with retinoids on same night
+- Always follow with moisturizer
+- Use SPF during the day
+- Less is more - don't over-exfoliate!
+
+**Signs of over-exfoliation:**
+- Redness, irritation
+- Increased sensitivity
+- Tight, dry feeling
+
+What's your skin type? I can give you more specific recommendations!`
+            }
+
+            // Generic response for other questions
+            console.log('ℹ️ No specific pattern matched, using generic response')
+            return `Thank you for your question! As a virtual skincare consultant, I'm here to help with educational skincare information and general guidance.
+
+To provide you with the most helpful information, could you tell me more about:
+
+- Your skin type (oily, dry, combination, sensitive)?
+- Your main skin concerns?
+- Any products you're currently using?
+- Any allergies or sensitivities?
+
+This will help me give you better tailored educational advice. You can also ask me about:
+- Specific ingredients and their benefits
+- General product recommendations
+- Basic skincare routines
+- Educational information about treatments
+- Facial care techniques
+
+**When to See a Professional:**
+Please consult a qualified dermatologist or healthcare provider for:
+- Persistent or worsening skin conditions
+- Unusual moles or skin changes
+- Severe acne or skin infections
+- Prescription medication recommendations
+- Medical diagnosis or treatment plans
+- Conditions affecting your health or quality of life
+
+What would you like to know more about?`
+        },
+
+        askSampleQuestion(question) {
+            this.userInput = question
+            this.sendMessage()
+        },
+
+        toggleCategory(categoryId) {
+            if (this.expandedCategory === categoryId) {
+                this.expandedCategory = null
+            } else {
+                this.expandedCategory = categoryId
+            }
+        },
+
+        formatMessage(content) {
+            // Use marked to parse markdown
+            try {
+                // Configure marked to support HTML
+                marked.setOptions({
+                    breaks: true,
+                    gfm: true,
+                    headerIds: false,
+                    mangle: false,
+                    sanitize: false
+                })
+
+                // Parse the markdown to HTML (no image processing needed)
+                return marked.parse(content)
+            } catch (error) {
+                console.error('Error parsing markdown:', error)
+                // Fallback to simple formatting
+                return content
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\n/g, '<br>')
+            }
+        },
+
+        formatTime(timestamp) {
+            const date = new Date(timestamp)
+            return date.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            })
+        },
+
+        scrollToBottom() {
+            const container = this.$refs.chatContainer
+            if (container) {
+                container.scrollTop = container.scrollHeight
+            }
+        },
+
+        // Chat History Management Methods
+        generateSessionId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2)
+        },
+
+        generateSessionTitle(messages) {
+            if (messages.length === 0) return 'New Chat'
+            const firstUserMessage = messages.find(m => m.role === 'user')
+            if (firstUserMessage) {
+                const title = firstUserMessage.content.substring(0, 50)
+                return title.length < firstUserMessage.content.length ? title + '...' : title
+            }
+            return 'New Chat'
+        },
+
+        generateSessionPreview(messages) {
+            if (messages.length === 0) return 'No messages yet'
+            const firstUserMessage = messages.find(m => m.role === 'user')
+            if (firstUserMessage) {
+                return firstUserMessage.content.substring(0, 80) + (firstUserMessage.content.length > 80 ? '...' : '')
+            }
+            return 'No messages yet'
+        },
+
+        saveCurrentSession() {
+            if (this.messages.length === 0) return
+
+            if (!this.currentSessionId) {
+                this.currentSessionId = this.generateSessionId()
+            }
+
+            // Create a copy of messages without blob URLs (they can't be restored)
+            const messagesToSave = this.messages.map(msg => {
+                if (msg.image && msg.image.startsWith('blob:')) {
+                    // Don't save blob URLs - they won't work after reload
+                    return {
+                        ...msg,
+                        image: null,
+                        content: msg.content + ' [Image was uploaded]'
+                    }
+                }
+                return msg
+            })
+
+            const session = {
+                id: this.currentSessionId,
+                title: this.generateSessionTitle(this.messages),
+                preview: this.generateSessionPreview(this.messages),
+                timestamp: new Date().toISOString(),
+                messages: messagesToSave
+            }
+
+            // Update or add session
+            const existingIndex = this.chatSessions.findIndex(s => s.id === this.currentSessionId)
+            if (existingIndex >= 0) {
+                this.chatSessions[existingIndex] = session
+            } else {
+                this.chatSessions.push(session)
+            }
+
+            // Save to localStorage
+            try {
+                localStorage.setItem('aiDermatologyExpertSessions', JSON.stringify(this.chatSessions))
+                localStorage.setItem('aiDermatologyExpertCurrentSession', this.currentSessionId)
+            } catch (error) {
+                console.warn('Failed to save chat session:', error)
+            }
+        },
+
+        loadAllSessions() {
+            try {
+                const savedSessions = localStorage.getItem('aiDermatologyExpertSessions')
+                if (savedSessions) {
+                    this.chatSessions = JSON.parse(savedSessions)
+                }
+            } catch (error) {
+                console.warn('Failed to load chat sessions:', error)
+                this.chatSessions = []
+            }
+        },
+
+        loadCurrentSession() {
+            try {
+                const currentSessionId = localStorage.getItem('aiDermatologyExpertCurrentSession')
+                if (currentSessionId) {
+                    this.currentSessionId = currentSessionId
+                    const session = this.chatSessions.find(s => s.id === currentSessionId)
+                    if (session) {
+                        this.messages = session.messages
+                    }
+                }
+            } catch (error) {
+                console.warn('Failed to load current session:', error)
+            }
+        },
+
+        loadChatSession(sessionId) {
+            const session = this.chatSessions.find(s => s.id === sessionId)
+            if (session) {
+                this.currentSessionId = sessionId
+                this.messages = session.messages
+                localStorage.setItem('aiDermatologyExpertCurrentSession', sessionId)
+                this.sidebarOpen = false
+                this.$nextTick(() => {
+                    this.scrollToBottom()
+                })
+            }
+        },
+
+        deleteChatSession(sessionId) {
+            if (confirm('Delete this conversation? This cannot be undone.')) {
+                this.chatSessions = this.chatSessions.filter(s => s.id !== sessionId)
+                localStorage.setItem('aiDermatologyExpertSessions', JSON.stringify(this.chatSessions))
+                
+                // If deleting current session, start a new one
+                if (sessionId === this.currentSessionId) {
+                    this.messages = []
+                    this.currentSessionId = null
+                    localStorage.removeItem('aiDermatologyExpertCurrentSession')
+                }
+            }
+        },
+
+        toggleSidebar() {
+            this.sidebarOpen = !this.sidebarOpen
+        },
+
+        formatSessionDate(timestamp) {
+            const date = new Date(timestamp)
+            const now = new Date()
+            const diff = now - date
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+            if (days === 0) {
+                return 'Today ' + date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+            } else if (days === 1) {
+                return 'Yesterday'
+            } else if (days < 7) {
+                return days + ' days ago'
+            } else {
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            }
+        },
+
+        saveChatHistory() {
+            // Legacy method - now handled by saveCurrentSession
+            this.saveCurrentSession()
+        },
+
+        loadChatHistory() {
+            // Legacy method - now handled by loadCurrentSession
+            this.loadCurrentSession()
+        },
+
+        startNewChat() {
+            if (this.messages.length > 0) {
+                if (confirm('Start a new chat? Current conversation will be saved.')) {
+                    this.saveCurrentSession()
+                    this.cleanupBlobUrls()
+                    this.messages = []
+                    this.userInput = ''
+                    this.currentSessionId = null
+                    localStorage.removeItem('aiDermatologyExpertCurrentSession')
+                }
+            }
+        },
+
+        clearChat() {
+            if (confirm('Clear this chat? This cannot be undone.')) {
+                if (this.currentSessionId) {
+                    this.deleteChatSession(this.currentSessionId)
+                }
+                this.cleanupBlobUrls()
+                this.messages = []
+                this.userInput = ''
+                this.currentSessionId = null
+                localStorage.removeItem('aiDermatologyExpertCurrentSession')
+            }
+        },
+
+        cleanupBlobUrls() {
+            // Revoke any blob URLs in messages to prevent memory leaks
+            this.messages.forEach(message => {
+                if (message.image && message.image.startsWith('blob:')) {
+                    URL.revokeObjectURL(message.image)
+                }
+            })
+        }
+    }
+}
+</script>
+
+<style scoped>
+.ai-dermatology-expert {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--primary-50);
+    position: relative;
+}
+
+/* History Sidebar */
+.history-sidebar {
+    position: fixed;
+    left: -320px;
+    top: 0;
+    bottom: 0;
+    width: 320px;
+    background: white;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.history-sidebar.open {
+    left: 0;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--primary-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--primary-50);
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    color: var(--primary-800);
+    font-size: 1.25rem;
+}
+
+.close-sidebar-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--primary-600);
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.close-sidebar-btn:hover {
+    background: var(--primary-100);
+}
+
+/* Search Input */
+.sidebar-search {
+    padding: 1rem 1.5rem;
+    padding-bottom: 0;
+    background: white;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    border: 1px solid var(--primary-200);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    background: var(--primary-50);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.search-input::placeholder {
+    color: var(--primary-600);
+}
+
+.clear-search {
+    position: absolute;
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-400);
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    font-size: 1rem;
+    transition: all 0.2s;
+    border-radius: 4px;
+}
+
+.clear-search:hover {
+    background: var(--primary-100);
+    color: var(--primary-600);
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.no-history {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--primary-400);
+}
+
+.no-history p {
+    margin: 0;
+}
+
+.chat-sessions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.chat-session-item {
+    padding: 1rem;
+    background: var(--primary-50);
+    border: 1px solid var(--primary-200);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.chat-session-item:hover {
+    background: var(--primary-100);
+    border-color: var(--primary-300);
+    transform: translateX(2px);
+}
+
+.chat-session-item.active {
+    background: var(--primary-100);
+    border-color: var(--primary-400);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.session-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.session-title {
+    font-weight: 600;
+    color: var(--primary-800);
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.session-date {
+    font-size: 0.75rem;
+    color: var(--primary-500);
+    margin-bottom: 0.25rem;
+}
+
+.session-preview {
+    font-size: 0.875rem;
+    color: var(--primary-600);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.delete-session-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.chat-session-item:hover .delete-session-btn {
+    opacity: 1;
+}
+
+.delete-session-btn:hover {
+    transform: scale(1.2);
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sidebar-overlay {
+        display: block;
+    }
+
+    .history-sidebar {
+        width: 280px;
+        left: -280px;
+    }
+}
+
+/* Chat Container */
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    padding-bottom: 150px;
+    /* Space for fixed input area */
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Welcome Section */
+.welcome-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100%;
+}
+
+.welcome-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    max-width: 700px;
+}
+
+.welcome-header {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--primary-200);
+}
+
+.welcome-header h1 {
+    color: var(--primary-800);
+    font-size: 2rem;
+    margin: 0 0 0.5rem 0;
+    font-weight: 700;
+}
+
+.welcome-disclaimer {
+    background: #fdf8e6;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.welcome-disclaimer h3 {
+    color: #d97706;
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.welcome-disclaimer p {
+    color: #856404;
+    margin: 0.5rem 0;
+    line-height: 1.6;
+}
+
+.welcome-disclaimer ul {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+    color: #856404;
+}
+
+.welcome-disclaimer li {
+    margin: 0.5rem 0;
+}
+
+.disclaimer-highlight {
+    padding: 1rem;
+    margin-top: 1rem !important;
+    border-radius: 4px;
+}
+
+.disclaimer-highlight strong {
+    color: #d97706;
+}
+
+.welcome-header {
+    color: var(--primary-600);
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+}
+
+.welcome-header .description {
+    color: var(--primary-color);
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.welcome-card h2 {
+    color: var(--primary-800);
+    margin-bottom: 1rem;
+}
+
+.welcome-card>p {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+/* Sample Questions Section */
+.sample-questions-section {
+    margin-top: 2rem;
+}
+
+.sample-questions-section h2 {
+    color: var(--primary-800);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.section-description {
+    text-align: center;
+    color: var(--primary-600);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.category-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.question-category {
+    background: var(--primary-50);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid var(--primary-200);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.question-category:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary-300);
+}
+
+.question-category.expanded {
+    background: white;
+    border-color: var(--primary-400);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.category-title {
+    color: var(--primary-800);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.toggle-icon {
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--primary-600);
+    transition: transform 0.3s ease;
+    min-width: 24px;
+    text-align: center;
+}
+
+.question-category.expanded .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.category-description {
+    color: var(--primary-600);
+    font-size: 0.875rem;
+    margin: 0.5rem 0 0 0;
+    font-style: italic;
+}
+
+.question-category.expanded .category-description {
+    margin-bottom: 1rem;
+}
+
+.questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sample-question-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: 1px solid var(--primary-200);
+    border-radius: 8px;
+    color: var(--primary-700);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.sample-question-btn:hover {
+    background: var(--primary-100);
+    border-color: var(--primary-400);
+    transform: translateX(4px);
+    color: var(--primary-800);
+}
+
+.sample-question-btn:active {
+    transform: translateX(2px);
+}
+
+/* Messages */
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.message {
+    display: flex;
+    gap: 1rem;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.message.user {
+    flex-direction: row-reverse;
+}
+
+.message-content {
+    max-width: 70%;
+    background: white;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+
+.message.user .message-content {
+    background: var(--primary-500);
+    color: white;
+}
+
+.message.user .message-content,
+.message.user .message-content * {
+    color: white !important;
+}
+
+.message-text {
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+
+/* Markdown elements styling - Enhanced for Tailwind compatibility */
+.message-text :deep(h1),
+.message-text :deep(h2),
+.message-text :deep(h3),
+.message-text :deep(h4) {
+    margin: 1rem 0 0.5rem 0 !important;
+    font-weight: 600 !important;
+    color: var(--primary-800) !important;
+    line-height: 1.4 !important;
+}
+
+.message.user .message-text :deep(h1),
+.message.user .message-text :deep(h2),
+.message.user .message-text :deep(h3),
+.message.user .message-text :deep(h4) {
+    color: white;
+}
+
+.message-text :deep(h1) {
+    font-size: 1.5rem !important;
+}
+
+.message-text :deep(h2) {
+    font-size: 1.3rem !important;
+}
+
+.message-text :deep(h3) {
+    font-size: 1.1rem !important;
+}
+
+.message-text :deep(h4) {
+    font-size: 1rem !important;
+}
+
+.message-text :deep(ul),
+.message-text :deep(ol) {
+    margin: 0.5rem 0 !important;
+    padding-left: 1.5rem !important;
+    list-style: disc !important;
+}
+
+.message-text :deep(ol) {
+    list-style: decimal !important;
+}
+
+.message-text :deep(li) {
+    margin: 0.25rem 0 !important;
+    display: list-item !important;
+}
+
+.message-text :deep(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+}
+
+.message-text :deep(table th),
+.message-text :deep(table td) {
+    border: 1px solid var(--primary-200);
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.message-text :deep(table th) {
+    background-color: var(--primary-100);
+    font-weight: 600;
+    color: var(--primary-800);
+}
+
+.message.user .message-text :deep(table th) {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.message.user .message-text :deep(table td) {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.message-text :deep(code) {
+    background-color: var(--primary-100);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+.message.user .message-text :deep(code) {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.message-text :deep(blockquote) {
+    border-left: 3px solid var(--primary-400);
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: var(--primary-700);
+}
+
+.message-text :deep(p) {
+    margin: 0 0 0.75rem 0 !important;
+    line-height: 1.6 !important;
+}
+
+.message-text :deep(p:last-child) {
+    margin-bottom: 0 !important;
+}
+
+.message-text :deep(strong) {
+    font-weight: 600 !important;
+    color: var(--primary-800) !important;
+}
+
+.message.user .message-text :deep(strong) {
+    color: white;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.5rem;
+}
+
+.message.user .message-time {
+    color: rgba(255, 255, 255, 0.8);
+    text-align: right;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.5rem 0;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: var(--primary-400);
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+
+    0%,
+    60%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+
+/* Input Area */
+.chat-input-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem 2rem;
+    background: var(--primary-50);
+    z-index: 100;
+}
+
+/* Image Preview Container */
+.image-preview-container {
+    max-width: 1200px;
+    margin: 0 auto 0.75rem;
+}
+
+.image-preview {
+    position: relative;
+    display: inline-block;
+    max-width: 200px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.remove-image-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.remove-image-btn:hover {
+    background: rgba(239, 68, 68, 1);
+    transform: scale(1.1);
+}
+
+/* Message Image */
+.message-image {
+    margin-bottom: 0.75rem;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 300px;
+}
+
+.message-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Chat Action Buttons */
+.chat-actions {
+    max-width: 1200px;
+    margin: 0 auto 0.75rem;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.action-button {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    border: none;
+}
+
+.history-btn {
+    background: var(--primary-100);
+    color: var(--primary-600);
+}
+
+.history-btn:hover {
+    background: white;
+}
+
+.new-chat-btn {
+    background: var(--primary-100);
+    color: var(--primary-600);
+}
+
+.new-chat-btn:hover {
+    background: white;
+}
+
+.clear-chat-btn {
+    background: white;
+    color: #ef4444;
+}
+
+.clear-chat-btn:hover {
+    background: #fef2f2;
+}
+
+.input-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.image-upload-btn {
+    padding: 0.75rem;
+    background: white;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-200);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+}
+
+.image-upload-btn:hover {
+    background: var(--primary-50);
+    border-color: var(--primary-color);
+}
+
+.image-upload-btn svg {
+    display: block;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--primary-200);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: none;
+    min-height: 50px;
+    max-height: 150px;
+    transition: border-color 0.2s;
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.send-button {
+    padding: 0.75rem 0.2rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+}
+
+.send-button:hover:not(:disabled) {
+    background: var(--primary-600);
+    transform: translateY(-2px);
+}
+
+.send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.input-disclaimer {
+    max-width: 1200px;
+    margin: 0.5rem auto 0;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--primary-800);
+    padding: 0 1rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+
+    .chat-container {
+        padding: 1rem;
+        padding-bottom: 180px; /* Increased space for fixed input area on mobile */
+    }
+
+    .welcome-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .welcome-header {
+        font-size: 0.875rem;
+    }
+
+    .welcome-disclaimer {
+        padding: 1rem;
+        font-size: 0.875rem;
+    }
+
+    .welcome-disclaimer h3 {
+        font-size: 1rem;
+    }
+
+    .sample-questions-section {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+    }
+
+    .sample-questions-section h2 {
+        font-size: 1.25rem;
+    }
+
+    .section-description {
+        font-size: 0.875rem;
+    }
+
+    .category-container {
+        gap: 1rem;
+    }
+
+    .question-category {
+        padding: 1rem;
+    }
+
+    .category-header {
+        gap: 0.5rem;
+    }
+
+    .category-title {
+        font-size: 1rem;
+    }
+
+    .toggle-icon {
+        font-size: 1.25rem;
+        min-width: 20px;
+    }
+
+    .category-description {
+        font-size: 0.8rem;
+    }
+
+    .sample-question-btn {
+        padding: 0.6rem 0.875rem;
+        font-size: 0.85rem;
+    }
+
+    .message-content {
+        max-width: 85%;
+    }
+
+    .chat-input-container {
+        padding: 1rem;
+    }
+
+    .input-disclaimer {
+        font-size: 0.7rem;
+        margin-top: 0.25rem;
+    }
+
+    .chat-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .action-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .input-wrapper {
+        gap: 0.5rem;
+    }
+
+    .send-button {
+        min-width: 40px;
+        padding: 0.75rem 1rem;
+    }
+}
+</style>
