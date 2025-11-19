@@ -18,6 +18,7 @@ import * as MediaLibrary from 'expo-media-library';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, API_BASE_URL } from '../constants';
 import livestreamService from '../services/livestreamService';
+import AgoraBroadcaster from '../components/AgoraBroadcaster';
 
 const { width, height } = Dimensions.get('window');
 
@@ -398,6 +399,13 @@ export default function LivestreamScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Agora Broadcaster - broadcasts camera feed to viewers */}
+      <AgoraBroadcaster
+        streamId={currentStreamId}
+        isStreaming={isStreaming}
+        onError={(error) => Alert.alert('Streaming Error', error)}
+      />
+      
       {/* Camera Preview */}
       <View style={styles.cameraContainer}>
         {console.log('🎥 Rendering CameraView with facing:', cameraFacing, 'Type:', typeof cameraFacing)}

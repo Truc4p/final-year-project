@@ -17,6 +17,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { livestreamService } from '../services/livestreamService';
 import { COLORS, API_BASE_URL } from '../constants';
+import AgoraViewer from '../components/AgoraViewer';
 
 const { width } = Dimensions.get('window');
 
@@ -433,31 +434,11 @@ export default function LivestreamScreen({ navigation }) {
 
         {/* Video Player Section */}
         <View style={styles.videoSection}>
-          <View style={styles.videoPlayer}>
-            {isLive ? (
-              <View style={styles.videoPlaceholder}>
-                <Text style={styles.videoPlaceholderText}>🎥</Text>
-                <Text style={styles.videoPlaceholderSubtext}>
-                  Live Stream Active
-                </Text>
-                <Text style={styles.videoPlaceholderDescription}>
-                  Broadcasting from mobile app
-                </Text>
-                <View style={styles.liveIndicatorLarge}>
-                  <View style={styles.liveDotLarge} />
-                  <Text style={styles.liveTextLarge}>LIVE NOW</Text>
-                </View>
-              </View>
-            ) : (
-              <View style={styles.videoPlaceholder}>
-                <Text style={styles.videoPlaceholderText}>📹</Text>
-                <Text style={styles.videoPlaceholderSubtext}>No Active Stream</Text>
-                <Text style={styles.videoPlaceholderDescription}>
-                  Stream will start soon
-                </Text>
-              </View>
-            )}
-          </View>
+          {/* Agora Video Viewer - shows live video from broadcaster */}
+          <AgoraViewer
+            streamId={currentStream?._id}
+            isLive={isLive}
+          />
 
           {/* Stream Info */}
           <View style={styles.streamInfo}>
