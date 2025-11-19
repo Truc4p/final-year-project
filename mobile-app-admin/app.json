@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "Admin Livestream",
+    "slug": "wrencos-admin-livestream",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#8BB8A8"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.wrencos.adminlivestream",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs camera access to broadcast livestreams",
+        "NSMicrophoneUsageDescription": "This app needs microphone access to broadcast livestreams with audio",
+        "NSPhotoLibraryUsageDescription": "This app needs photo library access to save livestream recordings"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#8BB8A8"
+      },
+      "package": "com.wrencos.adminlivestream",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to broadcast livestreams"
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for livestream audio"
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to save livestream recordings",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save livestream recordings",
+          "isAccessMediaLocationEnabled": true
+        }
+      ]
+    ]
+  }
+}

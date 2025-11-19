@@ -436,10 +436,17 @@ export default function LivestreamScreen({ navigation }) {
           <View style={styles.videoPlayer}>
             {isLive ? (
               <View style={styles.videoPlaceholder}>
-                <Text style={styles.videoPlaceholderText}>📹</Text>
+                <Text style={styles.videoPlaceholderText}>🎥</Text>
                 <Text style={styles.videoPlaceholderSubtext}>
-                  Live video streaming via web browser
+                  Live Stream Active
                 </Text>
+                <Text style={styles.videoPlaceholderDescription}>
+                  Broadcasting from mobile app
+                </Text>
+                <View style={styles.liveIndicatorLarge}>
+                  <View style={styles.liveDotLarge} />
+                  <Text style={styles.liveTextLarge}>LIVE NOW</Text>
+                </View>
               </View>
             ) : (
               <View style={styles.videoPlaceholder}>
@@ -900,5 +907,26 @@ const styles = StyleSheet.create({
   pastStreamDate: {
     fontSize: 12,
     color: COLORS.textSecondary,
+  },
+  liveIndicatorLarge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.error,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginTop: 16,
+  },
+  liveDotLarge: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: COLORS.white,
+    marginRight: 8,
+  },
+  liveTextLarge: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

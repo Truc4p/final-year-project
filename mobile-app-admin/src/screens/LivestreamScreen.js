@@ -1,0 +1,827 @@
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  TextInput,
+  Modal,
+  FlatList,
+  Image,
+  SafeAreaView,
+  Dimensions,
+} from 'react-native';
+import { Camera } from 'expo-camera';
+import { Audio, Video } from 'expo-av';
+import * as MediaLibrary from 'expo-media-library';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { COLORS, API_BASE_URL } from '../constants';
+import livestreamService from '../services/livestreamService';
+
+const { width, height } = Dimensions.get('window');
+
+export default function LivestreamScreen({ navigation }) {
+  // Camera and permissions
+  const [hasPermission, setHasPermission] = useState(null);
+  const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
+  const [isRecording, setIsRecording] = useState(false);
+  const cameraRef = useRef(null);
+  const [recording, setRecording] = useState(null);
+
+  // Stream state
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [currentStreamId, setCurrentStreamId] = useState(null);
+  const [streamDuration, setStreamDuration] = useState(0);
+  const [viewerCount, setViewerCount] = useState(0);
+  const [likes, setLikes] = useState(0);
+
+  // Stream setup
+  const [streamTitle, setStreamTitle] = useState('');
+  const [streamDescription, setStreamDescription] = useState('');
+  const [showStreamSetup, setShowStreamSetup] = useState(false);
+
+  // Chat
+  const [chatMessages, setChatMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const chatScrollRef = useRef(null);
+
+  // Products
+  const [products, setProducts] = useState([]);
+  const [pinnedProducts, setPinnedProducts] = useState([]);
+  const [showProductPicker, setShowProductPicker] = useState(false);
+
+  // Timer
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    requestPermissions();
+    loadProducts();
+    initializeWebSocket();
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      livestreamService.disconnectWebSocket();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isStreaming) {
+      timerRef.current = setInterval(() => {
+        setStreamDuration((prev) => prev + 1);
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isStreaming]);
+
+  const requestPermissions = async () => {
+    const { status: cameraStatus } = await Camera.requestCameraPermissionsAsync();
+    const { status: audioStatus } = await Audio.requestPermissionsAsync();
+    const { status: mediaStatus } = await MediaLibrary.requestPermissionsAsync();
+    
+    setHasPermission(cameraStatus === 'granted' && audioStatus === 'granted');
+  };
+
+  const initializeWebSocket = async () => {
+    const token = await AsyncStorage.getItem('adminToken');
+    livestreamService.connectWebSocket(token);
+    livestreamService.addMessageHandler(handleWebSocketMessage);
+  };
+
+  const handleWebSocketMessage = (data) => {
+    console.log('📨 WebSocket message:', data.type);
+    
+    switch (data.type) {
+      case 'stream_update':
+        if (data.viewerCount !== undefined) setViewerCount(data.viewerCount);
+        if (data.likes !== undefined) setLikes(data.likes);
+        break;
+      
+      case 'chat_message':
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            id: data.id || Date.now(),
+            username: data.username,
+            message: data.message,
+            timestamp: new Date(data.timestamp),
+            isAdmin: data.isAdmin || false,
+          },
+        ]);
+        break;
+      
+      case 'pinned_products_updated':
+        setPinnedProducts(data.pinnedProducts || []);
+        break;
+      
+      default:
+        break;
+    }
+  };
+
+  const loadProducts = async () => {
+    try {
+      const productList = await livestreamService.getProducts();
+      setProducts(productList);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    }
+  };
+
+  const handleStartStream = () => {
+    setShowStreamSetup(true);
+  };
+
+  const startStreamWithDetails = async () => {
+    if (!streamTitle.trim()) {
+      Alert.alert('Error', 'Please enter a stream title');
+      return;
+    }
+
+    try {
+      // Create livestream in backend
+      const response = await livestreamService.createLivestream({
+        title: streamTitle,
+        description: streamDescription,
+        quality: 'medium',
+        streamUrl: `mobile-stream-${Date.now()}`,
+      });
+
+      setCurrentStreamId(response.livestream._id);
+      setIsStreaming(true);
+      setStreamDuration(0);
+      setShowStreamSetup(false);
+
+      // Start recording
+      startRecording();
+
+      // Notify via WebSocket
+      livestreamService.startStream(response.livestream._id);
+
+      Alert.alert('Success', 'Livestream started!');
+    } catch (error) {
+      console.error('Error starting stream:', error);
+      Alert.alert('Error', 'Failed to start livestream');
+    }
+  };
+
+  const startRecording = async () => {
+    if (cameraRef.current && !isRecording) {
+      try {
+        setIsRecording(true);
+        const video = await cameraRef.current.recordAsync({
+          quality: Camera.Constants.VideoQuality['720p'],
+          maxDuration: 7200, // 2 hours max
+        });
+        setRecording(video);
+        console.log('Recording saved:', video.uri);
+      } catch (error) {
+        console.error('Error recording:', error);
+        setIsRecording(false);
+      }
+    }
+  };
+
+  const stopRecording = async () => {
+    if (cameraRef.current && isRecording) {
+      try {
+        cameraRef.current.stopRecording();
+        setIsRecording(false);
+      } catch (error) {
+        console.error('Error stopping recording:', error);
+      }
+    }
+  };
+
+  const handleStopStream = async () => {
+    Alert.alert(
+      'Stop Livestream',
+      'Are you sure you want to stop the livestream?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Stop', style: 'destructive', onPress: stopStream },
+      ]
+    );
+  };
+
+  const stopStream = async () => {
+    try {
+      // Stop recording first
+      await stopRecording();
+
+      // Stop livestream in backend
+      if (currentStreamId) {
+        await livestreamService.stopLivestream(currentStreamId, {
+          maxViewers: viewerCount,
+          viewCount: viewerCount,
+          likes,
+        });
+
+        // Upload recorded video if available
+        if (recording?.uri) {
+          await livestreamService.uploadVideo(currentStreamId, recording.uri);
+        }
+
+        // Notify via WebSocket
+        livestreamService.stopStream(currentStreamId);
+      }
+
+      // Reset state
+      setIsStreaming(false);
+      setCurrentStreamId(null);
+      setStreamDuration(0);
+      setViewerCount(0);
+      setLikes(0);
+      setChatMessages([]);
+      setPinnedProducts([]);
+      setStreamTitle('');
+      setStreamDescription('');
+      setRecording(null);
+
+      Alert.alert('Success', 'Livestream stopped and video saved!');
+    } catch (error) {
+      console.error('Error stopping stream:', error);
+      Alert.alert('Error', 'Failed to stop livestream properly');
+    }
+  };
+
+  const sendChatMessage = () => {
+    if (!newMessage.trim()) return;
+
+    livestreamService.sendChatMessage(newMessage);
+    setNewMessage('');
+  };
+
+  const toggleProductPin = async (product) => {
+    try {
+      const isPinned = pinnedProducts.some((p) => p.productId._id === product._id);
+
+      if (isPinned) {
+        await livestreamService.unpinProduct(currentStreamId, product._id);
+      } else {
+        await livestreamService.pinProduct(currentStreamId, product._id);
+      }
+    } catch (error) {
+      console.error('Error toggling product pin:', error);
+      Alert.alert('Error', 'Failed to update product');
+    }
+  };
+
+  const flipCamera = () => {
+    setCameraType(
+      cameraType === Camera.Constants.Type.back
+        ? Camera.Constants.Type.front
+        : Camera.Constants.Type.back
+    );
+  };
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            if (isStreaming) {
+              await stopStream();
+            }
+            await AsyncStorage.clear();
+            livestreamService.disconnectWebSocket();
+            navigation.replace('Login');
+          },
+        },
+      ]
+    );
+  };
+
+  const formatDuration = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  if (hasPermission === null) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text>Requesting permissions...</Text>
+      </View>
+    );
+  }
+
+  if (hasPermission === false) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>No access to camera or microphone</Text>
+        <TouchableOpacity style={styles.button} onPress={requestPermissions}>
+          <Text style={styles.buttonText}>Grant Permissions</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Camera Preview */}
+      <View style={styles.cameraContainer}>
+        <Camera
+          ref={cameraRef}
+          style={styles.camera}
+          type={cameraType}
+          ratio="16:9"
+        >
+          {/* Top Overlay */}
+          <View style={styles.topOverlay}>
+            <View style={styles.statusContainer}>
+              {isStreaming && (
+                <View style={styles.liveIndicator}>
+                  <View style={styles.liveDot} />
+                  <Text style={styles.liveText}>LIVE</Text>
+                  <Text style={styles.durationText}>{formatDuration(streamDuration)}</Text>
+                </View>
+              )}
+            </View>
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <Text style={styles.logoutButtonText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Stats Overlay */}
+          {isStreaming && (
+            <View style={styles.statsOverlay}>
+              <View style={styles.statItem}>
+                <Text style={styles.statIcon}>👁️</Text>
+                <Text style={styles.statText}>{viewerCount}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statIcon}>❤️</Text>
+                <Text style={styles.statText}>{likes}</Text>
+              </View>
+            </View>
+          )}
+
+          {/* Bottom Controls */}
+          <View style={styles.bottomOverlay}>
+            <TouchableOpacity style={styles.flipButton} onPress={flipCamera}>
+              <Text style={styles.flipButtonText}>🔄</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.recordButton,
+                isStreaming && styles.recordButtonActive,
+              ]}
+              onPress={isStreaming ? handleStopStream : handleStartStream}
+            >
+              <View style={[styles.recordButtonInner, isStreaming && styles.recordButtonInnerActive]} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.productsButton}
+              onPress={() => setShowProductPicker(!showProductPicker)}
+              disabled={!isStreaming}
+            >
+              <Text style={styles.productsButtonText}>🛍️</Text>
+            </TouchableOpacity>
+          </View>
+        </Camera>
+      </View>
+
+      {/* Chat Section */}
+      {isStreaming && (
+        <View style={styles.chatSection}>
+          <Text style={styles.chatTitle}>Live Chat</Text>
+          <ScrollView
+            ref={chatScrollRef}
+            style={styles.chatMessages}
+            onContentSizeChange={() => chatScrollRef.current?.scrollToEnd()}
+          >
+            {chatMessages.map((msg) => (
+              <View key={msg.id} style={styles.chatMessage}>
+                <Text style={styles.chatUsername}>{msg.username}:</Text>
+                <Text style={styles.chatText}>{msg.message}</Text>
+              </View>
+            ))}
+          </ScrollView>
+          <View style={styles.chatInput}>
+            <TextInput
+              style={styles.chatTextInput}
+              placeholder="Send a message..."
+              value={newMessage}
+              onChangeText={setNewMessage}
+              onSubmitEditing={sendChatMessage}
+            />
+            <TouchableOpacity style={styles.chatSendButton} onPress={sendChatMessage}>
+              <Text style={styles.chatSendText}>Send</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* Stream Setup Modal */}
+      <Modal visible={showStreamSetup} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Start Livestream</Text>
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Stream Title *"
+              value={streamTitle}
+              onChangeText={setStreamTitle}
+            />
+            
+            <TextInput
+              style={[styles.modalInput, styles.modalTextarea]}
+              placeholder="Description (optional)"
+              value={streamDescription}
+              onChangeText={setStreamDescription}
+              multiline
+              numberOfLines={3}
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonCancel]}
+                onPress={() => setShowStreamSetup(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonStart]}
+                onPress={startStreamWithDetails}
+              >
+                <Text style={[styles.modalButtonText, styles.modalButtonTextWhite]}>
+                  Start
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Product Picker Modal */}
+      <Modal visible={showProductPicker} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Pin Products</Text>
+            
+            <FlatList
+              data={products}
+              keyExtractor={(item) => item._id}
+              renderItem={({ item }) => {
+                const isPinned = pinnedProducts.some((p) => p.productId._id === item._id);
+                return (
+                  <TouchableOpacity
+                    style={styles.productItem}
+                    onPress={() => toggleProductPin(item)}
+                  >
+                    <Image
+                      source={{ uri: `${API_BASE_URL}/${item.image}` }}
+                      style={styles.productImage}
+                    />
+                    <View style={styles.productInfo}>
+                      <Text style={styles.productName}>{item.name}</Text>
+                      <Text style={styles.productPrice}>${item.price}</Text>
+                    </View>
+                    <View style={[styles.productCheckbox, isPinned && styles.productCheckboxActive]}>
+                      {isPinned && <Text style={styles.productCheckmark}>✓</Text>}
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+            
+            <TouchableOpacity
+              style={[styles.modalButton, styles.modalButtonStart]}
+              onPress={() => setShowProductPicker(false)}
+            >
+              <Text style={[styles.modalButtonText, styles.modalButtonTextWhite]}>
+                Done
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  cameraContainer: {
+    height: height * 0.6,
+    backgroundColor: '#000',
+  },
+  camera: {
+    flex: 1,
+  },
+  topOverlay: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+  },
+  statusContainer: {
+    flex: 1,
+  },
+  liveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 0, 0, 0.8)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#fff',
+    marginRight: 6,
+  },
+  liveText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginRight: 8,
+  },
+  durationText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  logoutButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 12,
+  },
+  statsOverlay: {
+    position: 'absolute',
+    top: 70,
+    right: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  statIcon: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  statText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  bottomOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 24,
+  },
+  flipButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  flipButtonText: {
+    fontSize: 24,
+  },
+  recordButton: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  recordButtonActive: {
+    backgroundColor: 'rgba(255, 0, 0, 0.5)',
+  },
+  recordButtonInner: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#fff',
+  },
+  recordButtonInnerActive: {
+    width: 30,
+    height: 30,
+    borderRadius: 4,
+  },
+  productsButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  productsButtonText: {
+    fontSize: 24,
+  },
+  chatSection: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    padding: 16,
+  },
+  chatTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  chatMessages: {
+    flex: 1,
+    marginBottom: 12,
+  },
+  chatMessage: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  chatUsername: {
+    fontWeight: 'bold',
+    marginRight: 6,
+  },
+  chatText: {
+    flex: 1,
+  },
+  chatInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  chatTextInput: {
+    flex: 1,
+    backgroundColor: COLORS.backgroundAlt,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginRight: 8,
+  },
+  chatSendButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  chatSendText: {
+    color: COLORS.white,
+    fontWeight: '600',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: 24,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalInput: {
+    backgroundColor: COLORS.backgroundAlt,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  modalTextarea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginHorizontal: 6,
+  },
+  modalButtonCancel: {
+    backgroundColor: COLORS.lightGray,
+  },
+  modalButtonStart: {
+    backgroundColor: COLORS.primary,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  modalButtonTextWhite: {
+    color: COLORS.white,
+  },
+  productItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.lightGray,
+  },
+  productImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+    backgroundColor: COLORS.backgroundAlt,
+  },
+  productInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  productName: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  productPrice: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: 'bold',
+  },
+  productCheckbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: COLORS.lightGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  productCheckboxActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  productCheckmark: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  errorText: {
+    fontSize: 16,
+    color: COLORS.error,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
