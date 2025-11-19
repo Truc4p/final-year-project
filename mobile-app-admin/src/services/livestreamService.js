@@ -127,7 +127,10 @@ class LivestreamService {
       const response = await api.post(`/livestreams/${streamId}/stop`, data);
       return response.data;
     } catch (error) {
-      console.error('Stop livestream error:', error);
+      // Ignore 400 errors (stream already stopped)
+      if (error.response?.status !== 400) {
+        console.error('Stop livestream error:', error);
+      }
       throw error;
     }
   }
@@ -200,6 +203,21 @@ class LivestreamService {
 
   updateStreamStats(viewerCount, likes) {
     this.sendMessage('stream_update', { viewerCount, likes });
+  }
+
+  // Get Agora RTC token
+  async getAgoraToken(channelName, uid = 0) {
+    try {
+      const response = await api.post('/livestreams/agora/token', {
+        channelName,
+        uid,
+      });
+      console.log('✅ Agora token received');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Get Agora token error:', error);
+      throw error;
+    }
   }
 }
 

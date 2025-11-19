@@ -6,6 +6,7 @@ import {
   ClientRoleType,
 } from 'react-native-agora';
 import { AGORA_APP_ID, getChannelName } from '../constants/agora';
+import livestreamService from '../services/livestreamService';
 
 export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
   const agoraEngine = useRef(null);
@@ -77,15 +78,25 @@ export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
       // Set client role to broadcaster
       agoraEngine.current.setClientRole(ClientRoleType.ClientRoleBroadcaster);
 
-      // Join channel with no token (testing mode)
-      await agoraEngine.current.joinChannel('', channelName, 0, {
+      // Fetch Agora token from backend
+      console.log('🔑 Fetching Agora token...');
+      const tokenData = await livestreamService.getAgoraToken(channelName, 0);
+      
+      if (!tokenData || !tokenData.token) {
+        throw new Error('Failed to get Agora token from server');
+      }
+      
+      console.log('✅ Token received, joining channel...');
+
+      // Join channel with token
+      await agoraEngine.current.joinChannel(tokenData.token, channelName, 0, {
         clientRoleType: ClientRoleType.ClientRoleBroadcaster,
       });
 
       console.log('✅ Broadcasting started');
     } catch (error) {
       console.error('❌ Failed to start broadcasting:', error);
-      Alert.alert('Error', 'Failed to start video broadcast');
+      Alert.alert('Error', 'Failed to start video broadcast: ' + error.message);
     }
   };
 

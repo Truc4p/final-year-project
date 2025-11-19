@@ -12,6 +12,7 @@ import {
   Image,
   SafeAreaView,
   Dimensions,
+  AppState,
 } from 'react-native';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
@@ -63,6 +64,33 @@ export default function LivestreamScreen({ navigation }) {
 
   // Timer
   const timerRef = useRef(null);
+  const appState = useRef(AppState.currentState);
+
+  // Handle app going to background
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (
+        appState.current.match(/active/) &&
+        nextAppState.match(/inactive|background/)
+      ) {
+        // App is going to background, stop stream if active
+        if (isStreaming && currentStreamId) {
+          console.log('📱 App going to background, stopping active stream');
+          livestreamService.stopLivestream(currentStreamId, {
+            maxViewers: viewerCount,
+            viewCount: viewerCount,
+            likes,
+          }).catch(err => console.error('Error stopping stream on background:', err));
+          setIsStreaming(false);
+        }
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [isStreaming, currentStreamId, viewerCount, likes]);
 
   useEffect(() => {
     checkAuthStatus();
@@ -70,11 +98,32 @@ export default function LivestreamScreen({ navigation }) {
     loadProducts();
     initializeWebSocket();
 
+    // Cleanup function: stop stream if active when component unmounts
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      
+      // Only stop stream if it's actually streaming
+      // Use a ref to check the latest state since this runs after component unmounts
+      const streamIdToCleanup = currentStreamId;
+      const isCurrentlyStreaming = isStreaming;
+      
+      if (isCurrentlyStreaming && streamIdToCleanup) {
+        console.log('🧹 Component unmounting with active stream, cleaning up:', streamIdToCleanup);
+        livestreamService.stopLivestream(streamIdToCleanup, {
+          maxViewers: viewerCount,
+          viewCount: viewerCount,
+          likes,
+        }).catch(err => {
+          // Ignore 400 errors (stream already stopped)
+          if (!err.message?.includes('400')) {
+            console.error('Error stopping stream on unmount:', err);
+          }
+        });
+      }
+      
       livestreamService.disconnectWebSocket();
     };
-  }, []);
+  }, [isStreaming, currentStreamId, viewerCount, likes]);
 
   const checkAuthStatus = async () => {
     const token = await AsyncStorage.getItem('adminToken');
@@ -272,21 +321,23 @@ export default function LivestreamScreen({ navigation }) {
           likes,
         });
 
-        // Upload recorded video if available
+        // Show success immediately, upload video in background
         const videoUri = recordingUriRef.current || recording?.uri;
         if (videoUri) {
+          Alert.alert('Success', 'Livestream stopped! Video is being uploaded...');
           console.log('📤 Uploading video to server:', videoUri);
-          try {
-            await livestreamService.uploadVideo(currentStreamId, videoUri);
-            console.log('✅ Video uploaded successfully');
-            Alert.alert('Success', 'Livestream stopped and video saved!');
-          } catch (uploadError) {
-            console.error('❌ Error uploading video:', uploadError);
-            Alert.alert('Upload Error', 'Livestream stopped but failed to upload video');
-          }
+          
+          // Upload in background (don't await)
+          livestreamService.uploadVideo(currentStreamId, videoUri)
+            .then(() => {
+              console.log('✅ Video uploaded successfully');
+            })
+            .catch(uploadError => {
+              console.error('❌ Error uploading video:', uploadError);
+            });
         } else {
           console.log('⚠️ No video recording to upload');
-          Alert.alert('Success', 'Livestream stopped (no recording available)');
+          Alert.alert('Success', 'Livestream stopped!');
         }
 
         // Notify via WebSocket
@@ -304,8 +355,6 @@ export default function LivestreamScreen({ navigation }) {
       setStreamTitle('');
       setStreamDescription('');
       setRecording(null);
-
-      Alert.alert('Success', 'Livestream stopped and video saved!');
     } catch (error) {
       console.error('Error stopping stream:', error);
       Alert.alert('Error', 'Failed to stop livestream properly');

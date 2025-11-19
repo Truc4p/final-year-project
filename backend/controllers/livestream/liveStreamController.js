@@ -3,6 +3,7 @@ const Product = require('../../models/ecommerce/product');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
+const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
 
 // Configure multer for video uploads
 const storage = multer.diskStorage({
@@ -530,6 +531,64 @@ exports.updatePinnedProductOrder = async (req, res) => {
   } catch (error) {
     console.error('Error updating pinned product order:', error);
     res.status(500).json({ message: 'Failed to update pinned product order', error: error.message });
+  }
+};
+
+// Generate Agora RTC token
+exports.generateAgoraToken = async (req, res) => {
+  try {
+    const { channelName, uid = 0 } = req.body;
+    
+    if (!channelName) {
+      return res.status(400).json({ message: 'Channel name is required' });
+    }
+
+    // Get Agora credentials from environment variables
+    const appId = process.env.AGORA_APP_ID;
+    const appCertificate = process.env.AGORA_APP_CERTIFICATE;
+    
+    if (!appId || !appCertificate) {
+      console.error('❌ Agora credentials not configured');
+      return res.status(500).json({ 
+        message: 'Agora credentials not configured. Please set AGORA_APP_ID and AGORA_APP_CERTIFICATE in .env file' 
+      });
+    }
+
+    // Token expiration time: 24 hours from now
+    const expirationTimeInSeconds = 86400; // 24 hours
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
+
+    // Build token with publisher role (broadcaster)
+    const token = RtcTokenBuilder.buildTokenWithUid(
+      appId,
+      appCertificate,
+      channelName,
+      uid,
+      RtcRole.PUBLISHER,
+      privilegeExpiredTs
+    );
+
+    console.log('✅ Agora token generated:', {
+      channelName,
+      uid,
+      expiresIn: expirationTimeInSeconds,
+      tokenLength: token.length
+    });
+
+    res.json({
+      token,
+      appId,
+      channelName,
+      uid,
+      expiresAt: new Date(privilegeExpiredTs * 1000).toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error generating Agora token:', error);
+    res.status(500).json({ 
+      message: 'Failed to generate Agora token', 
+      error: error.message 
+    });
   }
 };
 

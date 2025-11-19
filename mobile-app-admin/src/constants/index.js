@@ -1,6 +1,7 @@
 // API Configuration
-export const API_BASE_URL = 'http://192.168.88.55:3000'; // Change to your backend IP
-export const WS_BASE_URL = 'ws://192.168.88.55:3000'; // WebSocket URL
+// Using localhost because ADB reverse forwards these ports from Mac to phone
+export const API_BASE_URL = 'http://localhost:3000';
+export const WS_BASE_URL = 'ws://localhost:3000';
 
 // Colors
 export const COLORS = {

@@ -17,6 +17,7 @@
     "@langchain/core": "^0.3.17",
     "@langchain/google-genai": "^0.1.12",
     "@qdrant/js-client-rest": "^1.15.1",
+    "agora-access-token": "^2.0.4",
     "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
@@ -45,4 +46,3 @@
     "ws": "^8.18.3"
   }
 }
-

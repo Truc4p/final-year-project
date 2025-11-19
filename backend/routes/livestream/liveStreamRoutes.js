@@ -24,6 +24,9 @@ router.post('/:id/chat', optionalAuth, liveStreamController.addChatMessage);
 
 // Protected routes (authentication required)
 
+// Generate Agora RTC token (authenticated users)
+router.post('/agora/token', auth, liveStreamController.generateAgoraToken);
+
 // Get all livestreams (admin only)
 router.get('/', auth, role('admin'), liveStreamController.getAllLiveStreams);
 
