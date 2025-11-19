@@ -452,6 +452,7 @@ export default function LivestreamScreen({ navigation }) {
       <AgoraBroadcaster
         streamId={currentStreamId}
         isStreaming={isStreaming}
+        cameraFacing={cameraFacing}
         onError={(error) => Alert.alert('Streaming Error', error)}
       />
       

@@ -1,7 +1,9 @@
 // API Configuration
-// Using localhost because ADB reverse forwards these ports from Mac to phone
-export const API_BASE_URL = 'http://localhost:3000';
-export const WS_BASE_URL = 'ws://localhost:3000';
+// For physical iOS devices, use your Mac's IP address (find with: ipconfig getifaddr en0)
+// For Android emulator, use localhost (ADB reverse forwards the port)
+// For iOS simulator, use localhost
+export const API_BASE_URL = 'http://192.168.88.55:3000';
+export const WS_BASE_URL = 'ws://192.168.88.55:3000';
 
 // Colors
 export const COLORS = {

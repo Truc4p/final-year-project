@@ -8,7 +8,7 @@ import {
 import { AGORA_APP_ID, getChannelName } from '../constants/agora';
 import livestreamService from '../services/livestreamService';
 
-export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
+export default function AgoraBroadcaster({ streamId, isStreaming, cameraFacing, onError }) {
   const agoraEngine = useRef(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -26,6 +26,15 @@ export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
       stopBroadcasting();
     }
   }, [isStreaming, streamId, isInitialized]);
+
+  // Update camera when cameraFacing changes
+  useEffect(() => {
+    if (isInitialized && isStreaming && agoraEngine.current) {
+      const isFrontCamera = cameraFacing === 'front';
+      console.log('📷 Switching Agora camera to:', cameraFacing);
+      agoraEngine.current.switchCamera();
+    }
+  }, [cameraFacing, isInitialized, isStreaming]);
 
   const initializeAgora = async () => {
     try {
@@ -77,6 +86,20 @@ export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
 
       // Set client role to broadcaster
       agoraEngine.current.setClientRole(ClientRoleType.ClientRoleBroadcaster);
+
+      // Set initial camera (false = back camera, true = front camera)
+      const isFrontCamera = cameraFacing === 'front';
+      console.log('📷 Setting initial Agora camera:', cameraFacing, '(front=' + isFrontCamera + ')');
+      // Note: switchCamera() toggles between cameras. If default is front and we want back, call it once.
+      // We need to ensure we're using the correct camera
+      if (isFrontCamera) {
+        // Front camera is typically the default, so no switch needed
+        console.log('📷 Using default front camera');
+      } else {
+        // Switch to back camera
+        console.log('📷 Switching to back camera');
+        agoraEngine.current.switchCamera();
+      }
 
       // Fetch Agora token from backend
       console.log('🔑 Fetching Agora token...');
