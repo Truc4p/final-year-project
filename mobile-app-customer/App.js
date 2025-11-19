@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { ActivityIndicator, View, Text } from 'react-native';
+import { ActivityIndicator, View, Text, LogBox } from 'react-native';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { COLORS } from './src/constants';
 
@@ -16,6 +16,18 @@ import OrdersScreen from './src/screens/OrdersScreen';
 import OrderDetailScreen from './src/screens/OrderDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import LivestreamScreen from './src/screens/LivestreamScreen';
+
+// Skin Study Components
+import AIDermatologyExpert from './src/components/skinStudy/AIDermatologyExpert';
+import LiveChatAI from './src/components/skinStudy/LiveChatAI';
+
+// Suppress defaultProps warnings from react-native-render-html library
+LogBox.ignoreLogs([
+  'Warning: TRenderEngineProvider: Support for defaultProps',
+  'Warning: MemoizedTNodeRenderer: Support for defaultProps',
+  'Warning: TNodeChildrenRenderer: Support for defaultProps',
+  'Warning: bound renderChildren: Support for defaultProps',
+]);
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -94,6 +106,32 @@ function OrdersStack() {
   );
 }
 
+function SkinStudyStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: '#A44A6B' },
+        headerTintColor: COLORS.white,
+        headerTitleStyle: { fontWeight: 'bold' },
+      }}
+    >
+      <Stack.Screen 
+        name="AIDermatologyExpert" 
+        component={AIDermatologyExpert}
+        options={{ title: 'AI Dermatology Expert' }}
+      />
+      <Stack.Screen 
+        name="LiveChatAI" 
+        component={LiveChatAI}
+        options={{ 
+          title: 'Live Chat with AI',
+          headerShown: false,
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -153,6 +191,15 @@ function MainTabs() {
           tabBarIcon: ({ color, size }) => <ProfileIcon color={color} size={size} />,
         }}
       />
+      <Tab.Screen 
+        name="SkinStudy" 
+        component={SkinStudyStack}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Skin Study',
+          tabBarIcon: ({ color, size }) => <SkinStudyIcon color={color} size={size} />,
+        }}
+      />
     </Tab.Navigator>
   );
 }
@@ -185,6 +232,12 @@ const OrdersIcon = ({ color, size }) => (
 const ProfileIcon = ({ color, size }) => (
   <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
     <Text style={{ fontSize: size, color }}>👤</Text>
+  </View>
+);
+
+const SkinStudyIcon = ({ color, size }) => (
+  <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
+    <Text style={{ fontSize: size, color }}>✨</Text>
   </View>
 );
 
