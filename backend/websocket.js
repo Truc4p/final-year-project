@@ -113,9 +113,13 @@ class WebSocketManager {
       case 'start_stream':
         // Mobile admin starts streaming
         console.log('📱 Mobile stream started:', data);
+        // Fetch full stream data from database
+        const LiveStream = require('./models/livestream/liveStream');
+        const streamData = await LiveStream.findById(data.streamId).populate('createdBy', 'name email');
+        console.log('📱 Broadcasting stream_started with full data:', streamData?.title);
         await this.broadcastStreamStatus({ 
           type: 'stream_started', 
-          streamData: data.streamData || { streamId: data.streamId }
+          streamData: streamData || { streamId: data.streamId }
         });
         break;
         

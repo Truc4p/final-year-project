@@ -13,7 +13,7 @@ import {
   SafeAreaView,
   Dimensions,
 } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, API_BASE_URL } from '../constants';
@@ -26,14 +26,17 @@ export default function LivestreamScreen({ navigation }) {
   
   // Camera and permissions
   const [permission, requestPermission] = useCameraPermissions();
+  const [micPermission, requestMicPermission] = useMicrophonePermissions();
   const [cameraFacing, setCameraFacing] = useState('back');
   
   console.log('📷 Initial permission state:', permission);
+  console.log('🎤 Initial mic permission state:', micPermission);
   console.log('📷 Initial cameraFacing:', cameraFacing, 'Type:', typeof cameraFacing);
   
   const [isRecording, setIsRecording] = useState(false);
   const cameraRef = useRef(null);
   const [recording, setRecording] = useState(null);
+  const recordingUriRef = useRef(null); // Store video URI in ref for immediate access
 
   // Stream state
   const [isStreaming, setIsStreaming] = useState(false);
@@ -98,6 +101,7 @@ export default function LivestreamScreen({ navigation }) {
 
   const requestPermissions = async () => {
     await requestPermission();
+    await requestMicPermission();
     await MediaLibrary.requestPermissionsAsync();
   };
 
@@ -189,9 +193,11 @@ export default function LivestreamScreen({ navigation }) {
     if (cameraRef.current && !isRecording) {
       try {
         setIsRecording(true);
+        recordingUriRef.current = null; // Reset previous recording
         console.log('🎬 Starting camera recording...');
         const video = await cameraRef.current.recordAsync();
         setRecording(video);
+        recordingUriRef.current = video.uri; // Store in ref for immediate access
         console.log('✅ Recording saved:', video.uri);
       } catch (error) {
         console.error('❌ Error recording:', error);
@@ -239,7 +245,23 @@ export default function LivestreamScreen({ navigation }) {
   const stopStream = async () => {
     try {
       // Stop recording first
-      await stopRecording();
+      if (cameraRef.current && isRecording) {
+        try {
+          console.log('⏹️ Stopping recording...');
+          cameraRef.current.stopRecording();
+          setIsRecording(false);
+          
+          // Wait for the recording to finish saving (up to 3 seconds)
+          let attempts = 0;
+          while (!recordingUriRef.current && attempts < 30) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
+          console.log('✅ Recording stopped, URI:', recordingUriRef.current);
+        } catch (error) {
+          console.error('❌ Error stopping recording:', error);
+        }
+      }
 
       // Stop livestream in backend
       if (currentStreamId) {
@@ -250,8 +272,20 @@ export default function LivestreamScreen({ navigation }) {
         });
 
         // Upload recorded video if available
-        if (recording?.uri) {
-          await livestreamService.uploadVideo(currentStreamId, recording.uri);
+        const videoUri = recordingUriRef.current || recording?.uri;
+        if (videoUri) {
+          console.log('📤 Uploading video to server:', videoUri);
+          try {
+            await livestreamService.uploadVideo(currentStreamId, videoUri);
+            console.log('✅ Video uploaded successfully');
+            Alert.alert('Success', 'Livestream stopped and video saved!');
+          } catch (uploadError) {
+            console.error('❌ Error uploading video:', uploadError);
+            Alert.alert('Upload Error', 'Livestream stopped but failed to upload video');
+          }
+        } else {
+          console.log('⚠️ No video recording to upload');
+          Alert.alert('Success', 'Livestream stopped (no recording available)');
         }
 
         // Notify via WebSocket
@@ -337,7 +371,7 @@ export default function LivestreamScreen({ navigation }) {
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!permission) {
+  if (!permission || !micPermission) {
     console.log('⏳ Permission object is null, waiting...');
     return (
       <View style={styles.centerContainer}>
@@ -347,14 +381,15 @@ export default function LivestreamScreen({ navigation }) {
   }
 
   console.log('📷 Camera permission status:', permission);
+  console.log('🎤 Microphone permission status:', micPermission);
   console.log('📷 Camera facing:', cameraFacing, 'Type:', typeof cameraFacing);
 
-  if (!permission.granted) {
-    console.log('❌ Camera permission not granted');
+  if (!permission.granted || !micPermission.granted) {
+    console.log('❌ Camera or microphone permission not granted');
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>No access to camera</Text>
-        <TouchableOpacity style={styles.button} onPress={requestPermission}>
+        <Text style={styles.errorText}>Camera and microphone access required for livestreaming</Text>
+        <TouchableOpacity style={styles.button} onPress={requestPermissions}>
           <Text style={styles.buttonText}>Grant Permissions</Text>
         </TouchableOpacity>
       </View>
