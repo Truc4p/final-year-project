@@ -19,7 +19,7 @@
       "bundleIdentifier": "com.yourcompany.customershoppingapp",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs camera access to view livestreams",
-        "NSMicrophoneUsageDescription": "This app needs microphone access for livestream audio"
+        "NSMicrophoneUsageDescription": "This app needs microphone access for livestream audio and AI voice chat in Skin Study"
       }
     },
     "android": {
