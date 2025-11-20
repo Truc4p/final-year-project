@@ -575,9 +575,10 @@ exports.generateAgoraToken = async (req, res) => {
     const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
 
     // Determine role based on user type or request parameter
-    // Admin/broadcaster uses PUBLISHER, customers/viewers use SUBSCRIBER
+    // Admin/broadcaster uses PUBLISHER, anonymous/customers use SUBSCRIBER
     const isAdmin = req.user?.role === 'admin';
-    const tokenRole = (role === 'audience' || !isAdmin) ? RtcRole.SUBSCRIBER : RtcRole.PUBLISHER;
+    const isAnonymous = !req.user;
+    const tokenRole = (role === 'audience' || !isAdmin || isAnonymous) ? RtcRole.SUBSCRIBER : RtcRole.PUBLISHER;
 
     // Build token with appropriate role
     const token = RtcTokenBuilder.buildTokenWithUid(
@@ -594,6 +595,7 @@ exports.generateAgoraToken = async (req, res) => {
       uid,
       role: tokenRole === RtcRole.PUBLISHER ? 'PUBLISHER' : 'SUBSCRIBER',
       isAdmin,
+      isAnonymous,
       expiresIn: expirationTimeInSeconds,
       tokenLength: token.length
     });

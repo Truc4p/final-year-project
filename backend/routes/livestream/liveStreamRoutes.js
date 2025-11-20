@@ -24,8 +24,8 @@ router.post('/:id/chat', optionalAuth, liveStreamController.addChatMessage);
 
 // Protected routes (authentication required)
 
-// Generate Agora RTC token (authenticated users)
-router.post('/agora/token', auth, liveStreamController.generateAgoraToken);
+// Generate Agora RTC token (optional auth - allow anonymous viewers)
+router.post('/agora/token', optionalAuth, liveStreamController.generateAgoraToken);
 
 // Force cleanup stuck active streams (admin only)
 router.post('/cleanup', auth, role('admin'), liveStreamController.forceCleanupActiveStreams);

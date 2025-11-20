@@ -98,6 +98,12 @@ export default function AgoraViewer({ streamId, isLive }) {
         uid: 0, // Viewer uses uid 0
         role: 'audience', // Specify audience role for SUBSCRIBER token
       });
+      
+      if (!tokenResponse.data || !tokenResponse.data.token) {
+        console.error('❌ [Viewer] Invalid token response:', tokenResponse.data);
+        throw new Error('Failed to get valid Agora token from server');
+      }
+      
       const { token } = tokenResponse.data;
       console.log('✅ [Viewer] Got Agora token');
 
@@ -117,6 +123,7 @@ export default function AgoraViewer({ streamId, isLive }) {
       console.log('✅ [Viewer] Joined as audience');
     } catch (error) {
       console.error('❌ [Viewer] Failed to join channel:', error);
+      console.error('❌ [Viewer] Error details:', error.response?.data || error.message);
     }
   };
 
