@@ -9,7 +9,7 @@ Mobile application for admin users to broadcast livestreams that can be viewed b
 - 💬 Real-time chat with viewers
 - 🛍️ Product pinning during livestream
 - 📊 Live viewer count and likes
-- 💾 Automatic recording and upload
+
 - 🔄 Camera flip (front/back)
 
 ## Setup
@@ -51,10 +51,10 @@ npm run android
 - Email and password must match an admin user in the database
 
 ### Start Livestream
-1. Tap the record button (center)
+1. Tap the start stream button (center)
 2. Enter stream title and description
 3. Tap "Start" to begin broadcasting
-4. The camera will start recording automatically
+4. The camera will start streaming automatically
 
 ### During Livestream
 - **Flip Camera**: Tap the 🔄 button (left)
@@ -63,23 +63,22 @@ npm run android
 - **View Stats**: See live viewer count and likes in the top-right overlay
 
 ### Stop Livestream
-1. Tap the record button again
+1. Tap the stop stream button again
 2. Confirm stop action
-3. Recording will be saved and uploaded automatically
+3. Stream will end automatically
 
 ## Permissions Required
 
 - **Camera**: For video broadcasting
 - **Microphone**: For audio streaming
-- **Photo Library**: To save recordings
+
 
 ## Technical Details
 
-### Recording
-- Videos are recorded in 720p quality
+### Streaming
+- Videos are streamed in 720p quality
 - Maximum duration: 2 hours
-- Format: MP4/MOV (device dependent)
-- Automatically uploaded to backend after stream ends
+- Format: Real-time streaming
 
 ### WebSocket Communication
 - Real-time updates to all connected viewers
@@ -91,9 +90,9 @@ npm run android
 ```
 Admin Mobile App → Backend API → WebSocket → Customer Apps (Web & Mobile)
                 ↓
-            Recording
+            Live Streaming
                 ↓
-            Upload to Server
+            Real-time Communication
 ```
 
 ## Troubleshooting
@@ -109,10 +108,10 @@ Admin Mobile App → Backend API → WebSocket → Customer Apps (Web & Mobile)
 - Restart the app
 - Check if other apps can access camera
 
-### Recording Not Saving
-- Grant photo library permissions
-- Check device storage space
-- Ensure backend upload endpoint is working
+### Streaming Issues
+- Check network connectivity
+- Ensure stable Wi-Fi connection
+- Verify backend WebSocket connection
 
 ## Building for Production
 

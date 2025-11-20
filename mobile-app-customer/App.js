@@ -41,13 +41,13 @@ function AuthStack() {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      <Stack.Screen 
-        name="Login" 
+      <Stack.Screen
+        name="Login"
         component={LoginScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name="Register" 
+      <Stack.Screen
+        name="Register"
         component={RegisterScreen}
         options={{ title: 'Create Account' }}
       />
@@ -64,18 +64,18 @@ function HomeStack() {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      <Stack.Screen 
-        name="HomeMain" 
+      <Stack.Screen
+        name="HomeMain"
         component={HomeScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name="ProductDetail" 
+      <Stack.Screen
+        name="ProductDetail"
         component={ProductDetailScreen}
         options={{ title: 'Product Details' }}
       />
-      <Stack.Screen 
-        name="Cart" 
+      <Stack.Screen
+        name="Cart"
         component={CartScreen}
         options={{ title: 'Shopping Cart' }}
       />
@@ -92,13 +92,13 @@ function OrdersStack() {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      <Stack.Screen 
-        name="OrdersList" 
+      <Stack.Screen
+        name="OrdersList"
         component={OrdersScreen}
         options={{ title: 'My Orders' }}
       />
-      <Stack.Screen 
-        name="OrderDetail" 
+      <Stack.Screen
+        name="OrderDetail"
         component={OrderDetailScreen}
         options={{ title: 'Order Details' }}
       />
@@ -115,15 +115,15 @@ function SkinStudyStack() {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      <Stack.Screen 
-        name="AIDermatologyExpert" 
+      <Stack.Screen
+        name="AIDermatologyExpert"
         component={AIDermatologyExpert}
         options={{ title: 'AI Dermatology Expert' }}
       />
-      <Stack.Screen 
-        name="LiveChatAI" 
+      <Stack.Screen
+        name="LiveChatAI"
         component={LiveChatAI}
-        options={{ 
+        options={{
           title: 'Live Chat with AI',
           headerShown: false,
         }}
@@ -148,8 +148,8 @@ function MainTabs() {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      <Tab.Screen 
-        name="Home" 
+      <Tab.Screen
+        name="Home"
         component={HomeStack}
         options={{
           headerShown: false,
@@ -157,8 +157,8 @@ function MainTabs() {
           tabBarIcon: ({ color, size }) => <HomeIcon color={color} size={size} />,
         }}
       />
-      <Tab.Screen 
-        name="Livestream" 
+      <Tab.Screen
+        name="Livestream"
         component={LivestreamScreen}
         options={{
           title: 'Live Stream',
@@ -166,38 +166,41 @@ function MainTabs() {
           tabBarIcon: ({ color, size }) => <LivestreamIcon color={color} size={size} />,
         }}
       />
-      <Tab.Screen 
-        name="Cart" 
+      <Tab.Screen
+        name="Cart"
         component={CartScreen}
         options={{
           tabBarLabel: 'Cart',
           tabBarIcon: ({ color, size }) => <CartIcon color={color} size={size} />,
         }}
       />
-      <Tab.Screen 
-        name="Orders" 
-        component={OrdersStack}
+
+      <Tab.Screen
+        name="SkinStudy"
+        component={SkinStudyStack}
         options={{
           headerShown: false,
-          tabBarLabel: 'Orders',
-          tabBarIcon: ({ color, size }) => <OrdersIcon color={color} size={size} />,
+          tabBarLabel: 'Skin Study',
+          tabBarIcon: ({ color, size }) => <SkinStudyIcon color={color} size={size} />,
         }}
       />
-      <Tab.Screen 
-        name="Profile" 
+
+      <Tab.Screen
+        name="Profile"
         component={ProfileScreen}
         options={{
           tabBarLabel: 'Profile',
           tabBarIcon: ({ color, size }) => <ProfileIcon color={color} size={size} />,
         }}
       />
-      <Tab.Screen 
-        name="SkinStudy" 
-        component={SkinStudyStack}
+
+      <Tab.Screen
+        name="Orders"
+        component={OrdersStack}
         options={{
           headerShown: false,
-          tabBarLabel: 'Skin Study',
-          tabBarIcon: ({ color, size }) => <SkinStudyIcon color={color} size={size} />,
+          tabBarLabel: 'Orders',
+          tabBarIcon: ({ color, size }) => <OrdersIcon color={color} size={size} />,
         }}
       />
     </Tab.Navigator>
@@ -223,9 +226,9 @@ const CartIcon = ({ color, size }) => (
   </View>
 );
 
-const OrdersIcon = ({ color, size }) => (
+const SkinStudyIcon = ({ color, size }) => (
   <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
-    <Text style={{ fontSize: size, color }}>📦</Text>
+    <Text style={{ fontSize: size, color }}>✨</Text>
   </View>
 );
 
@@ -235,9 +238,9 @@ const ProfileIcon = ({ color, size }) => (
   </View>
 );
 
-const SkinStudyIcon = ({ color, size }) => (
+const OrdersIcon = ({ color, size }) => (
   <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
-    <Text style={{ fontSize: size, color }}>✨</Text>
+    <Text style={{ fontSize: size, color }}>📦</Text>
   </View>
 );
 

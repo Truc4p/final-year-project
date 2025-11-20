@@ -34,15 +34,13 @@ mobile-app-admin/
 
 ### 2. **Live Broadcasting**
 - 📹 Native camera access (front/back)
-- 🎙️ Audio recording
-- 💾 Automatic video recording
+- 🎙️ Audio streaming
 - ⏱️ Live duration timer
 - 🔴 Live indicator overlay
 
 ### 3. **Stream Management**
 - Create livestream with title/description
 - Start/stop streaming
-- Upload recorded video after stream
 - View real-time stats (viewers, likes)
 
 ### 4. **Real-time Features**
@@ -66,7 +64,7 @@ Admin Mobile App
     ↓ (Start Stream)
 Creates livestream record via API
     ↓
-Starts camera recording
+Starts camera streaming
     ↓
 WebSocket broadcasts "stream_started"
     ↓
@@ -74,7 +72,7 @@ All customers receive notification
     ↓
 Customers see: LIVE indicator, chat, products
     ↓ (Stop Stream)
-Stops recording & uploads video
+Stops streaming
     ↓
 WebSocket broadcasts "stream_stopped"
 ```
@@ -114,7 +112,7 @@ npm start
 Use your admin credentials from the database.
 
 ### 5. **Start Broadcasting!**
-- Tap the record button
+- Tap the start stream button
 - Enter stream details
 - Grant camera permissions
 - Start streaming!
@@ -146,9 +144,8 @@ The customer mobile app has been updated to properly display mobile-originated l
 ## 📦 Technologies Used
 
 - **React Native** with Expo
-- **expo-camera** for video recording
+- **expo-camera** for video streaming
 - **expo-av** for audio
-- **expo-media-library** for saving recordings
 - **WebSocket** for real-time communication
 - **Axios** for REST API calls
 - **AsyncStorage** for token persistence
@@ -159,7 +156,7 @@ The customer mobile app has been updated to properly display mobile-originated l
 | Aspect | Web Admin | Mobile Admin |
 |--------|-----------|--------------|
 | **Broadcast** | Browser WebRTC | Native Camera |
-| **Recording** | MediaRecorder | Expo Camera |
+| **Streaming** | MediaRecorder | Expo Camera |
 | **Quality** | Up to 1080p | 720p (optimal for mobile) |
 | **Portability** | Desktop only | Anywhere! |
 | **Setup** | Complex WebRTC | Simple camera API |
@@ -183,8 +180,7 @@ The customer mobile app has been updated to properly display mobile-originated l
 - [ ] Products can be pinned/unpinned
 - [ ] Viewer count updates in real-time
 - [ ] Likes increment correctly
-- [ ] Stream stops and video uploads
-- [ ] Recording saved successfully
+- [ ] Stream stops successfully
 
 ## 📚 Documentation Created
 
@@ -204,8 +200,7 @@ The customer mobile app has been updated to properly display mobile-originated l
 ### Issue: WebSocket disconnects
 **Solution**: Check Wi-Fi stability, auto-reconnect is built-in
 
-### Issue: Video not uploading
-**Solution**: Check backend logs, verify upload endpoint
+
 
 ## 🔮 Future Enhancements
 

@@ -20,7 +20,7 @@ This guide explains the complete mobile livestreaming architecture where:
            │
            │ WebSocket + REST API
            │ - Creates livestream
-           │ - Records video
+           │ - Streams video
            │ - Sends chat messages
            │ - Pins products
            ▼
@@ -61,7 +61,7 @@ This guide explains the complete mobile livestreaming architecture where:
 4. User enters title and description
 5. App calls API: POST /livestreams
 6. Backend creates livestream record
-7. App starts recording video locally
+7. App starts streaming video
 8. WebSocket sends: { type: 'start_stream', streamId: '...' }
 9. Backend broadcasts to all clients: { type: 'stream_started', streamData: {...} }
 ```
@@ -96,12 +96,10 @@ This guide explains the complete mobile livestreaming architecture where:
 ```javascript
 // Admin Mobile App
 1. User taps "Stop Stream" button
-2. App stops video recording
+2. App stops video streaming
 3. App calls API: POST /livestreams/:id/stop
-4. App uploads recorded video: POST /livestreams/:id/upload
-5. WebSocket sends: { type: 'stop_stream', streamId: '...' }
-6. Backend broadcasts: { type: 'stream_stopped' }
-7. Recording saved to backend storage
+4. WebSocket sends: { type: 'stop_stream', streamId: '...' }
+5. Backend broadcasts: { type: 'stream_stopped' }
 ```
 
 ## Setup Instructions
@@ -113,7 +111,7 @@ The backend is already set up to support mobile streaming! No changes needed to 
 #### Verify these endpoints exist:
 - ✅ `POST /livestreams` - Create livestream
 - ✅ `POST /livestreams/:id/stop` - Stop livestream
-- ✅ `POST /livestreams/:id/upload` - Upload video
+
 - ✅ `POST /livestreams/:id/pin-product` - Pin product
 - ✅ `DELETE /livestreams/:id/pin-product/:productId` - Unpin product
 - ✅ WebSocket connection at `/` with `?token=...&role=admin`
@@ -181,7 +179,7 @@ npm start
    - Password: (your admin password)
 
 5. **Start Livestream:**
-   - Tap the record button
+   - Tap the start stream button
    - Enter title: "Test Stream"
    - Tap "Start"
    - Grant camera/microphone permissions
@@ -236,9 +234,9 @@ npm start
 | Feature | Web Admin | Mobile Admin |
 |---------|-----------|--------------|
 | Broadcasting | Browser WebRTC | Native Camera API |
-| Recording | MediaRecorder API | Expo Camera Recording |
+| Streaming | MediaRecorder API | Expo Camera Streaming |
 | Video Format | WebM | MP4/MOV |
-| Viewing (Web) | WebRTC peer connection | Via uploaded recording |
+| Viewing (Web) | WebRTC peer connection | Via live stream sync |
 | Viewing (Mobile) | N/A | Via WebSocket sync |
 | Quality | Up to 1080p | 720p (configurable) |
 
@@ -291,7 +289,7 @@ mobile-app-admin/
 
 1. **Video Quality**: Use 720p for balance of quality and file size
 2. **Network**: Ensure stable Wi-Fi connection during streaming
-3. **Storage**: Clear old recordings periodically
+3. **Storage**: Clear old stream data periodically
 4. **Battery**: Keep device plugged in during long streams
 5. **Memory**: Close other apps to free up resources
 
@@ -300,7 +298,7 @@ mobile-app-admin/
 - [ ] Real-time video streaming (WebRTC peer-to-peer)
 - [ ] Multiple camera support (picture-in-picture)
 - [ ] Beauty filters and effects
-- [ ] Screen recording option
+
 - [ ] Scheduled livestreams
 - [ ] Analytics dashboard
 - [ ] Multi-streaming to different platforms
