@@ -50,6 +50,7 @@ export default function LivestreamScreen({ navigation }) {
   // Chat
   const [chatMessages, setChatMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [adminUsername, setAdminUsername] = useState('Admin');
   const chatScrollRef = useRef(null);
 
   // Products
@@ -165,6 +166,17 @@ export default function LivestreamScreen({ navigation }) {
     const token = await AsyncStorage.getItem('adminToken');
     if (!token) {
       navigation.replace('Login');
+      return;
+    }
+    
+    // Get admin username from token
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const username = payload.user?.username || payload.username || 'Admin';
+      setAdminUsername(username);
+      console.log('👤 Admin username:', username);
+    } catch (error) {
+      console.error('Error parsing admin username:', error);
     }
   };
 
@@ -329,7 +341,7 @@ export default function LivestreamScreen({ navigation }) {
   const sendChatMessage = () => {
     if (!newMessage.trim()) return;
 
-    livestreamService.sendChatMessage(newMessage);
+    livestreamService.sendChatMessage(newMessage, adminUsername);
     setNewMessage('');
   };
 
@@ -486,7 +498,10 @@ export default function LivestreamScreen({ navigation }) {
               >
                 {chatMessages.map((msg) => (
                   <View key={msg.id} style={styles.chatMessageBubble}>
-                    <Text style={styles.chatUsername}>{msg.username}</Text>
+                    <Text style={styles.chatUsername}>
+                      {msg.username}
+                      {msg.isAdmin && <Text style={styles.adminBadge}> 👑</Text>}
+                    </Text>
                     <Text style={styles.chatText}>{msg.message}</Text>
                   </View>
                 ))}
@@ -500,6 +515,13 @@ export default function LivestreamScreen({ navigation }) {
                   onChangeText={setNewMessage}
                   onSubmitEditing={sendChatMessage}
                 />
+                <TouchableOpacity
+                  style={styles.chatSendButton}
+                  onPress={sendChatMessage}
+                  disabled={!newMessage.trim()}
+                >
+                  <Text style={styles.chatSendIcon}>➤</Text>
+                </TouchableOpacity>
               </View>
             </View>
           )}
@@ -780,6 +802,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 13,
   },
+  adminBadge: {
+    fontSize: 12,
+  },
   chatText: {
     color: '#fff',
     fontSize: 13,
@@ -798,6 +823,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     color: '#fff',
     fontSize: 14,
+    marginRight: 8,
+  },
+  chatSendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chatSendIcon: {
+    fontSize: 18,
+    color: '#fff',
   },
   modalContainer: {
     flex: 1,

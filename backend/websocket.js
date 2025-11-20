@@ -117,9 +117,17 @@ class WebSocketManager {
         const LiveStream = require('./models/livestream/liveStream');
         const streamData = await LiveStream.findById(data.streamId).populate('createdBy', 'name email');
         console.log('📱 Broadcasting stream_started with full data:', streamData?.title);
+        
+        // Convert Mongoose document to plain object and add streamId
+        const streamObj = streamData ? {
+          ...streamData.toObject(),
+          streamId: data.streamId,
+          _id: data.streamId
+        } : { streamId: data.streamId, _id: data.streamId };
+        
         await this.broadcastStreamStatus({ 
           type: 'stream_started', 
-          streamData: streamData || { streamId: data.streamId }
+          streamData: streamObj
         });
         break;
         
@@ -389,7 +397,7 @@ class WebSocketManager {
     if (data.type === 'stream_started' && data.streamData) {
       this.currentStreamState = {
         isActive: true,
-        streamId: data.streamData.streamId || null,
+        streamId: data.streamData.streamId || data.streamData._id || null,
         viewerCount: data.streamData.viewerCount || 0,
         likes: data.streamData.likes || 0,
         likedBy: new Set(data.streamData.likedBy || []), // Initialize from database or empty
@@ -399,9 +407,13 @@ class WebSocketManager {
         streamUrl: data.streamData.streamUrl || '',
         quality: data.streamData.quality || '720p'
       };
-      console.log('💾 Updated in-memory stream state:', this.currentStreamState);
+      console.log('💾 Updated in-memory stream state:', {
+        ...this.currentStreamState,
+        likedBy: Array.from(this.currentStreamState.likedBy)
+      });
     } else if (data.type === 'stream_stopped') {
       this.currentStreamState.isActive = false;
+      this.currentStreamState.streamId = null;
       this.currentStreamState.likedBy.clear(); // Clear liked users when stream stops
       console.log('💾 Stream stopped, marked as inactive in memory');
     }

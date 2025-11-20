@@ -197,8 +197,14 @@ class LivestreamService {
     this.sendMessage('stop_stream', { streamId });
   }
 
-  sendChatMessage(message) {
-    this.sendMessage('chat_message', { message, isAdmin: true });
+  sendChatMessage(message, username = 'Admin') {
+    this.sendMessage('chat_message', { 
+      username,
+      message,
+      timestamp: new Date().toISOString(),
+      isAdmin: true,
+      id: Date.now()
+    });
   }
 
   updateStreamStats(viewerCount, likes) {
