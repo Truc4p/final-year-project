@@ -33,10 +33,7 @@ export default function LivestreamScreen({ navigation }) {
   console.log('📷 Initial permission state:', permission);
   console.log('🎤 Initial mic permission state:', micPermission);
   
-  const [isRecording, setIsRecording] = useState(false);
   const cameraRef = useRef(null);
-  const [recording, setRecording] = useState(null);
-  const recordingUriRef = useRef(null); // Store video URI in ref for immediate access
 
   // Stream state
   const [isStreaming, setIsStreaming] = useState(false);
@@ -226,53 +223,10 @@ export default function LivestreamScreen({ navigation }) {
       // Notify via WebSocket
       livestreamService.startStream(response.livestream._id);
 
-      Alert.alert('Success', 'Livestream started! (Live streaming only - no recording)');
+      Alert.alert('Success', 'Livestream started!');
     } catch (error) {
       console.error('Error starting stream:', error);
       Alert.alert('Error', 'Failed to start livestream');
-    }
-  };
-
-  const startRecording = async () => {
-    console.log('🔴 Start recording called, isRecording:', isRecording);
-    if (cameraRef.current && !isRecording) {
-      try {
-        setIsRecording(true);
-        recordingUriRef.current = null; // Reset previous recording
-        console.log('🎬 Starting camera recording...');
-        const video = await cameraRef.current.recordAsync();
-        setRecording(video);
-        recordingUriRef.current = video.uri; // Store in ref for immediate access
-        console.log('✅ Recording saved:', video.uri);
-      } catch (error) {
-        console.error('❌ Error recording:', error);
-        
-        // If simulator error, continue streaming without recording
-        if (error.message.includes('simulator')) {
-          console.log('⚠️ Running on simulator - streaming without video recording');
-          Alert.alert(
-            'Simulator Limitation',
-            'Video recording is not supported on iOS Simulator. The livestream will continue without recording. Test on a physical device for full functionality.',
-            [{ text: 'OK' }]
-          );
-          // Keep isRecording true to maintain streaming state
-        } else {
-          setIsRecording(false);
-        }
-      }
-    }
-  };
-
-  const stopRecording = async () => {
-    console.log('⏹️ Stop recording called, isRecording:', isRecording);
-    if (cameraRef.current && isRecording) {
-      try {
-        cameraRef.current.stopRecording();
-        setIsRecording(false);
-        console.log('✅ Recording stopped');
-      } catch (error) {
-        console.error('❌ Error stopping recording:', error);
-      }
     }
   };
 
@@ -454,12 +408,12 @@ export default function LivestreamScreen({ navigation }) {
           <View style={styles.bottomOverlay}>
             <TouchableOpacity
               style={[
-                styles.recordButton,
-                isStreaming && styles.recordButtonActive,
+                styles.streamButton,
+                isStreaming && styles.streamButtonActive,
               ]}
               onPress={isStreaming ? handleStopStream : handleStartStream}
             >
-              <View style={[styles.recordButtonInner, isStreaming && styles.recordButtonInnerActive]} />
+              <View style={[styles.streamButtonInner, isStreaming && styles.streamButtonInnerActive]} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -693,7 +647,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
   },
-  recordButton: {
+  streamButton: {
     width: 70,
     height: 70,
     borderRadius: 35,
@@ -701,16 +655,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  recordButtonActive: {
+  streamButtonActive: {
     backgroundColor: 'rgba(255, 0, 0, 0.5)',
   },
-  recordButtonInner: {
+  streamButtonInner: {
     width: 50,
     height: 50,
     borderRadius: 25,
     backgroundColor: '#fff',
   },
-  recordButtonInnerActive: {
+  streamButtonInnerActive: {
     width: 30,
     height: 30,
     borderRadius: 4,
