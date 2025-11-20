@@ -223,13 +223,10 @@ export default function LivestreamScreen({ navigation }) {
       setStreamDuration(0);
       setShowStreamSetup(false);
 
-      // Start recording
-      startRecording();
-
       // Notify via WebSocket
       livestreamService.startStream(response.livestream._id);
 
-      Alert.alert('Success', 'Livestream started!');
+      Alert.alert('Success', 'Livestream started! (Live streaming only - no recording)');
     } catch (error) {
       console.error('Error starting stream:', error);
       Alert.alert('Error', 'Failed to start livestream');
@@ -292,25 +289,6 @@ export default function LivestreamScreen({ navigation }) {
 
   const stopStream = async () => {
     try {
-      // Stop recording first
-      if (cameraRef.current && isRecording) {
-        try {
-          console.log('⏹️ Stopping recording...');
-          cameraRef.current.stopRecording();
-          setIsRecording(false);
-          
-          // Wait for the recording to finish saving (up to 3 seconds)
-          let attempts = 0;
-          while (!recordingUriRef.current && attempts < 30) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-          }
-          console.log('✅ Recording stopped, URI:', recordingUriRef.current);
-        } catch (error) {
-          console.error('❌ Error stopping recording:', error);
-        }
-      }
-
       // Stop livestream in backend
       if (currentStreamId) {
         await livestreamService.stopLivestream(currentStreamId, {
@@ -319,27 +297,10 @@ export default function LivestreamScreen({ navigation }) {
           likes,
         });
 
-        // Show success immediately, upload video in background
-        const videoUri = recordingUriRef.current || recording?.uri;
-        if (videoUri) {
-          Alert.alert('Success', 'Livestream stopped! Video is being uploaded...');
-          console.log('📤 Uploading video to server:', videoUri);
-          
-          // Upload in background (don't await)
-          livestreamService.uploadVideo(currentStreamId, videoUri)
-            .then(() => {
-              console.log('✅ Video uploaded successfully');
-            })
-            .catch(uploadError => {
-              console.error('❌ Error uploading video:', uploadError);
-            });
-        } else {
-          console.log('⚠️ No video recording to upload');
-          Alert.alert('Success', 'Livestream stopped!');
-        }
-
         // Notify via WebSocket
         livestreamService.stopStream(currentStreamId);
+        
+        Alert.alert('Success', 'Livestream stopped!');
       }
 
       // Reset state
@@ -352,7 +313,6 @@ export default function LivestreamScreen({ navigation }) {
       setPinnedProducts([]);
       setStreamTitle('');
       setStreamDescription('');
-      setRecording(null);
     } catch (error) {
       console.error('Error stopping stream:', error);
       Alert.alert('Error', 'Failed to stop livestream properly');
@@ -438,8 +398,8 @@ export default function LivestreamScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Camera Preview - only show when NOT streaming to avoid camera conflict */}
       <View style={styles.cameraContainer}>
+        {/* CameraView - only for preview before streaming */}
         {!isStreaming && (
           <CameraView
             ref={cameraRef}
