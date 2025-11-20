@@ -404,6 +404,35 @@ export default function LivestreamScreen({ navigation }) {
             </View>
           )}
 
+          {/* Chat Section - Overlaid at bottom 1/3 */}
+          {isStreaming && (
+            <View style={styles.chatOverlay}>
+              <ScrollView
+                ref={chatScrollRef}
+                style={styles.chatMessages}
+                contentContainerStyle={styles.chatMessagesContent}
+                onContentSizeChange={() => chatScrollRef.current?.scrollToEnd()}
+              >
+                {chatMessages.map((msg) => (
+                  <View key={msg.id} style={styles.chatMessageBubble}>
+                    <Text style={styles.chatUsername}>{msg.username}</Text>
+                    <Text style={styles.chatText}>{msg.message}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+              <View style={styles.chatInputOverlay}>
+                <TextInput
+                  style={styles.chatTextInput}
+                  placeholder="Write a comment..."
+                  placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                  value={newMessage}
+                  onChangeText={setNewMessage}
+                  onSubmitEditing={sendChatMessage}
+                />
+              </View>
+            </View>
+          )}
+
           {/* Bottom Controls */}
           <View style={styles.bottomOverlay}>
             <TouchableOpacity
@@ -426,37 +455,6 @@ export default function LivestreamScreen({ navigation }) {
           </View>
         </View>
       </View>
-
-      {/* Chat Section */}
-      {isStreaming && (
-        <View style={styles.chatSection}>
-          <Text style={styles.chatTitle}>Live Chat</Text>
-          <ScrollView
-            ref={chatScrollRef}
-            style={styles.chatMessages}
-            onContentSizeChange={() => chatScrollRef.current?.scrollToEnd()}
-          >
-            {chatMessages.map((msg) => (
-              <View key={msg.id} style={styles.chatMessage}>
-                <Text style={styles.chatUsername}>{msg.username}:</Text>
-                <Text style={styles.chatText}>{msg.message}</Text>
-              </View>
-            ))}
-          </ScrollView>
-          <View style={styles.chatInput}>
-            <TextInput
-              style={styles.chatTextInput}
-              placeholder="Send a message..."
-              value={newMessage}
-              onChangeText={setNewMessage}
-              onSubmitEditing={sendChatMessage}
-            />
-            <TouchableOpacity style={styles.chatSendButton} onPress={sendChatMessage}>
-              <Text style={styles.chatSendText}>Send</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
 
       {/* Stream Setup Modal */}
       <Modal visible={showStreamSetup} animationType="slide" transparent>
@@ -550,7 +548,7 @@ export default function LivestreamScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#000',
   },
   centerContainer: {
     flex: 1,
@@ -559,7 +557,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   cameraContainer: {
-    height: height * 0.6,
+    flex: 1,
     backgroundColor: '#000',
     position: 'relative',
   },
@@ -639,13 +637,13 @@ const styles = StyleSheet.create({
   },
   bottomOverlay: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 20,
     left: 0,
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    padding: 24,
+    paddingHorizontal: 24,
   },
   streamButton: {
     width: 70,
@@ -680,52 +678,55 @@ const styles = StyleSheet.create({
   productsButtonText: {
     fontSize: 24,
   },
-  chatSection: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    padding: 16,
-  },
-  chatTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
+  chatOverlay: {
+    position: 'absolute',
+    bottom: 80,
+    left: 0,
+    right: 0,
+    height: height / 3,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
   chatMessages: {
     flex: 1,
-    marginBottom: 12,
-  },
-  chatMessage: {
-    flexDirection: 'row',
     marginBottom: 8,
   },
+  chatMessagesContent: {
+    paddingBottom: 8,
+  },
+  chatMessageBubble: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 4,
+    alignSelf: 'flex-start',
+    maxWidth: '80%',
+  },
   chatUsername: {
+    color: '#fff',
     fontWeight: 'bold',
-    marginRight: 6,
+    fontSize: 13,
   },
   chatText: {
-    flex: 1,
+    color: '#fff',
+    fontSize: 13,
+    marginTop: 2,
   },
-  chatInput: {
+  chatInputOverlay: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingTop: 8,
   },
   chatTextInput: {
     flex: 1,
-    backgroundColor: COLORS.backgroundAlt,
+    backgroundColor: 'rgba(50, 50, 50, 0.8)',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    marginRight: 8,
-  },
-  chatSendButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  chatSendText: {
-    color: COLORS.white,
-    fontWeight: '600',
+    color: '#fff',
+    fontSize: 14,
   },
   modalContainer: {
     flex: 1,
