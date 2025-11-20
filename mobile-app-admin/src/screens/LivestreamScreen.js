@@ -29,7 +29,7 @@ export default function LivestreamScreen({ navigation }) {
   // Camera and permissions
   const [permission, requestPermission] = useCameraPermissions();
   const [micPermission, requestMicPermission] = useMicrophonePermissions();
-  const [cameraFacing, setCameraFacing] = useState('back');
+  const [cameraFacing, setCameraFacing] = useState('front');
   
   console.log('📷 Initial permission state:', permission);
   console.log('🎤 Initial mic permission state:', micPermission);
