@@ -87,11 +87,52 @@ export default function LivestreamScreen({ navigation }) {
     };
   }, [isStreaming, currentStreamId, viewerCount, likes]);
 
+  // Block navigation when streaming
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      if (!isStreaming) {
+        // If not streaming, allow navigation
+        return;
+      }
+
+      // Prevent default behavior of leaving the screen
+      e.preventDefault();
+
+      // Prompt the user to stop streaming first
+      Alert.alert(
+        'Livestream Active',
+        'You must stop the livestream before leaving this screen.',
+        [
+          { 
+            text: 'Cancel', 
+            style: 'cancel',
+            onPress: () => {} 
+          },
+          {
+            text: 'Stop Stream & Leave',
+            style: 'destructive',
+            onPress: async () => {
+              // Stop the stream
+              await stopStream();
+              // Allow navigation after stopping
+              navigation.dispatch(e.data.action);
+            },
+          },
+        ]
+      );
+    });
+
+    return unsubscribe;
+  }, [navigation, isStreaming]);
+
   useEffect(() => {
     checkAuthStatus();
     requestPermissions();
     loadProducts();
     initializeWebSocket();
+    // Note: cleanupStuckStreams() removed from here to prevent stopping newly created streams
+    // It was causing streams to be stopped immediately after creation
+    // Cleanup now only happens on server startup or via manual endpoint
 
     // Cleanup function: stop stream if active when component unmounts
     return () => {
@@ -124,6 +165,18 @@ export default function LivestreamScreen({ navigation }) {
     const token = await AsyncStorage.getItem('adminToken');
     if (!token) {
       navigation.replace('Login');
+    }
+  };
+
+  const cleanupStuckStreams = async () => {
+    try {
+      const result = await livestreamService.forceCleanupStreams();
+      if (result.cleaned > 0) {
+        console.log(`✅ Cleaned up ${result.cleaned} stuck stream(s) on app start`);
+      }
+    } catch (error) {
+      console.error('Error cleaning up stuck streams:', error);
+      // Don't block app startup if cleanup fails
     }
   };
 
@@ -298,6 +351,27 @@ export default function LivestreamScreen({ navigation }) {
 
 
   const handleLogout = async () => {
+    if (isStreaming) {
+      Alert.alert(
+        'Livestream Active',
+        'You must stop the livestream before logging out.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Stop Stream & Logout',
+            style: 'destructive',
+            onPress: async () => {
+              await stopStream();
+              await AsyncStorage.clear();
+              livestreamService.disconnectWebSocket();
+              navigation.replace('Login');
+            },
+          },
+        ]
+      );
+      return;
+    }
+
     Alert.alert(
       'Logout',
       'Are you sure you want to logout?',
@@ -307,9 +381,6 @@ export default function LivestreamScreen({ navigation }) {
           text: 'Logout',
           style: 'destructive',
           onPress: async () => {
-            if (isStreaming) {
-              await stopStream();
-            }
             await AsyncStorage.clear();
             livestreamService.disconnectWebSocket();
             navigation.replace('Login');

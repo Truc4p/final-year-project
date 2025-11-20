@@ -588,8 +588,21 @@ class WebSocketManager {
   // Send current stream status to a new connection
   async sendCurrentStreamStatus(ws) {
     try {
-      // Check if there's an active stream in memory first (real-time state)
-      if (this.currentStreamState.isActive) {
+      // Double-check with database to ensure stream is actually active
+      const LiveStream = require('./models/livestream/liveStream');
+      const activeStream = await LiveStream.findOne({ isActive: true }).sort({ createdAt: -1 });
+      
+      // If no active stream in database, clear in-memory state
+      if (!activeStream) {
+        console.log('📡 No active stream in database, clearing in-memory state');
+        this.currentStreamState.isActive = false;
+        this.currentStreamState.streamId = null;
+        this.currentStreamState.likedBy.clear();
+        return;
+      }
+      
+      // Check if there's an active stream in memory AND database
+      if (this.currentStreamState.isActive && activeStream) {
         console.log('📡 Sending current stream status from memory to new connection');
         console.log('🔍 Active stream from memory:', this.currentStreamState);
         
@@ -601,7 +614,8 @@ class WebSocketManager {
           likes: this.currentStreamState.likes,
           likedBy: Array.from(this.currentStreamState.likedBy), // Send as array
           streamUrl: this.currentStreamState.streamUrl,
-          quality: this.currentStreamState.quality
+          quality: this.currentStreamState.quality,
+          _id: activeStream._id
         };
 
         console.log('📡 Sending stream data via WebSocket:', streamData);
@@ -614,7 +628,7 @@ class WebSocketManager {
         // Send chat history to new connection
         await this.sendChatHistory(ws);
       } else {
-        console.log('📡 No active stream in memory');
+        console.log('📡 No active stream in memory or database');
       }
     } catch (error) {
       console.error('❌ Error sending current stream status:', error);

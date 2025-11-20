@@ -50,11 +50,26 @@ exports.createLiveStream = async (req, res) => {
     });
     
     // Check if there's already an active stream
-    const activeStream = await LiveStream.getActiveStream();
+    let activeStream = await LiveStream.getActiveStream();
     if (activeStream) {
-      return res.status(400).json({ 
-        message: 'Another livestream is currently active. Please stop it before starting a new one.' 
-      });
+      // Check if the stream has been active for more than 24 hours (likely stuck)
+      const hoursSinceStart = (Date.now() - activeStream.startTime.getTime()) / (1000 * 60 * 60);
+      
+      if (hoursSinceStart > 24) {
+        console.log('🧹 Found stuck active stream (active for', hoursSinceStart.toFixed(1), 'hours), cleaning up...');
+        
+        // Force cleanup the stuck stream
+        activeStream.isActive = false;
+        activeStream.endTime = new Date();
+        activeStream.duration = Math.floor((Date.now() - activeStream.startTime.getTime()) / 1000);
+        await activeStream.save();
+        
+        console.log('✅ Cleaned up stuck stream:', activeStream._id);
+      } else {
+        return res.status(400).json({ 
+          message: 'Another livestream is currently active. Please stop it before starting a new one.' 
+        });
+      }
     }
 
     const liveStream = new LiveStream({
@@ -537,7 +552,7 @@ exports.updatePinnedProductOrder = async (req, res) => {
 // Generate Agora RTC token
 exports.generateAgoraToken = async (req, res) => {
   try {
-    const { channelName, uid = 0 } = req.body;
+    const { channelName, uid = 0, role } = req.body;
     
     if (!channelName) {
       return res.status(400).json({ message: 'Channel name is required' });
@@ -559,19 +574,26 @@ exports.generateAgoraToken = async (req, res) => {
     const currentTimestamp = Math.floor(Date.now() / 1000);
     const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
 
-    // Build token with publisher role (broadcaster)
+    // Determine role based on user type or request parameter
+    // Admin/broadcaster uses PUBLISHER, customers/viewers use SUBSCRIBER
+    const isAdmin = req.user?.role === 'admin';
+    const tokenRole = (role === 'audience' || !isAdmin) ? RtcRole.SUBSCRIBER : RtcRole.PUBLISHER;
+
+    // Build token with appropriate role
     const token = RtcTokenBuilder.buildTokenWithUid(
       appId,
       appCertificate,
       channelName,
       uid,
-      RtcRole.PUBLISHER,
+      tokenRole,
       privilegeExpiredTs
     );
 
     console.log('✅ Agora token generated:', {
       channelName,
       uid,
+      role: tokenRole === RtcRole.PUBLISHER ? 'PUBLISHER' : 'SUBSCRIBER',
+      isAdmin,
       expiresIn: expirationTimeInSeconds,
       tokenLength: token.length
     });
@@ -587,6 +609,50 @@ exports.generateAgoraToken = async (req, res) => {
     console.error('❌ Error generating Agora token:', error);
     res.status(500).json({ 
       message: 'Failed to generate Agora token', 
+      error: error.message 
+    });
+  }
+};
+
+// Force cleanup all stuck active streams
+exports.forceCleanupActiveStreams = async (req, res) => {
+  try {
+    console.log('🧹 Force cleanup: Searching for stuck active streams...');
+    
+    const activeStreams = await LiveStream.find({ isActive: true });
+    
+    if (activeStreams.length === 0) {
+      return res.json({
+        message: 'No active streams found',
+        cleaned: 0
+      });
+    }
+    
+    console.log(`Found ${activeStreams.length} active stream(s), cleaning up...`);
+    
+    let cleanedCount = 0;
+    for (const stream of activeStreams) {
+      stream.isActive = false;
+      stream.endTime = new Date();
+      stream.duration = Math.floor((Date.now() - stream.startTime.getTime()) / 1000);
+      await stream.save();
+      cleanedCount++;
+      console.log(`✅ Cleaned up stream: ${stream._id} (${stream.title})`);
+    }
+    
+    res.json({
+      message: `Successfully cleaned up ${cleanedCount} stuck stream(s)`,
+      cleaned: cleanedCount,
+      streams: activeStreams.map(s => ({
+        id: s._id,
+        title: s.title,
+        startTime: s.startTime
+      }))
+    });
+  } catch (error) {
+    console.error('❌ Error forcing cleanup:', error);
+    res.status(500).json({ 
+      message: 'Failed to force cleanup streams', 
       error: error.message 
     });
   }

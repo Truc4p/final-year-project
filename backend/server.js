@@ -39,5 +39,11 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
 // Initialize WebSocket server
 const wsManager = new WebSocketManager(server);
 
+// Clear WebSocket in-memory state on startup
+console.log('🧹 Clearing WebSocket in-memory stream state on startup');
+wsManager.currentStreamState.isActive = false;
+wsManager.currentStreamState.streamId = null;
+wsManager.currentStreamState.likedBy.clear();
+
 // Make WebSocket manager available to other modules
 app.locals.wsManager = wsManager;

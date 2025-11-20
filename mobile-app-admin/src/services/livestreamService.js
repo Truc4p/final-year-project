@@ -219,6 +219,19 @@ class LivestreamService {
       throw error;
     }
   }
+
+  // Force cleanup stuck active streams
+  async forceCleanupStreams() {
+    try {
+      console.log('🧹 Forcing cleanup of stuck streams...');
+      const response = await api.post('/livestreams/cleanup');
+      console.log('✅ Cleanup result:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Force cleanup error:', error);
+      throw error;
+    }
+  }
 }
 
 export default new LivestreamService();

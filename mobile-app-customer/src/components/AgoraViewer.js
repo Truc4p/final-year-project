@@ -96,6 +96,7 @@ export default function AgoraViewer({ streamId, isLive }) {
       const tokenResponse = await api.post('/livestreams/agora/token', {
         channelName,
         uid: 0, // Viewer uses uid 0
+        role: 'audience', // Specify audience role for SUBSCRIBER token
       });
       const { token } = tokenResponse.data;
       console.log('✅ [Viewer] Got Agora token');
