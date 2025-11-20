@@ -10,7 +10,7 @@ import {
 import { AGORA_APP_ID, getChannelName } from '../constants/agora';
 import api from '../services/api';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default function AgoraViewer({ streamId, isLive }) {
   const agoraEngine = useRef(null);
@@ -183,7 +183,7 @@ export default function AgoraViewer({ streamId, isLive }) {
 const styles = StyleSheet.create({
   container: {
     width: width,
-    height: width * (9 / 16), // 16:9 aspect ratio
+    height: height,
     backgroundColor: '#000',
   },
   videoView: {
@@ -192,8 +192,8 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     width: width,
-    height: width * (9 / 16),
-    backgroundColor: '#e0e0e0',
+    height: height,
+    backgroundColor: '#1a1a1a',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     fontSize: 18,
-    color: '#666',
+    color: '#999',
     fontWeight: '600',
   },
   liveIndicator: {

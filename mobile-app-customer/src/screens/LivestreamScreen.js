@@ -19,7 +19,7 @@ import { livestreamService } from '../services/livestreamService';
 import { COLORS, API_BASE_URL } from '../constants';
 import AgoraViewer from '../components/AgoraViewer';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default function LivestreamScreen({ navigation }) {
   // Stream state
@@ -420,116 +420,113 @@ export default function LivestreamScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Live Stream</Text>
-          <View style={styles.liveIndicator}>
-            {isLive && <View style={styles.liveDot} />}
-            <Text style={styles.liveText}>{isLive ? 'LIVE NOW' : 'Next Stream Soon'}</Text>
-          </View>
-        </View>
-
-        {/* Video Player Section */}
-        <View style={styles.videoSection}>
-          {/* Agora Video Viewer - shows live video from broadcaster */}
-          <AgoraViewer
-            streamId={currentStream?._id}
-            isLive={isLive}
-          />
-
-          {/* Stream Info */}
-          <View style={styles.streamInfo}>
-            <Text style={styles.streamTitle}>
-              {currentStream?.title || 'Live Stream Title'}
-            </Text>
-            <Text style={styles.streamDescription}>
-              {currentStream?.description || 'Watch our latest live streams'}
-            </Text>
-
-            <View style={styles.streamStats}>
+      <View style={styles.videoContainer}>
+        {/* Full-screen Agora Video Viewer */}
+        <AgoraViewer
+          streamId={currentStream?._id}
+          isLive={isLive}
+        />
+        
+        {/* Overlays */}
+        <View style={styles.overlayContainer}>
+          {/* Top Overlay */}
+          <View style={styles.topOverlay}>
+            <View style={styles.topLeft}>
               {isLive && (
-                <View style={styles.stat}>
-                  <View style={styles.liveDotSmall} />
-                  <Text style={styles.statText}>{viewerCount} viewers</Text>
+                <View style={styles.liveIndicator}>
+                  <View style={styles.liveDot} />
+                  <Text style={styles.liveText}>LIVE</Text>
                 </View>
               )}
-              {isLive && (
-                <Text style={styles.streamTime}>
-                  Started: {formatTime(currentStream?.startTime)}
-                </Text>
-              )}
             </View>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.backButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
 
-            <View style={styles.streamActions}>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={toggleLike}
-              >
-                <Text style={styles.actionIcon}>{isLiked ? '❤️' : '🤍'}</Text>
-                <Text style={styles.actionText}>{likes}</Text>
-              </TouchableOpacity>
+          {/* Stats Overlay - Right Side */}
+          <View style={styles.rightOverlay}>
+            {isLive && (
+              <View style={styles.statBubble}>
+                <Text style={styles.statIcon}>👁️</Text>
+                <Text style={styles.statText}>{viewerCount}</Text>
+              </View>
+            )}
+            
+            <TouchableOpacity 
+              style={styles.actionBubble}
+              onPress={toggleLike}
+            >
+              <Text style={styles.actionIcon}>{isLiked ? '❤️' : '🤍'}</Text>
+              <Text style={styles.actionText}>{likes}</Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={shareStream}
-              >
-                <Text style={styles.actionIcon}>🔗</Text>
-                <Text style={styles.actionText}>Share</Text>
-              </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.actionBubble}
+              onPress={shareStream}
+            >
+              <Text style={styles.actionIcon}>🔗</Text>
+              <Text style={styles.actionText}>Share</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Stream Info - Left Bottom */}
+          <View style={styles.streamInfoOverlay}>
+            <Text style={styles.streamTitleOverlay} numberOfLines={1}>
+              {currentStream?.title || 'Live Stream'}
+            </Text>
+            {currentStream?.description && (
+              <Text style={styles.streamDescOverlay} numberOfLines={2}>
+                {currentStream.description}
+              </Text>
+            )}
+          </View>
+
+          {/* Pinned Products Overlay */}
+          {pinnedProducts.length > 0 && (
+            <View style={styles.productsOverlay}>
+              <FlatList
+                data={pinnedProducts}
+                renderItem={renderPinnedProduct}
+                keyExtractor={(item) => item._id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+              />
             </View>
-          </View>
-        </View>
+          )}
 
-        {/* Pinned Products */}
-        {pinnedProducts.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Featured Products</Text>
-            <FlatList
-              data={pinnedProducts}
-              renderItem={renderPinnedProduct}
-              keyExtractor={(item) => item._id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.pinnedProductsList}
-            />
-          </View>
-        )}
-
-        {/* Live Chat */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Live Chat</Text>
-          <View style={styles.chatContainer}>
+          {/* Chat Overlay - Bottom 1/3 */}
+          <View style={styles.chatOverlay}>
             <ScrollView
               ref={chatScrollRef}
-              style={styles.chatList}
-              contentContainerStyle={styles.chatListContent}
-              // Auto scroll when content changes
-              onContentSizeChange={() => {
-                chatScrollRef.current?.scrollToEnd({ animated: true });
-              }}
+              style={styles.chatMessages}
+              contentContainerStyle={styles.chatMessagesContent}
+              onContentSizeChange={() => chatScrollRef.current?.scrollToEnd()}
             >
-              {chatMessages.map((item) => (
-                <View key={item.id}>
-                  {renderChatMessage({ item })}
+              {chatMessages.map((msg) => (
+                <View key={msg.id} style={styles.chatMessageBubble}>
+                  <Text style={styles.chatUsername}>
+                    {msg.username}
+                    {msg.isAdmin && <Text style={styles.adminBadge}> 👑</Text>}
+                  </Text>
+                  <Text style={styles.chatText}>{msg.message}</Text>
                 </View>
               ))}
             </ScrollView>
-            <View style={styles.chatInput}>
+            <View style={styles.chatInputOverlay}>
               <TextInput
                 style={styles.chatTextInput}
-                placeholder="Type a message..."
+                placeholder="Write a comment..."
+                placeholderTextColor="rgba(255, 255, 255, 0.6)"
                 value={newMessage}
                 onChangeText={setNewMessage}
                 onSubmitEditing={sendMessage}
               />
               <TouchableOpacity
-                style={[
-                  styles.chatSendButton,
-                  !newMessage.trim() && styles.chatSendButtonDisabled,
-                ]}
+                style={styles.chatSendButton}
                 onPress={sendMessage}
                 disabled={!newMessage.trim()}
               >
@@ -538,20 +535,7 @@ export default function LivestreamScreen({ navigation }) {
             </View>
           </View>
         </View>
-
-        {/* Past Streams */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Past Streams</Text>
-          <FlatList
-            data={pastStreams}
-            renderItem={renderPastStream}
-            keyExtractor={(item) => item._id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.pastStreamsList}
-          />
-        </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -559,264 +543,226 @@ export default function LivestreamScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#000',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#000',
   },
-  header: {
-    padding: 16,
-    backgroundColor: COLORS.primaryLight,
+  videoContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+    position: 'relative',
+  },
+  overlayContainer: {
+    ...StyleSheet.absoluteFillObject,
+    pointerEvents: 'box-none',
+  },
+  topOverlay: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 16,
+    paddingTop: 8,
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.primaryDarker,
-    marginBottom: 8,
+  topLeft: {
+    flex: 1,
   },
   liveIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 0, 0, 0.8)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
   },
   liveDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.error,
-    marginRight: 8,
-  },
-  liveDotSmall: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.error,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#fff',
     marginRight: 6,
   },
   liveText: {
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.primaryDarker,
   },
-  videoSection: {
-    backgroundColor: COLORS.white,
-    marginBottom: 16,
-  },
-  videoPlayer: {
-    width: '100%',
-    height: 220,
-    backgroundColor: COLORS.lightGray,
-  },
-  videoPlaceholder: {
-    flex: 1,
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
-  videoPlaceholderText: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
-  videoPlaceholderSubtext: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  videoPlaceholderDescription: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-  },
-  streamInfo: {
-    padding: 16,
-  },
-  streamTitle: {
-    fontSize: 20,
+  backButtonText: {
+    color: '#fff',
+    fontSize: 24,
     fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 8,
   },
-  streamDescription: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginBottom: 12,
+  rightOverlay: {
+    position: 'absolute',
+    right: 12,
+    top: 80,
+    alignItems: 'center',
   },
-  streamStats: {
-    flexDirection: 'row',
+  statBubble: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
     alignItems: 'center',
     marginBottom: 12,
   },
-  stat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 16,
+  statIcon: {
+    fontSize: 20,
   },
   statText: {
-    fontSize: 13,
-    color: COLORS.error,
-    fontWeight: '600',
-  },
-  streamTime: {
+    color: '#fff',
     fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  streamActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-    paddingHorizontal: 12,
-    backgroundColor: COLORS.backgroundAlt,
-    borderRadius: 8,
-  },
-  actionIcon: {
-    fontSize: 18,
-    marginRight: 6,
-  },
-  actionText: {
-    fontSize: 14,
-    color: COLORS.text,
-    fontWeight: '600',
-  },
-  section: {
-    marginBottom: 24,
-    paddingHorizontal: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
     fontWeight: 'bold',
-    color: COLORS.text,
+    marginTop: 2,
+  },
+  actionBubble: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 12,
   },
-  pinnedProductsList: {
-    paddingRight: 16,
+  actionIcon: {
+    fontSize: 24,
+  },
+  actionText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginTop: 2,
+  },
+  streamInfoOverlay: {
+    position: 'absolute',
+    left: 12,
+    bottom: height / 3 + 80,
+    right: 80,
+    paddingHorizontal: 4,
+  },
+  streamTitleOverlay: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  streamDescOverlay: {
+    color: '#fff',
+    fontSize: 13,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  productsOverlay: {
+    position: 'absolute',
+    left: 0,
+    bottom: height / 3 + 20,
+    right: 0,
+    height: 60,
+    paddingLeft: 12,
   },
   pinnedProductCard: {
-    width: 160,
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    marginRight: 12,
+    width: 50,
+    height: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 8,
+    marginRight: 8,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.lightGray,
   },
   pinnedProductImage: {
     width: '100%',
-    height: 120,
-    backgroundColor: COLORS.backgroundAlt,
+    height: '100%',
   },
   pinnedProductInfo: {
-    padding: 12,
+    display: 'none',
   },
   pinnedProductName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 4,
+    display: 'none',
   },
   pinnedProductCategory: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginBottom: 8,
+    display: 'none',
   },
   pinnedProductFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    display: 'none',
   },
   pinnedProductPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.primary,
+    display: 'none',
   },
   pinnedProductButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    display: 'none',
   },
   pinnedProductButtonDisabled: {
-    backgroundColor: COLORS.gray,
+    display: 'none',
   },
   pinnedProductButtonText: {
-    color: COLORS.white,
-    fontSize: 12,
-    fontWeight: '600',
+    display: 'none',
   },
-  chatContainer: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    overflow: 'hidden',
-    height: 300,
+  chatOverlay: {
+    position: 'absolute',
+    bottom: 60,
+    left: 0,
+    right: 0,
+    height: height / 3,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
-  chatList: {
+  chatMessages: {
     flex: 1,
+    marginBottom: 8,
   },
-  chatListContent: {
-    padding: 12,
+  chatMessagesContent: {
+    paddingBottom: 8,
   },
-  chatMessage: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  chatAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  chatAvatarAdmin: {
-    backgroundColor: COLORS.accent,
-  },
-  chatAvatarText: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  chatMessageContent: {
-    flex: 1,
-  },
-  chatMessageHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  chatMessageBubble: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
     marginBottom: 4,
+    alignSelf: 'flex-start',
+    maxWidth: '80%',
   },
   chatUsername: {
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginRight: 8,
   },
-  chatTimestamp: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
+  adminBadge: {
+    fontSize: 12,
   },
   chatText: {
-    fontSize: 14,
-    color: COLORS.text,
+    color: '#fff',
+    fontSize: 13,
+    marginTop: 2,
   },
-  chatInput: {
+  chatInputOverlay: {
     flexDirection: 'row',
-    padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.lightGray,
+    alignItems: 'center',
+    paddingTop: 8,
   },
   chatTextInput: {
     flex: 1,
-    backgroundColor: COLORS.backgroundAlt,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: 'rgba(50, 50, 50, 0.8)',
     borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    color: '#fff',
     fontSize: 14,
     marginRight: 8,
   },
@@ -824,90 +770,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.primary,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  chatSendButtonDisabled: {
-    backgroundColor: COLORS.gray,
   },
   chatSendIcon: {
     fontSize: 18,
-    color: COLORS.white,
-  },
-  pastStreamsList: {
-    paddingRight: 16,
-  },
-  pastStreamCard: {
-    width: 160,
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    marginRight: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.lightGray,
-  },
-  pastStreamImage: {
-    width: '100%',
-    height: 120,
-    backgroundColor: COLORS.backgroundAlt,
-  },
-  pastStreamPlaceholder: {
-    width: '100%',
-    height: 120,
-    backgroundColor: COLORS.backgroundAlt,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pastStreamPlaceholderText: {
-    fontSize: 32,
-  },
-  noRecordingBadge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  noRecordingText: {
-    color: COLORS.white,
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  pastStreamInfo: {
-    padding: 12,
-  },
-  pastStreamTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  pastStreamDate: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  liveIndicatorLarge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.error,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginTop: 16,
-  },
-  liveDotLarge: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.white,
-    marginRight: 8,
-  },
-  liveTextLarge: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: '#fff',
   },
 });
