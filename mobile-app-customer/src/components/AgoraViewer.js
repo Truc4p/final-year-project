@@ -63,6 +63,12 @@ export default function AgoraViewer({ streamId, isLive }) {
           setIsJoined(false);
           setRemoteUid(null);
         },
+        onRemoteVideoStateChanged: (connection, uid, state, reason, elapsed) => {
+          console.log(`📹 [Viewer] Remote video state changed - uid: ${uid}, state: ${state}, reason: ${reason}`);
+          if (state === 2) { // VideoRemoteState.Decoding
+            console.log('✅ [Viewer] Remote video is now streaming!');
+          }
+        },
       });
 
       // Enable video

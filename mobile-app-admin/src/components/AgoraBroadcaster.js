@@ -4,6 +4,8 @@ import {
   createAgoraRtcEngine,
   ChannelProfileType,
   ClientRoleType,
+  RtcSurfaceView,
+  VideoSourceType,
 } from 'react-native-agora';
 import { AGORA_APP_ID, getChannelName } from '../constants/agora';
 import livestreamService from '../services/livestreamService';
@@ -47,6 +49,15 @@ export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
         onLeaveChannel: (connection, stats) => {
           console.log('👋 Left Agora channel');
         },
+        onLocalVideoStateChanged: (source, state, error) => {
+          console.log(`📹 [Broadcaster] Local video state changed - state: ${state}, error: ${error}`);
+        },
+        onUserJoined: (connection, uid, elapsed) => {
+          console.log(`👤 [Broadcaster] Viewer joined: ${uid}`);
+        },
+        onUserOffline: (connection, uid, reason) => {
+          console.log(`👋 [Broadcaster] Viewer left: ${uid}`);
+        },
       });
 
       // Enable video
@@ -81,6 +92,10 @@ export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
       // Always use front camera - Agora defaults to front camera
       console.log('📷 Using front camera for broadcasting');
 
+      // Start local video preview and enable camera
+      agoraEngine.current.startPreview();
+      console.log('📹 Started local camera preview');
+
       // Fetch Agora token from backend
       console.log('🔑 Fetching Agora token...');
       const tokenData = await livestreamService.getAgoraToken(channelName, 0);
@@ -96,7 +111,7 @@ export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
         clientRoleType: ClientRoleType.ClientRoleBroadcaster,
       });
 
-      console.log('✅ Broadcasting started');
+      console.log('✅ Broadcasting started - video should now be streaming');
     } catch (error) {
       console.error('❌ Failed to start broadcasting:', error);
       Alert.alert('Error', 'Failed to start video broadcast: ' + error.message);
@@ -106,6 +121,8 @@ export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
   const stopBroadcasting = async () => {
     try {
       if (agoraEngine.current) {
+        // Stop camera preview
+        agoraEngine.current.stopPreview();
         await agoraEngine.current.leaveChannel();
         console.log('📴 Broadcasting stopped');
       }
@@ -126,9 +143,30 @@ export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
     }
   };
 
-  // This component doesn't render anything visible - the camera is already shown by CameraView
-  // Agora runs in the background and broadcasts the video to viewers
-  return null;
+  // Render local video preview when streaming
+  if (!isStreaming || !isInitialized) {
+    return null;
+  }
+
+  return (
+    <View style={styles.container}>
+      <RtcSurfaceView
+        style={styles.videoView}
+        canvas={{
+          sourceType: VideoSourceType.VideoSourceCamera,
+          uid: 0,
+        }}
+      />
+    </View>
+  );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  videoView: {
+    width: '100%',
+    height: '100%',
+  },
+});

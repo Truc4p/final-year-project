@@ -438,21 +438,28 @@ export default function LivestreamScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Agora Broadcaster - broadcasts camera feed to viewers */}
-      <AgoraBroadcaster
-        streamId={currentStreamId}
-        isStreaming={isStreaming}
-        onError={(error) => Alert.alert('Streaming Error', error)}
-      />
-      
-      {/* Camera Preview */}
+      {/* Camera Preview - only show when NOT streaming to avoid camera conflict */}
       <View style={styles.cameraContainer}>
-        <CameraView
-          ref={cameraRef}
-          style={styles.camera}
-          facing="front"
-          mode="video"
-        >
+        {!isStreaming && (
+          <CameraView
+            ref={cameraRef}
+            style={styles.camera}
+            facing="front"
+            mode="video"
+          />
+        )}
+        
+        {/* Agora Broadcaster - shows local video when streaming */}
+        {isStreaming && (
+          <AgoraBroadcaster
+            streamId={currentStreamId}
+            isStreaming={isStreaming}
+            onError={(error) => Alert.alert('Streaming Error', error)}
+          />
+        )}
+        
+        {/* Overlays - always visible regardless of streaming state */}
+        <View style={styles.overlayContainer}>
           {/* Top Overlay */}
           <View style={styles.topOverlay}>
             <View style={styles.statusContainer}>
@@ -503,7 +510,7 @@ export default function LivestreamScreen({ navigation }) {
               <Text style={styles.productsButtonText}>🛍️</Text>
             </TouchableOpacity>
           </View>
-        </CameraView>
+        </View>
       </View>
 
       {/* Chat Section */}
@@ -640,9 +647,14 @@ const styles = StyleSheet.create({
   cameraContainer: {
     height: height * 0.6,
     backgroundColor: '#000',
+    position: 'relative',
   },
   camera: {
     flex: 1,
+  },
+  overlayContainer: {
+    ...StyleSheet.absoluteFillObject,
+    pointerEvents: 'box-none',
   },
   topOverlay: {
     flexDirection: 'row',
