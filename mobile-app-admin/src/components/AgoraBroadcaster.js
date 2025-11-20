@@ -87,18 +87,18 @@ export default function AgoraBroadcaster({ streamId, isStreaming, cameraFacing, 
       // Set client role to broadcaster
       agoraEngine.current.setClientRole(ClientRoleType.ClientRoleBroadcaster);
 
-      // Set initial camera (false = back camera, true = front camera)
+      // Set initial camera - Agora defaults to BACK camera
+      // If we want front camera, we need to switch
       const isFrontCamera = cameraFacing === 'front';
       console.log('📷 Setting initial Agora camera:', cameraFacing, '(front=' + isFrontCamera + ')');
-      // Note: switchCamera() toggles between cameras. If default is front and we want back, call it once.
-      // We need to ensure we're using the correct camera
+      
       if (isFrontCamera) {
-        // Front camera is typically the default, so no switch needed
-        console.log('📷 Using default front camera');
-      } else {
-        // Switch to back camera
-        console.log('📷 Switching to back camera');
+        // Agora defaults to back, so switch to front
+        console.log('📷 Switching from default back to front camera');
         agoraEngine.current.switchCamera();
+      } else {
+        // Using default back camera, no switch needed
+        console.log('📷 Using default back camera');
       }
 
       // Fetch Agora token from backend

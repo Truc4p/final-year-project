@@ -30,9 +30,19 @@ export default function LoginScreen({ navigation }) {
       const userData = await AsyncStorage.getItem('adminUser');
       
       if (token && userData) {
-        console.log('🔑 Found existing token, auto-logging in...');
-        // Navigate directly to main screen
-        navigation.replace('Main');
+        // Check if token is expired
+        const isExpired = isTokenExpired(token);
+        
+        if (isExpired) {
+          console.log('🔑 Token expired, clearing storage...');
+          await AsyncStorage.removeItem('adminToken');
+          await AsyncStorage.removeItem('adminUser');
+          setLoading(false);
+        } else {
+          console.log('🔑 Found valid token, auto-logging in...');
+          // Navigate directly to main screen
+          navigation.replace('Main');
+        }
       } else {
         console.log('🔑 No existing token found');
         setLoading(false);
@@ -40,6 +50,19 @@ export default function LoginScreen({ navigation }) {
     } catch (error) {
       console.error('Error checking token:', error);
       setLoading(false);
+    }
+  };
+
+  // Check if JWT token is expired
+  const isTokenExpired = (token) => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expirationTime = payload.exp * 1000; // Convert to milliseconds
+      const currentTime = Date.now();
+      return currentTime >= expirationTime;
+    } catch (error) {
+      console.error('Error parsing token:', error);
+      return true; // Treat as expired if we can't parse it
     }
   };
 
