@@ -730,7 +730,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   chatMessageBubble: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,

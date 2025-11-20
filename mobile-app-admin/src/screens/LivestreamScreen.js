@@ -158,6 +158,8 @@ export default function LivestreamScreen({ navigation }) {
         });
       }
       
+      // Remove message handler and disconnect WebSocket
+      livestreamService.removeMessageHandler(handleWebSocketMessage);
       livestreamService.disconnectWebSocket();
     };
   }, [isStreaming, currentStreamId, viewerCount, likes]);
@@ -217,6 +219,10 @@ export default function LivestreamScreen({ navigation }) {
 
   const initializeWebSocket = async () => {
     const token = await AsyncStorage.getItem('adminToken');
+    
+    // Remove any existing handlers before adding new one to prevent duplicates
+    livestreamService.removeMessageHandler(handleWebSocketMessage);
+    
     livestreamService.connectWebSocket(token);
     livestreamService.addMessageHandler(handleWebSocketMessage);
   };
@@ -231,16 +237,31 @@ export default function LivestreamScreen({ navigation }) {
         break;
       
       case 'chat_message':
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            id: data.id || Date.now(),
-            username: data.username,
-            message: data.message,
-            timestamp: new Date(data.timestamp),
-            isAdmin: data.isAdmin || false,
-          },
-        ]);
+        // Check for duplicate messages using unique ID
+        setChatMessages((prev) => {
+          const messageId = data.id || `${data.username}-${data.timestamp}`;
+          const isDuplicate = prev.some(msg => msg.id === messageId);
+          
+          if (isDuplicate) {
+            console.log('⚠️ Duplicate message detected, skipping:', messageId);
+            return prev;
+          }
+          
+          return [
+            ...prev,
+            {
+              id: messageId,
+              username: data.username,
+              message: data.message,
+              timestamp: new Date(data.timestamp),
+              isAdmin: data.isAdmin || false,
+            },
+          ];
+        });
+        // Auto scroll to bottom when new message arrives
+        setTimeout(() => {
+          chatScrollRef.current?.scrollToEnd({ animated: true });
+        }, 100);
         break;
       
       case 'pinned_products_updated':
@@ -346,17 +367,27 @@ export default function LivestreamScreen({ navigation }) {
   };
 
   const toggleProductPin = async (product) => {
+    if (!currentStreamId) {
+      Alert.alert('Error', 'No active stream. Start streaming first.');
+      return;
+    }
+    
     try {
-      const isPinned = pinnedProducts.some((p) => p.productId._id === product._id);
+      const isPinned = pinnedProducts.some((p) => p.productId?._id === product._id);
 
       if (isPinned) {
         await livestreamService.unpinProduct(currentStreamId, product._id);
       } else {
         await livestreamService.pinProduct(currentStreamId, product._id);
       }
+      
+      // Refresh pinned products after toggle
+      const products = await livestreamService.getPinnedProducts(currentStreamId);
+      setPinnedProducts(products);
     } catch (error) {
       console.error('Error toggling product pin:', error);
-      Alert.alert('Error', 'Failed to update product');
+      const errorMsg = error.response?.data?.message || 'Failed to update product';
+      Alert.alert('Error', errorMsg);
     }
   };
 
@@ -494,7 +525,7 @@ export default function LivestreamScreen({ navigation }) {
                 ref={chatScrollRef}
                 style={styles.chatMessages}
                 contentContainerStyle={styles.chatMessagesContent}
-                onContentSizeChange={() => chatScrollRef.current?.scrollToEnd()}
+                onContentSizeChange={() => chatScrollRef.current?.scrollToEnd({ animated: true })}
               >
                 {chatMessages.map((msg) => (
                   <View key={msg.id} style={styles.chatMessageBubble}>
@@ -698,8 +729,8 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
     borderRadius: 20,
   },
   logoutButtonText: {
@@ -773,27 +804,32 @@ const styles = StyleSheet.create({
   },
   chatOverlay: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 100,
     left: 0,
     right: 0,
     height: height / 3,
     paddingHorizontal: 12,
     paddingTop: 12,
     paddingBottom: 8,
+    backgroundColor: 'transparent',
   },
   chatMessages: {
     flex: 1,
     marginBottom: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
   chatMessagesContent: {
     paddingBottom: 8,
   },
   chatMessageBubble: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 8,
-    marginBottom: 4,
+    marginBottom: 6,
     alignSelf: 'flex-start',
     maxWidth: '80%',
   },

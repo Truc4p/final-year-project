@@ -26,6 +26,18 @@ class LivestreamService {
       this.ws.onopen = () => {
         console.log('✅ WebSocket connected successfully');
         this.reconnectAttempts = 0;
+        
+        // Register as admin with the backend
+        if (token) {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const userId = payload.user?.id || payload.id;
+          this.ws.send(JSON.stringify({
+            type: 'register_admin',
+            userId: userId,
+            token: token
+          }));
+          console.log('📤 Sent admin registration to WebSocket');
+        }
       };
 
       this.ws.onmessage = (event) => {
@@ -180,11 +192,21 @@ class LivestreamService {
 
   async unpinProduct(streamId, productId) {
     try {
-      const response = await api.delete(`/livestreams/${streamId}/pin-product/${productId}`);
+      const response = await api.delete(`/livestreams/${streamId}/unpin-product/${productId}`);
       return response.data;
     } catch (error) {
       console.error('Unpin product error:', error);
       throw error;
+    }
+  }
+
+  async getPinnedProducts(streamId) {
+    try {
+      const response = await api.get(`/livestreams/${streamId}/pinned-products`);
+      return response.data.pinnedProducts || [];
+    } catch (error) {
+      console.error('Get pinned products error:', error);
+      return [];
     }
   }
 
