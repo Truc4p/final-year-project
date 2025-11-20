@@ -33,7 +33,10 @@ export default function LivestreamScreen({ navigation }) {
   console.log('📷 Initial permission state:', permission);
   console.log('🎤 Initial mic permission state:', micPermission);
   
+  const [isRecording, setIsRecording] = useState(false);
   const cameraRef = useRef(null);
+  const [recording, setRecording] = useState(null);
+  const recordingUriRef = useRef(null); // Store video URI in ref for immediate access
 
   // Stream state
   const [isStreaming, setIsStreaming] = useState(false);
@@ -220,6 +223,9 @@ export default function LivestreamScreen({ navigation }) {
       setStreamDuration(0);
       setShowStreamSetup(false);
 
+      // Start recording
+      startRecording();
+
       // Notify via WebSocket
       livestreamService.startStream(response.livestream._id);
 
@@ -230,7 +236,48 @@ export default function LivestreamScreen({ navigation }) {
     }
   };
 
+  const startRecording = async () => {
+    console.log('🔴 Start recording called, isRecording:', isRecording);
+    if (cameraRef.current && !isRecording) {
+      try {
+        setIsRecording(true);
+        recordingUriRef.current = null; // Reset previous recording
+        console.log('🎬 Starting camera recording...');
+        const video = await cameraRef.current.recordAsync();
+        setRecording(video);
+        recordingUriRef.current = video.uri; // Store in ref for immediate access
+        console.log('✅ Recording saved:', video.uri);
+      } catch (error) {
+        console.error('❌ Error recording:', error);
+        
+        // If simulator error, continue streaming without recording
+        if (error.message.includes('simulator')) {
+          console.log('⚠️ Running on simulator - streaming without video recording');
+          Alert.alert(
+            'Simulator Limitation',
+            'Video recording is not supported on iOS Simulator. The livestream will continue without recording. Test on a physical device for full functionality.',
+            [{ text: 'OK' }]
+          );
+          // Keep isRecording true to maintain streaming state
+        } else {
+          setIsRecording(false);
+        }
+      }
+    }
+  };
 
+  const stopRecording = async () => {
+    console.log('⏹️ Stop recording called, isRecording:', isRecording);
+    if (cameraRef.current && isRecording) {
+      try {
+        cameraRef.current.stopRecording();
+        setIsRecording(false);
+        console.log('✅ Recording stopped');
+      } catch (error) {
+        console.error('❌ Error stopping recording:', error);
+      }
+    }
+  };
 
   const handleStopStream = async () => {
     Alert.alert(
@@ -245,6 +292,25 @@ export default function LivestreamScreen({ navigation }) {
 
   const stopStream = async () => {
     try {
+      // Stop recording first
+      if (cameraRef.current && isRecording) {
+        try {
+          console.log('⏹️ Stopping recording...');
+          cameraRef.current.stopRecording();
+          setIsRecording(false);
+          
+          // Wait for the recording to finish saving (up to 3 seconds)
+          let attempts = 0;
+          while (!recordingUriRef.current && attempts < 30) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
+          console.log('✅ Recording stopped, URI:', recordingUriRef.current);
+        } catch (error) {
+          console.error('❌ Error stopping recording:', error);
+        }
+      }
+
       // Stop livestream in backend
       if (currentStreamId) {
         await livestreamService.stopLivestream(currentStreamId, {
@@ -253,8 +319,24 @@ export default function LivestreamScreen({ navigation }) {
           likes,
         });
 
-        console.log('✅ Livestream stopped');
-        Alert.alert('Success', 'Livestream stopped!');
+        // Show success immediately, upload video in background
+        const videoUri = recordingUriRef.current || recording?.uri;
+        if (videoUri) {
+          Alert.alert('Success', 'Livestream stopped! Video is being uploaded...');
+          console.log('📤 Uploading video to server:', videoUri);
+          
+          // Upload in background (don't await)
+          livestreamService.uploadVideo(currentStreamId, videoUri)
+            .then(() => {
+              console.log('✅ Video uploaded successfully');
+            })
+            .catch(uploadError => {
+              console.error('❌ Error uploading video:', uploadError);
+            });
+        } else {
+          console.log('⚠️ No video recording to upload');
+          Alert.alert('Success', 'Livestream stopped!');
+        }
 
         // Notify via WebSocket
         livestreamService.stopStream(currentStreamId);
@@ -270,6 +352,7 @@ export default function LivestreamScreen({ navigation }) {
       setPinnedProducts([]);
       setStreamTitle('');
       setStreamDescription('');
+      setRecording(null);
     } catch (error) {
       console.error('Error stopping stream:', error);
       Alert.alert('Error', 'Failed to stop livestream properly');
