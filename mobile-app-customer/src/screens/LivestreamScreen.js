@@ -127,12 +127,12 @@ export default function LivestreamScreen({ navigation }) {
   // Handle WebSocket messages
   const handleWebSocketMessage = (data) => {
     console.log('📨 handleWebSocketMessage called with type:', data.type);
-    console.log('📨 Full message data:', JSON.stringify(data, null, 2));
+    // console.log('📨 Full message data:', JSON.stringify(data, null, 2));
     
     switch (data.type) {
       case 'stream_started':
         console.log('🎥 STREAM_STARTED received!');
-        console.log('🎥 Stream data:', data.streamData);
+        // console.log('🎥 Stream data:', data.streamData);
         console.log('🎥 Setting isLive to TRUE');
         setIsLive(true);
         setCurrentStream(data.streamData);
@@ -201,7 +201,7 @@ export default function LivestreamScreen({ navigation }) {
   useEffect(() => {
     const identifier = userId || sessionId;
     const liked = likedBy.includes(identifier);
-    console.log('❤️ Checking like status:', { identifier, liked, likedByCount: likedBy.length });
+    // console.log('❤️ Checking like status:', { identifier, liked, likedByCount: likedBy.length });
     setIsLiked(liked);
   }, [likedBy, userId, sessionId]);
 
@@ -407,16 +407,16 @@ export default function LivestreamScreen({ navigation }) {
     );
   }
 
-  console.log('🎬 Rendering LivestreamScreen with state:', {
-    isLive,
-    hasCurrentStream: !!currentStream,
-    currentStreamTitle: currentStream?.title,
-    viewerCount,
-    likes,
-    chatMessagesCount: chatMessages.length,
-    pinnedProductsCount: pinnedProducts.length,
-    pastStreamsCount: pastStreams.length
-  });
+  // console.log('🎬 Rendering LivestreamScreen with state:', {
+  //   isLive,
+  //   hasCurrentStream: !!currentStream,
+  //   currentStreamTitle: currentStream?.title,
+  //   viewerCount,
+  //   likes,
+  //   chatMessagesCount: chatMessages.length,
+  //   pinnedProductsCount: pinnedProducts.length,
+  //   pastStreamsCount: pastStreams.length
+  // });
 
   return (
     <SafeAreaView style={styles.container}>

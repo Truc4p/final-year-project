@@ -8,7 +8,7 @@ import {
 import { AGORA_APP_ID, getChannelName } from '../constants/agora';
 import livestreamService from '../services/livestreamService';
 
-export default function AgoraBroadcaster({ streamId, isStreaming, cameraFacing, onError }) {
+export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
   const agoraEngine = useRef(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -26,15 +26,6 @@ export default function AgoraBroadcaster({ streamId, isStreaming, cameraFacing, 
       stopBroadcasting();
     }
   }, [isStreaming, streamId, isInitialized]);
-
-  // Update camera when cameraFacing changes
-  useEffect(() => {
-    if (isInitialized && isStreaming && agoraEngine.current) {
-      const isFrontCamera = cameraFacing === 'front';
-      console.log('📷 Switching Agora camera to:', cameraFacing);
-      agoraEngine.current.switchCamera();
-    }
-  }, [cameraFacing, isInitialized, isStreaming]);
 
   const initializeAgora = async () => {
     try {
@@ -87,19 +78,8 @@ export default function AgoraBroadcaster({ streamId, isStreaming, cameraFacing, 
       // Set client role to broadcaster
       agoraEngine.current.setClientRole(ClientRoleType.ClientRoleBroadcaster);
 
-      // Set initial camera - Agora defaults to FRONT camera
-      // If we want back camera, we need to switch
-      const isFrontCamera = cameraFacing === 'front';
-      console.log('📷 Setting initial Agora camera:', cameraFacing, '(front=' + isFrontCamera + ')');
-      
-      if (!isFrontCamera) {
-        // Agora defaults to front, so switch to back if needed
-        console.log('📷 Switching from default front to back camera');
-        agoraEngine.current.switchCamera();
-      } else {
-        // Using default front camera, no switch needed
-        console.log('📷 Using default front camera');
-      }
+      // Always use front camera - Agora defaults to front camera
+      console.log('📷 Using front camera for broadcasting');
 
       // Fetch Agora token from backend
       console.log('🔑 Fetching Agora token...');

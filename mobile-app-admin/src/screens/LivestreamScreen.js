@@ -29,11 +29,9 @@ export default function LivestreamScreen({ navigation }) {
   // Camera and permissions
   const [permission, requestPermission] = useCameraPermissions();
   const [micPermission, requestMicPermission] = useMicrophonePermissions();
-  const [cameraFacing, setCameraFacing] = useState('front');
   
   console.log('📷 Initial permission state:', permission);
   console.log('🎤 Initial mic permission state:', micPermission);
-  console.log('📷 Initial cameraFacing:', cameraFacing, 'Type:', typeof cameraFacing);
   
   const [isRecording, setIsRecording] = useState(false);
   const cameraRef = useRef(null);
@@ -383,14 +381,7 @@ export default function LivestreamScreen({ navigation }) {
     }
   };
 
-  const flipCamera = () => {
-    console.log('🔄 Flipping camera from:', cameraFacing);
-    setCameraFacing(current => {
-      const newFacing = current === 'back' ? 'front' : 'back';
-      console.log('🔄 Camera flipped to:', newFacing);
-      return newFacing;
-    });
-  };
+
 
   const handleLogout = async () => {
     Alert.alert(
@@ -432,7 +423,6 @@ export default function LivestreamScreen({ navigation }) {
 
   console.log('📷 Camera permission status:', permission);
   console.log('🎤 Microphone permission status:', micPermission);
-  console.log('📷 Camera facing:', cameraFacing, 'Type:', typeof cameraFacing);
 
   if (!permission.granted || !micPermission.granted) {
     console.log('❌ Camera or microphone permission not granted');
@@ -452,17 +442,15 @@ export default function LivestreamScreen({ navigation }) {
       <AgoraBroadcaster
         streamId={currentStreamId}
         isStreaming={isStreaming}
-        cameraFacing={cameraFacing}
         onError={(error) => Alert.alert('Streaming Error', error)}
       />
       
       {/* Camera Preview */}
       <View style={styles.cameraContainer}>
-        {console.log('🎥 Rendering CameraView with facing:', cameraFacing, 'Type:', typeof cameraFacing)}
         <CameraView
           ref={cameraRef}
           style={styles.camera}
-          facing={cameraFacing}
+          facing="front"
           mode="video"
         >
           {/* Top Overlay */}
@@ -497,10 +485,6 @@ export default function LivestreamScreen({ navigation }) {
 
           {/* Bottom Controls */}
           <View style={styles.bottomOverlay}>
-            <TouchableOpacity style={styles.flipButton} onPress={flipCamera}>
-              <Text style={styles.flipButtonText}>🔄</Text>
-            </TouchableOpacity>
-
             <TouchableOpacity
               style={[
                 styles.recordButton,
@@ -733,20 +717,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
     padding: 24,
-  },
-  flipButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  flipButtonText: {
-    fontSize: 24,
   },
   recordButton: {
     width: 70,
