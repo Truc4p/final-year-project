@@ -49,11 +49,12 @@ export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
         },
       });
 
-      // Enable video
+      // Enable video and start camera preview
       agoraEngine.current.enableVideo();
+      agoraEngine.current.startPreview();
       
       setIsInitialized(true);
-      console.log('✅ Agora engine initialized');
+      console.log('✅ Agora engine initialized with camera preview');
     } catch (error) {
       console.error('❌ Failed to initialize Agora:', error);
       Alert.alert('Error', 'Failed to initialize video streaming');
@@ -106,6 +107,7 @@ export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
   const stopBroadcasting = async () => {
     try {
       if (agoraEngine.current) {
+        agoraEngine.current.stopPreview();
         await agoraEngine.current.leaveChannel();
         console.log('📴 Broadcasting stopped');
       }
@@ -117,6 +119,7 @@ export default function AgoraBroadcaster({ streamId, isStreaming, onError }) {
   const cleanup = async () => {
     try {
       if (agoraEngine.current) {
+        agoraEngine.current.stopPreview();
         await agoraEngine.current.leaveChannel();
         agoraEngine.current.release();
         console.log('🧹 Agora engine cleaned up');
