@@ -26,7 +26,23 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 
 ### 1.5 Scope and Limitations
 
-**Scope (Features Included):** This project encompasses comprehensive e-commerce functionality including product catalogs, shopping cart systems, order management, and inventory control. Live streaming capabilities include video streaming, real-time chat functionality, product pinning during streams, and viewer analytics. AI-powered chat integration provides personalized product recommendations based on customer skin type and concerns, alongside FAQ management. Email marketing systems support campaign management and customer segmentation functionality. Analytics dashboards enable business performance monitoring and reporting. Financial management modules facilitate cash flow tracking and expense recording. Human resources modules support employee record management and documentation. Multi-platform support extends across web-based administrative interfaces, web-based customer interfaces, and native mobile applications for iOS and Android platforms. The customer web frontend and mobile app include an AI dermatology consultation (text and voice) and skin image analysis; an admin mobile app supports livestream scheduling and management. Web browser compatibility includes Chrome 90+, Firefox 88+, Safari 14+, and Edge 90+. Mobile support targets iOS 14+ and Android 10+.
+**Scope (Features Included):** This project encompasses comprehensive e-commerce functionality including product catalogs, shopping cart, payment, order management, and inventory control. Live streaming capabilities include video streaming, real-time chat functionality, product pinning during streams, and viewer analytics. AI-powered chat integration provides personalized product recommendations based on customer skin type and concerns, alongside FAQ management with staff escalation. Email marketing systems support campaign management and customer segmentation functionality. Analytics dashboards enable business performance monitoring and reporting. Financial management modules facilitate cash flow tracking and expense recording. Human resources modules support employee record management and documentation. AI dermatology expert with text and voice chat, skin image analysis, RAG-based knowledge base with curated dermatology literature, chat history management, multi-language support, real-time audio streaming. Multi-platform support extends across web-based administrative interfaces, web-based customer interfaces, and cross-platform mobile applications for iOS and Android platforms. Web browser compatibility includes Chrome 90+, Firefox 88+, Safari 14+, and Edge 90+. Mobile support targets iOS 14+ and Android 10+.
+
+| Feature Category | In-Scope Components |
+|---|---|
+| **E-Commerce** | Product catalog, shopping cart, payment, orders, inventory, categories |
+| **Live Streaming** | WebSocket-based video streaming infrastructure, real-time chat, product pinning, viewer analytics |
+| **AI Chat** | Google Gemini integration, conversational product recommendations, FAQ management with staff escalation |
+| **Skin Study Feature** | AI dermatology expert with text and voice chat, skin image analysis, RAG-based knowledge base with curated dermatology literature, chat history management, multi-language support, real-time audio streaming |
+| **Email Marketing** | Campaigns, customer segmentation, email templates, newsletter management, audience targeting |
+| **Analytics Dashboards** | Sales metrics, customer insights, product performance |
+| **Financial Management** | Cash flow tracking, expense recording, financial reporting, profit analysis |
+| **HR Module** | Employee records, document management |
+| **Authentication & Security** | JWT tokens, role-based access control (admin/customer roles) |
+| **API Documentation** | Swagger/OpenAPI |
+| **Multi-Platform Support** | web admin, web customer, iOS/Android mobile customer app, iOS/Android mobile admin app |
+| **Browser Compatibility** | Chrome 90+, Firefox 88+, Safari 14+, Edge 90+ |
+| **Mobile Support** | iOS 14+, Android 10+ |
 
 **Limitations (Features Excluded):** The project explicitly excludes advanced payment gateway integration beyond basic structural implementation, complex logistics integration with third-party fulfillment providers, augmented reality virtual try-on functionality, social commerce features, advanced marketing automation beyond email segmentation, enterprise multi-tenancy capabilities, video processing effects, and subscription business models. These exclusions reflect realistic constraints on development capacity and project scope within the defined 18-week timeline while ensuring core functionality achieves quality standards.
 
