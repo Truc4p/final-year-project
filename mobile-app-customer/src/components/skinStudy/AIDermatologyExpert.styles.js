@@ -42,6 +42,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     minHeight: 600
   },
+
   welcomeCard: {
     backgroundColor: colors.white,
     borderRadius: 16,
@@ -55,48 +56,118 @@ export const styles = StyleSheet.create({
     width: '100%'
   },
   welcomeHeader: {
-    padding: 20,
+    padding: 16,
     backgroundColor: colors.primary100,
     borderRadius: 12,
     marginBottom: 16,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.primary200,
     alignItems: 'center'
   },
   welcomeTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: colors.primary800,
-    margin: 0
+    marginBottom: 8
   },
-  welcomeText: {
-    fontSize: 15,
-    color: colors.primary700,
-    marginBottom: 16,
-    lineHeight: 22
+  welcomeDescription: {
+    fontSize: 13,
+    color: colors.primary500,
+    fontWeight: '600'
   },
   
-  // Capabilities Grid
-  capabilitiesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 20
+  // Welcome Disclaimer
+  welcomeDisclaimer: {
+    backgroundColor: '#fdf8e6',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16
   },
-  capabilityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '48%',
-    padding: 12,
-    backgroundColor: colors.primary50,
-    borderRadius: 8,
-    marginBottom: 12
-  },
-  capabilityText: {
+  disclaimerTitle: {
+    color: '#d97706',
     fontSize: 14,
-    color: colors.primary700,
-    fontWeight: '500',
+    fontWeight: '600',
+    marginBottom: 8
+  },
+  disclaimerText: {
+    color: '#856404',
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: 8
+  },
+  disclaimerBold: {
+    fontWeight: '600',
+    color: '#856404'
+  },
+  disclaimerList: {
+    marginVertical: 8,
+    marginLeft: 8
+  },
+  disclaimerListItem: {
+    color: '#856404',
+    fontSize: 13,
+    lineHeight: 20,
+    marginVertical: 4
+  },
+  disclaimerHighlight: {
+    padding: 12,
+    marginTop: 8,
+    borderRadius: 4,
+    fontSize: 13,
+    lineHeight: 20,
+    color: '#856404'
+  },
+  
+  // Sample Questions Section
+  sampleQuestionsSection: {
+    marginTop: 16
+  },
+  sampleQuestionsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary800,
+    marginBottom: 4,
+    textAlign: 'center'
+  },
+  sectionDescription: {
+    fontSize: 13,
+    color: colors.primary600,
+    marginBottom: 12,
+    textAlign: 'center',
+    fontStyle: 'italic'
+  },
+  
+  // Question Category
+  questionCategory: {
+    backgroundColor: colors.primary50,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.primary200
+  },
+  categoryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8
+  },
+  categoryTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.primary800,
     flex: 1
+  },
+  categoryDescription: {
+    fontSize: 12,
+    color: colors.primary600,
+    marginBottom: 8,
+    fontStyle: 'italic'
+  },
+  
+  // Questions List
+  questionsList: {
+    gap: 6
   },
   
   // Sample Questions
@@ -113,16 +184,17 @@ export const styles = StyleSheet.create({
   },
   sampleQuestionBtn: {
     width: '100%',
-    padding: 12,
-    backgroundColor: colors.primary50,
+    padding: 10,
+    backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.primary200,
     borderRadius: 8,
-    marginBottom: 8
+    marginBottom: 6
   },
   sampleQuestionText: {
-    fontSize: 14,
-    color: colors.primary700
+    fontSize: 13,
+    color: colors.primary700,
+    lineHeight: 18
   },
   
   // Messages

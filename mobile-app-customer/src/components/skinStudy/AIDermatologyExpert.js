@@ -957,38 +957,182 @@ What would you like to know more about?`;
             <View style={styles.welcomeCard}>
               <View style={styles.welcomeHeader}>
                 <Text style={styles.welcomeTitle}>AI Dermatology Expert</Text>
+                <Text style={styles.welcomeDescription}>Your virtual skincare consultant powered by advanced AI technology</Text>
               </View>
 
-              <Text style={styles.welcomeText}>
-                I'm here to help you with all your skincare concerns. I can assist with:
-              </Text>
+              {/* Important Disclaimer */}
+              <View style={styles.welcomeDisclaimer}>
+                <Text style={styles.disclaimerTitle}>Important Notice</Text>
+                <Text style={styles.disclaimerText}>
+                  This AI assistant provides <Text style={styles.disclaimerBold}>educational information and general skincare guidance only</Text>. It does not:
+                </Text>
+                <View style={styles.disclaimerList}>
+                  <Text style={styles.disclaimerListItem}>• Provide medical diagnosis or treatment</Text>
+                  <Text style={styles.disclaimerListItem}>• Replace consultation with qualified dermatologists</Text>
+                  <Text style={styles.disclaimerListItem}>• Offer emergency medical advice</Text>
+                </View>
+                <Text style={styles.disclaimerHighlight}>
+                  <Text style={styles.disclaimerBold}>Seek immediate medical attention if you experience:</Text> severe pain, rapid changes, signs of infection, severe allergic reactions, or suspicious skin changes.
+                </Text>
+              </View>
 
-              <View style={styles.capabilitiesGrid}>
-                {[
-                  { text: 'Skincare routines' },
-                  { text: 'Cosmetic advice' },
-                  { text: 'Product recommendations' },
-                  { text: 'Face improvement tips' },
-                  { text: 'Ingredient analysis' },
-                  { text: 'Skin concerns' }
-                ].map((item, index) => (
-                  <View key={index} style={styles.capabilityItem}>
-                    <Text style={styles.capabilityText}>{item.text}</Text>
+              {/* Sample Questions Section */}
+              <View style={styles.sampleQuestionsSection}>
+                <Text style={styles.sampleQuestionsTitle}>Explore Sample Topics</Text>
+                <Text style={styles.sectionDescription}>Select a category to explore sample questions</Text>
+
+                {/* Category 1 */}
+                <View style={styles.questionCategory}>
+                  <Text style={styles.categoryTitle}>1. Fundamentals of Cosmetic Dermatology</Text>
+                  <Text style={styles.categoryDescription}>Core principles, skin structure, and classification systems.</Text>
+                  <View style={styles.questionsList}>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What are the different types of chemical peels and how do they work?')}>
+                      <Text style={styles.sampleQuestionText}>What are the different types of chemical peels and how do they work?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What is the Fitzpatrick skin type classification and why is it important?')}>
+                      <Text style={styles.sampleQuestionText}>What is the Fitzpatrick skin type classification and why is it important?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What is the skin barrier function and why is it important?')}>
+                      <Text style={styles.sampleQuestionText}>What is the skin barrier function and why is it important?</Text>
+                    </TouchableOpacity>
                   </View>
-                ))}
-              </View>
+                </View>
 
-              <View style={styles.sampleQuestions}>
-                <Text style={styles.sampleTitle}>Try asking:</Text>
-                {sampleQuestions.map((question, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.sampleQuestionBtn}
-                    onPress={() => askSampleQuestion(question)}
-                  >
-                    <Text style={styles.sampleQuestionText}>{question}</Text>
-                  </TouchableOpacity>
-                ))}
+                {/* Category 2 */}
+                <View style={styles.questionCategory}>
+                  <Text style={styles.categoryTitle}>2. Skincare Science & Active Ingredients</Text>
+                  <Text style={styles.categoryDescription}>Focused on ingredients, mechanisms, and interactions.</Text>
+                  <View style={styles.questionsList}>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What ingredients should I look for in an anti-aging serum?')}>
+                      <Text style={styles.sampleQuestionText}>What ingredients should I look for in an anti-aging serum?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('How does retinol work and what are the best practices for using it?')}>
+                      <Text style={styles.sampleQuestionText}>How does retinol work and what are the best practices for using it?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('Can you explain what peptides do in skincare products?')}>
+                      <Text style={styles.sampleQuestionText}>Can you explain what peptides do in skincare products?</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Category 3 */}
+                <View style={styles.questionCategory}>
+                  <Text style={styles.categoryTitle}>3. Chemical Peels & Exfoliative Procedures</Text>
+                  <Text style={styles.categoryDescription}>Mechanisms, preparation, safety, and complications.</Text>
+                  <View style={styles.questionsList}>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('How should I prepare my skin before getting a chemical peel?')}>
+                      <Text style={styles.sampleQuestionText}>How should I prepare my skin before getting a chemical peel?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What are the potential side effects and complications of chemical peels?')}>
+                      <Text style={styles.sampleQuestionText}>What are the potential side effects and complications of chemical peels?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('How should I care for my skin after a medium-depth chemical peel?')}>
+                      <Text style={styles.sampleQuestionText}>How should I care for my skin after a medium-depth chemical peel?</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Category 4 */}
+                <View style={styles.questionCategory}>
+                  <Text style={styles.categoryTitle}>4. Energy-Based and Aesthetic Procedures</Text>
+                  <Text style={styles.categoryDescription}>Lasers, radiofrequency, microneedling, fillers, and related techniques.</Text>
+                  <View style={styles.questionsList}>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What types of lasers are used for hair removal and how do they work?')}>
+                      <Text style={styles.sampleQuestionText}>What types of lasers are used for hair removal and how do they work?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('How does microneedling stimulate collagen production?')}>
+                      <Text style={styles.sampleQuestionText}>How does microneedling stimulate collagen production?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What is the difference between Botox and fillers?')}>
+                      <Text style={styles.sampleQuestionText}>What is the difference between Botox and fillers?</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Category 5 */}
+                <View style={styles.questionCategory}>
+                  <Text style={styles.categoryTitle}>5. Cosmetics, Cosmeceuticals, and Skin Reactions</Text>
+                  <Text style={styles.categoryDescription}>Product classification, sensitivities, and ingredient safety.</Text>
+                  <View style={styles.questionsList}>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What is the difference between cosmetics and cosmeceuticals?')}>
+                      <Text style={styles.sampleQuestionText}>What is the difference between cosmetics and cosmeceuticals?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('How can I identify if I am allergic to a skincare ingredient?')}>
+                      <Text style={styles.sampleQuestionText}>How can I identify if I am allergic to a skincare ingredient?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('How can I rebuild my damaged skin barrier?')}>
+                      <Text style={styles.sampleQuestionText}>How can I rebuild my damaged skin barrier?</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Category 6 */}
+                <View style={styles.questionCategory}>
+                  <Text style={styles.categoryTitle}>6. Pathophysiology & Treatment of Skin Conditions</Text>
+                  <Text style={styles.categoryDescription}>Acne, rosacea, melasma, dermatitis, pigmentation, and related disorders.</Text>
+                  <View style={styles.questionsList}>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What is a comprehensive treatment plan for rosacea?')}>
+                      <Text style={styles.sampleQuestionText}>What is a comprehensive treatment plan for rosacea?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('How should melasma be treated in different skin types?')}>
+                      <Text style={styles.sampleQuestionText}>How should melasma be treated in different skin types?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What are the best approaches for treating adult acne?')}>
+                      <Text style={styles.sampleQuestionText}>What are the best approaches for treating adult acne?</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Category 7 */}
+                <View style={styles.questionCategory}>
+                  <Text style={styles.categoryTitle}>7. Holistic & Preventive Dermatology</Text>
+                  <Text style={styles.categoryDescription}>Lifestyle, nutrition, environment, and long-term care.</Text>
+                  <View style={styles.questionsList}>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('How does lifestyle affect skin aging and appearance?')}>
+                      <Text style={styles.sampleQuestionText}>How does lifestyle affect skin aging and appearance?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What role does nutrition play in skin health?')}>
+                      <Text style={styles.sampleQuestionText}>What role does nutrition play in skin health?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('How can I prevent premature aging of my skin?')}>
+                      <Text style={styles.sampleQuestionText}>How can I prevent premature aging of my skin?</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Category 8 */}
+                <View style={styles.questionCategory}>
+                  <Text style={styles.categoryTitle}>8. Advanced Science & Mechanisms of Aging</Text>
+                  <Text style={styles.categoryDescription}>Cellular and molecular dermatology concepts.</Text>
+                  <View style={styles.questionsList}>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What is the molecular mechanism of collagen degradation in aging skin?')}>
+                      <Text style={styles.sampleQuestionText}>What is the molecular mechanism of collagen degradation in aging skin?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('Can you explain the difference between chronological and photoaging?')}>
+                      <Text style={styles.sampleQuestionText}>Can you explain the difference between chronological and photoaging?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('What is the role of the skin microbiome in skin health?')}>
+                      <Text style={styles.sampleQuestionText}>What is the role of the skin microbiome in skin health?</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Category 9 */}
+                <View style={styles.questionCategory}>
+                  <Text style={styles.categoryTitle}>9. Clinical Scenarios & Integrated Care</Text>
+                  <Text style={styles.categoryDescription}>Case-based, multidisciplinary, and personalized treatment planning.</Text>
+                  <View style={styles.questionsList}>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('I have acne scars, hyperpigmentation, and fine lines. What comprehensive treatment approach would you recommend?')}>
+                      <Text style={styles.sampleQuestionText}>I have acne scars, hyperpigmentation, and fine lines. What comprehensive treatment approach would you recommend?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('How do I combine professional treatments (like lasers and peels) with at-home skincare?')}>
+                      <Text style={styles.sampleQuestionText}>How do I combine professional treatments (like lasers and peels) with at-home skincare?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sampleQuestionBtn} onPress={() => askSampleQuestion('Can you create a complete skincare routine for sensitive, acne-prone skin?')}>
+                      <Text style={styles.sampleQuestionText}>Can you create a complete skincare routine for sensitive, acne-prone skin?</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
             </View>
           </View>
