@@ -78,7 +78,7 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 - Real-time chat functionality during streams with message history
 - Product pinning during streams with display ordering
 - Viewer engagement analytics (likes, view duration, peak concurrent viewers)
-- Stream quality options (480p, 720p, 1080p, 4K)
+- Stream quality options
 - Stream recording and archival capabilities
 - Stream scheduling and management
 - Admin livestream broadcasting from mobile app

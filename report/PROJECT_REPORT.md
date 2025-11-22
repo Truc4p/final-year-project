@@ -20,7 +20,7 @@ Objective 1: To design and implement a RESTful API backend with corresponding da
 
 Objective 2: To develop web-based administrative interfaces for business management and customer-facing interfaces for product discovery, shopping, and order management, skin study module on the web frontend, complemented by cross-platform mobile applications: (a) a customer app with an integrated Skin Study module providing AI dermatology consultation (text and voice) and skin image analysis; and (b) an admin app for livestream scheduling and management.
 
-Objective 3: To integrate Google Gemini AI for conversational product recommendations based on customer skin type and concerns, implementing context-aware dialogue systems that maintain conversation history and enable escalation to staff members when appropriate, alongside a comprehensive skin study module available on the web frontend and the customer mobile app that provides AI dermatology consultation (text and voice) and skin image analysis (Esteva et al., 2017; Liu et al., 2020; Tschandl, Rosendahl and Kittler, 2018; Daneshjou et al., 2022).
+Objective 3: To integrate Google Gemini AI for conversational product recommendations based on customer skin type and concerns, implementing context-aware dialogue systems that maintain conversation history and enable escalation to staff members when appropriate, alongside a comprehensive skin study module available on the web frontend and the customer mobile app that provides AI dermatology consultation (text and voice) and skin image analysis.
 
 Objective 4: To implement WebSocket infrastructure supporting real-time live video streaming with concurrent viewer support, product pinning during streams, real-time chat functionality, and comprehensive viewer analytics.
 
@@ -47,21 +47,119 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 
 **In-Scope Features:**
 
-| Feature Category | Concise In-Scope Capabilities |
-|---|---|
-| E-Commerce | Catalog with full-text search; cart; checkout & payments; orders with status/history; inventory; category/skin-type filtering; rich product details; image upload |
-| Live Streaming | WebSocket streaming; concurrent viewers; real-time chat; product pinning; engagement analytics; quality options (480p–4K); recording/archival; scheduling; admin mobile broadcasting |
-| AI Chat Support | Gemini-powered chat; context-aware history; skin-type/concern recommendations; FAQ; staff escalation; sessions (authed/anonymous); message persistence |
-| Skin Study (AI Dermatology) | Text/voice consultation; AI skin image analysis; real-time audio; RAG knowledge base; chat history; multi-language; cited, evidence-based outputs; web & mobile integration |
-| Email Marketing | Campaigns; templates; segmentation; newsletter & subscribers; scheduling; analytics (open/click/convert); audience targeting/personalization |
-| Analytics Dashboards | Sales/revenue; product performance; customer insights; order trends; forecasting; livestream analytics; email metrics; conversion analysis |
-| Financial Management | Cash flow; expenses; financial reports; P&L analysis; budgets/forecasting; audit trails |
-| HR | Employee records; departments/roles; document management; performance tracking |
-| Authentication & Authorization | JWT auth; RBAC (admin/customer); bcrypt password security; token expiry/refresh; session management |
-| API & Documentation | 35+ REST endpoints (11 modules); Swagger/OpenAPI; robust validation & error handling; rate limiting; CORS |
-| Multi-Platform Support | Vue web (admin/customer); React Native apps (customer + admin); responsive UI; browser: Chrome 90+/FF 88+/Safari 14+/Edge 90+; iOS 14+, Android 10+ |
-| Database & Infrastructure | MongoDB + Mongoose; Qdrant for RAG; WebSocket infra; Dockerized deployment; file uploads; DB indexing |
-| Additional Features | i18n; performance monitoring; security (CORS, rate limits, validation); scheduled jobs; QR codes; text-to-speech |
+*E-Commerce Module:*
+- Complete product catalog with full-text search across name, description, ingredients, benefits, and tags
+- Shopping cart with persistent storage and quantity management
+- Checkout process with order creation and payment processing
+- Order management with status tracking and history
+- Inventory management with stock quantity tracking
+- Product categorization and filtering by skin type, concerns, and benefits
+- Product details including ingredients, usage instructions, and skincare benefits
+- Image upload and management for products
+
+*Live Streaming Module:*
+- WebSocket-based real-time video streaming infrastructure
+- Concurrent viewer support with viewer count tracking
+- Real-time chat functionality during streams with message history
+- Product pinning during streams with display ordering
+- Viewer engagement analytics (likes, view duration, peak concurrent viewers)
+- Stream quality options
+- Stream recording and archival capabilities
+- Stream scheduling and management
+- Admin livestream broadcasting from mobile app
+
+*AI Chat Support System:*
+- Google Gemini AI integration for conversational responses
+- Context-aware dialogue with conversation history management
+- Conversational product recommendations based on skin type and concerns
+- FAQ management with predefined responses
+- Staff escalation workflow for complex queries
+- Session management for both authenticated and anonymous users
+- Message history persistence
+
+*Skin Study Feature (AI Dermatology Expert):*
+- AI dermatology expert with text-based consultation
+- Voice chat with automatic speech-to-text transcription
+- Skin image analysis with AI-powered assessment
+- Real-time audio streaming for voice interactions
+- RAG-based knowledge base with curated dermatology literature
+- Chat history management with conversation persistence
+- Multi-language support with automatic language detection and translation
+- Evidence-based recommendations with source citations
+- Integration across web and mobile platforms
+
+*Email Marketing Module:*
+- Email campaign creation and management
+- Email template design and customization
+- Customer segmentation based on purchase history and preferences
+- Newsletter subscription management
+- Subscriber list management with unsubscribe functionality
+- Campaign scheduling and automated sending
+- Email analytics (open rates, click rates, conversion tracking)
+- Audience targeting and personalization
+
+*Analytics Dashboards:*
+- Sales metrics and revenue tracking
+- Product performance analysis
+- Customer insights and behavior analytics
+- Order analytics and trends
+- Revenue forecasting and analysis
+- Viewer analytics for livestreams
+- Email campaign performance metrics
+- Conversion rate analysis
+
+*Financial Management Module:*
+- Cash flow transaction tracking
+- Expense recording and categorization
+- Financial reporting and statements
+- Profit and loss analysis
+- Budget tracking and forecasting
+- Transaction history and audit trails
+
+*HR Module:*
+- Employee record management
+- Department and role management
+- Employee document management
+- Performance tracking capabilities
+
+*Authentication & Authorization:*
+- JWT token-based authentication
+- Role-based access control (Admin/Customer roles)
+- Secure password hashing with bcryptjs
+- Token expiration and refresh mechanisms
+- Session management
+
+*API & Documentation:*
+- RESTful API with 35+ endpoints across 11 route modules
+- Swagger/OpenAPI documentation with interactive testing
+- Comprehensive API error handling and validation
+- Rate limiting to prevent abuse
+- CORS configuration for cross-origin requests
+
+*Multi-Platform Support:*
+- Vue.js web application for admin dashboard
+- Vue.js web application for customer interface
+- React Native mobile app for customers (iOS 14+, Android 10+) with integrated Skin Study
+- React Native mobile app for admin livestream management (iOS 14+, Android 10+)
+- Responsive design for desktop, tablet, and mobile devices
+- Web browser compatibility: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+- Mobile support: iOS 14+ and Android 10+
+
+*Database & Infrastructure:*
+- MongoDB with Mongoose ORM for data persistence
+- Qdrant vector database for RAG implementation
+- WebSocket infrastructure for real-time communication
+- Docker containerization for deployment
+- File upload and storage management
+- Database indexing for performance optimization
+
+*Additional Features:*
+- Internationalization (i18n) support for multiple languages
+- Performance monitoring and optimization
+- Security measures including CORS, rate limiting, input validation
+- Automated task scheduling with node-cron
+- QR code generation for orders and products
+- Text-to-speech capabilities for accessibility
 
 **Limitations (Features Excluded):** The project explicitly excludes advanced payment gateway integration beyond basic structure, complex logistics integration with third-party fulfillment systems, AR virtual try-on functionality, social commerce feature integration (social media shopping), advanced marketing automation beyond email segmentation, enterprise multi-tenancy support, video processing effects for live streams, subscription business model implementation, real-time inventory sync with external systems, blockchain integration, advanced recommendation engine using collaborative filtering, machine learning-based customer segmentation, video compression and adaptive bitrate streaming, integration with third-party CRM systems, advanced fraud detection systems, and marketplace functionality allowing multiple sellers.
 
@@ -81,11 +179,17 @@ This chapter establishes the theoretical and practical context for Wrencos throu
 
 **Historical Context and Current Trends:** E-commerce has evolved from early inventory-focused systems toward customer experience personalization (Turban et al., 2015). Mobile commerce and social platforms fundamentally altered consumer behaviour, shifting purchasing to integrated mobile-first environments (Cai et al., 2019). Beauty retail historically remained offline-dominant; the COVID-19 pandemic forced digital transformation, compelling brands to innovate online engagement mechanisms (Roggeveen & Srivastava, 2020). Live streaming commerce emerged from China's e-commerce infrastructure, demonstrating 10-15 times higher conversion rates than traditional e-commerce (McKinsey, 2021), with expansion throughout Asia-Pacific markets (Zhang et al., 2020). Simultaneously, artificial intelligence advanced substantially; machine learning technologies now enable personalized recommendation systems addressing sensory deficits in online beauty retail (Nilashi et al., 2019).
 
-**Key Concepts and Terminology:** E-commerce encompasses digital transaction infrastructure mediated through product catalogs and shopping carts. Live streaming commerce represents synchronous video broadcasting where sellers demonstrate products in real-time while viewers engage through integrated chat and purchasing mechanisms. Sensory deficit (Dholakia et al., 2010) describes the absence of multisensory product evaluation in online retail, particularly acute in beauty retail where texture, scent, and colour matching inform purchasing confidence. AI personalization employs machine learning to recommend products and tailor offers based on customer skin type and concerns (Jiang et al., 2019), substantially improving conversion rates. Role-based access control implements security through user classification (admin, customer) enabling secure multi-user systems.
+Dermatology consultation has evolved from geographically-constrained in-person services to digital telemedicine (Warshaw et al., 2011). Early implementations lacked real-time diagnostic capability (Federman et al., 2003). Recent AI advances demonstrate dermatologist-level performance: Esteva et al. (2017) achieved clinical-grade skin cancer classification; Robust datasets like HAM10000 (Tschandl, Rosendahl and Kittler, 2018) enable rigorous validation; Liu et al. (2020) developed comprehensive differential diagnosis systems. Critical fairness evaluation by Daneshjou et al. (2022) identified performance disparities across skin tones, necessitating careful deployment monitoring. 
+
+**Key Concepts and Terminology:** E-commerce encompasses digital transaction infrastructure mediated through product catalogs and shopping carts. Live streaming commerce represents synchronous video broadcasting where sellers demonstrate products in real-time while viewers engage through integrated chat and purchasing mechanisms. Sensory deficit (Dholakia et al., 2010) describes the absence of multisensory product evaluation in online retail, particularly acute in beauty retail where texture, scent, and colour matching inform purchasing confidence. AI personalization employs machine learning to recommend products and tailor offers based on customer skin type and concerns (Jiang et al., 2019), substantially improving conversion rates.
+
+Business management tools for e-commerce, marketing, accounting, analytics, and operations are software systems that help businesses streamline online sales, automate promotion and financial tasks, monitor performance data, and manage day-to-day processes efficiently.
+
+Teledermatology refers to delivering dermatology consultations remotely through digital communication tools, while real-time diagnostic capability describes a system’s ability to provide immediate clinical assessment during live interactions. AI dermatology classification involves machine learning models that identify skin conditions from images, supported by clinical-grade datasets such as HAM10000 that enable robust training and validation. Differential diagnosis systems use AI to evaluate multiple possible conditions and suggest the most likely one. Fairness evaluation in AI assesses whether these systems perform consistently across demographics, such as different skin tones, to prevent biased outcomes in real-world use.
 
 **Significance and Impact:** The beauty e-commerce market, valued at USD 120 billion in 2024, demonstrates 15% compound annual growth projecting USD 200 billion by 2027 (Statista, 2024). However, growth concentrates among large enterprises; approximately 70% of SMEs utilize five to eight disconnected platforms incurring USD 500–3,000 monthly operational costs (Forrester, 2023). Beauty return rates exceed 40%, substantially higher than general e-commerce averages, indicating inadequate consumer confidence (NPD Group, 2023). Personalized recommendations achieve 15–20% conversion rates versus 5% for generic algorithms (Jiang et al., 2019). Live-streaming commerce remains more mature in Asia-Pacific, representing a growing but under-penetrated opportunity in Western markets: adoption in the U.S. and Europe is accelerating (Luo et al., 2023; Haidar, 2024), and although usage is lower than in China, early adopters in the West cite entertainment and real-time engagement as key motivations (McKinsey, 2023). The gap between accessible but limited platforms and expensive enterprise solutions represents significant market opportunity for integrated mid-market solutions.
 
-Within skincare and dermatology, recent advances demonstrate that deep learning models can reach clinician-level performance for image-based diagnosis and differential classification (Esteva et al., 2017; Liu et al., 2020). Large, publicly available dermatoscopic datasets such as HAM10000 enable robust evaluation and benchmarking (Tschandl, Rosendahl and Kittler, 2018), while recent studies highlight fairness and generalisation concerns across diverse real-world populations that must be addressed in deployment (Daneshjou et al., 2022).
+Within skincare and dermatology, recent advances demonstrate that deep learning models can reach clinician-level performance for image-based diagnosis (Esteva et al., 2017) and differential classification (Liu et al., 2020). Large, publicly available dermatoscopic datasets such as HAM10000 enable robust evaluation and benchmarking (Tschandl, Rosendahl and Kittler, 2018), while recent studies highlight fairness and generalisation concerns across diverse real-world populations that must be addressed in deployment (Daneshjou et al., 2022).
 
 ### 2.3 Critical Review of Existing Solutions
 
@@ -141,6 +245,20 @@ Wrencos addresses these identified gaps through deliberate integration. Unlike S
 ## References
 
 Cai, J., Liu, X., Xiao, Z., & Liu, M. (2019). Improving supply chain performance management with cloud computing. *International Journal of Information Management*, 45, 1–15.
+
+Daneshjou, R., Vodrahalli, K., Novoa, R., Jenkins, M., Rotemberg, V. and Zou, J. (2022) 'Disparities in dermatology AI performance on a diverse, real-world dataset', Science Advances, 8(34), eabq6147. doi:10.1126/sciadv.abq6147.
+
+Esteva, A., Kuprel, B., Novoa, R.A., Ko, J., Swetter, S.M., Blau, H.M. and Thrun, S. (2017) 'Dermatologist-level classification of skin cancer with deep neural networks', Nature, 542(7639), pp. 115–118. doi:10.1038/nature21056.
+
+Federman, D. G., Concato, J., & Kirsner, R. S. (2003). Comparison of dermatologic diagnoses by primary care practitioners and dermatologists: A meta-analytic review. *Journal of the American Academy of Dermatology*, 49(4), 498–506.
+
+Liu, Y., Jain, A., Eng, C., Way, D.H., Lee, K., Bui, P., Kanada, K., de Oliveira Marinho, G., Gallegos, J., Gabriele, S., Nguyen, M., Gupta, V., Natarajan, V., Huang, S.J., Turakhia, M.P., Ladapo, J.A., Ng, A.Y. and Coz, D. (2020) 'A deep learning system for differential diagnosis of skin diseases', Nature Medicine, 26(6), pp. 900–908. doi:10.1038/s41591-020-0842-3.
+
+Tschandl, P., Rosendahl, C. and Kittler, H. (2018) 'The HAM10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions', Scientific Data, 5, 180161. doi:10.1038/sdata.2018.161.
+
+Warshaw, E. M., Hillman, Y. J., Greer, N. L., Hagel, E. M., MacDonald, R., Herrera, V., & Wilt, T. J. (2011). Teledermatology for diagnosis and management of skin conditions: A systematic review. *Journal of the American Academy of Dermatology*, 64(4), 759–772.
+
+Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W.-T., Rocktäschel, T., Riedel, S. and Kiela, D. (2020) ‘Retrieval-augmented generation for knowledge-intensive NLP’, Advances in Neural Information Processing Systems, 33, pp. 9459–9474.
 
 Dholakia, U. M., Kahn, B. E., Reeves, R. J., & Rindfleisch, A. (2010). Consumer satisfaction and delight: The role of personal and situational influences. *Journal of Business Research*, 63(1), 1–9.
 
@@ -200,15 +318,7 @@ Tilkov, S., & Vinoski, S. (2010). Node.js: Using JavaScript to build high-perfor
 
 You, E. (2019). Vue.js 3 composition API and TypeScript: Improving code organization and type safety in large-scale applications. *O'Reilly Media*, 1–45.
 
-Esteva, A., Kuprel, B., Novoa, R.A., Ko, J., Swetter, S.M., Blau, H.M. and Thrun, S. (2017) ‘Dermatologist-level classification of skin cancer with deep neural networks’, Nature, 542(7639), pp. 115–118. doi:10.1038/nature21056.
 
-Liu, Y., Jain, A., Eng, C., Way, D.H., Lee, K., Bui, P., Kanada, K., de Oliveira Marinho, G., Gallegos, J., Gabriele, S., Nguyen, M., Gupta, V., Natarajan, V., Huang, S.J., Turakhia, M.P., Ladapo, J.A., Ng, A.Y. and Coz, D. (2020) ‘A deep learning system for differential diagnosis of skin diseases’, Nature Medicine, 26(6), pp. 900–908. doi:10.1038/s41591-020-0842-3.
-
-Tschandl, P., Rosendahl, C. and Kittler, H. (2018) ‘The HAM10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions’, Scientific Data, 5, 180161. doi:10.1038/sdata.2018.161.
-
-Daneshjou, R., Vodrahalli, K., Novoa, R., Jenkins, M., Rotemberg, V. and Zou, J. (2022) ‘Disparities in dermatology AI performance on a diverse, real-world dataset’, Science Advances, 8(34), eabq6147. doi:10.1126/sciadv.abq6147.
-
-Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W.-T., Rocktäschel, T., Riedel, S. and Kiela, D. (2020) ‘Retrieval-augmented generation for knowledge-intensive NLP’, Advances in Neural Information Processing Systems, 33, pp. 9459–9474.
 
 ---
 
