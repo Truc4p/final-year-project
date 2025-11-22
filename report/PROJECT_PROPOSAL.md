@@ -5,13 +5,13 @@
 
 ## 1. Introduction
 
-**Project Topic:** The beauty e-commerce market has grown to $120 billion (2024) and is projected to exceed $200 billion by 2027, driven by digital-native consumers demanding personalized experiences (Statista, 2024). However, existing platforms fail to address beauty-specific needs. Wrencos addresses this gap by integrating e-commerce with live streaming commerce, AI-powered recommendations, dermatology consultation, and business management tools specifically designed for beauty retailers (Esteva et al., 2017; Liu et al., 2020; Daneshjou et al., 2022).
+**Project Topic:** The beauty e-commerce market has grown to $120 billion (2024) and is projected to exceed $200 billion by 2027, driven by digital-native consumers demanding personalized experiences (Statista, 2024). However, existing platforms fail to address beauty-specific needs. Wrencos addresses this gap by integrating e-commerce with live streaming commerce, AI-powered recommendations, dermatology consultation, and business management tools specifically designed for beauty retailers.
 
-**Motivation:** This project was selected to combine contemporary technologies addressing real market demands. Beauty e-commerce requires solutions balancing customer engagement with operational efficiency—a challenge where technical innovation can create measurable business value.
+**Motivation:** The beauty e-commerce market requires solutions that balance high customer engagement with operational efficiency. This project utilizes contemporary technologies to democratize advanced retail and dermatological experiences. Our goal is to enable small businesses (SMEs) to deliver the data-driven, high-touch services previously exclusive to large enterprises.
 
-**Problem Statement Summary:** Small to medium-sized beauty businesses struggle with fragmented technology ecosystems. They typically use five to eight disconnected platforms for e-commerce, marketing, accounting, and analytics, creating data silos and cumulative costs of $500-$3,000 monthly while limiting access to advanced features like AI personalization and live streaming.
+**Problem Statement Summary:** Small to medium-sized beauty businesses struggle with fragmented technology ecosystems. They typically use five to eight disconnected platforms for e-commerce, marketing, accounting, and analytics, creating data silos and cumulative costs of $500-$3,000 monthly while limiting access to advanced features like AI personalization and live streaming. They struggle to replicate personalized retail consultation experiences online, leading to high return rates and customer dissatisfaction. Moreover, individuals face barriers accessing expert dermatological guidance due to limited specialist availability, high costs, and geographic constraints, while existing online resources provide generic information failing to address individual skin types and conditions. 
 
-**Originality and Significance:** Wrencos is novel in its holistic integration of e-commerce, real-time live commerce, conversational AI, AI dermatology consultation, and business management into a single platform specifically designed for beauty retail. This integration addresses a market gap between simple but limited platforms (Shopify) and expensive enterprise solutions (Adobe Commerce). The significance lies in democratizing advanced e-commerce technologies for SMEs, enabling competitive capability previously restricted to large enterprises, while providing professional-grade dermatological consultation accessible to consumers.
+**Originality and Significance:** Wrencos is novel in its holistic integration of e-commerce, real-time live commerce, conversational AI, AI dermatology consultation, and business management into a single platform specifically designed for beauty retail. This integration addresses the gap between limited SME-friendly tools and costly enterprise systems. By incorporating AI-driven skin analysis, dermatology consultation and guided product recommendations, the platform provides individualized dermatological insights that typical online resources cannot offer. 
 
 ## 2. Problem Statement
 
@@ -19,7 +19,7 @@
 
 **Problem Significance:** This problem impacts business competitiveness and customer satisfaction across a high-growth market. The beauty e-commerce industry represents $120 billion globally with 15% annual growth (Statista, 2024). Live streaming commerce in Asia achieves 10-15x higher engagement than traditional e-commerce, yet remains inaccessible to Western businesses due to high implementation barriers. SMEs cannot compete using legacy systems, while enterprise solutions exceed affordability thresholds, creating market opportunity for integrated mid-market solutions.
 
-**Context and Assumptions:** The beauty market is underserved by technology solutions. Current market leaders are either basic platforms (Shopify, WooCommerce) with limited sophistication or enterprise systems with implementation costs exceeding $100,000. The platform assumes: (1) target businesses possess baseline technical literacy to operate web-based applications; (2) customers have internet connectivity supporting video streaming; (3) consumers value personalized recommendations and product demonstrations as key purchasing drivers—supported by evidence that live demonstrations meaningfully increase purchase intention (Guo et al., 2021; Hwang & Youn, 2023) and that personalized recommendations enhance perceived relevance and purchasing likelihood (Yun & Chun, 2024); (4) business owners prioritize operational efficiency and technology cost reduction; and (5) regulatory compliance with GDPR and data protection laws is mandatory.
+**Context and Assumptions:** The beauty market is underserved by technology solutions. Current market leaders are either basic platforms (e.g., Shopify, WooCommerce) with limited sophistication or enterprise systems (e.g., Adobe Commerce) with implementation costs exceeding $100,000. The platform assumes: (1) target businesses possess baseline technical literacy to operate web-based applications; (2) customers have internet connectivity supporting video streaming; (3) consumers value personalized recommendations and product demonstrations as key purchasing drivers—supported by evidence that live demonstrations meaningfully increase purchase intention (Guo et al., 2021; Hwang & Youn, 2023) and that personalized recommendations enhance perceived relevance and purchasing likelihood (Yun & Chun, 2024); (4) business owners prioritize operational efficiency and technology cost reduction; and (5) regulatory compliance with GDPR and data protection laws is mandatory.
 
 ## 3. Project Aim and Objectives
 
@@ -77,7 +77,7 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 - Concurrent viewer support with viewer count tracking
 - Real-time chat functionality during streams with message history
 - Product pinning during streams with display ordering
-- Viewer engagement analytics (likes, view duration, peak concurrent viewers)
+- Viewer engagement analytics
 - Stream quality options
 - Stream recording and archival capabilities
 - Stream scheduling and management
@@ -145,7 +145,7 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 - Session management
 
 *API & Documentation:*
-- RESTful API with 35+ endpoints across 11 route modules
+- RESTful API with endpoints across route modules
 - Swagger/OpenAPI documentation with interactive testing
 - Comprehensive API error handling and validation
 - Rate limiting to prevent abuse

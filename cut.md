@@ -1,4 +1,14 @@
 rep
+
+In the early 2000s, e-commerce focused on internal logistics, making sure the system works, tracking inventory, and processing orders
+
+Nowadays, e-commerce focuses on external customer service, using data to create unique, tailored shopping experiences and personalized recommendations for every single user
+
+E-commerce has evolved from early inventory-focused systems toward customer experience personalization (Turban et al., 2015). 
+
+Turban, E., King, D., Lee, J. K., Liang, T. P., & Turban, D. C. (2015). Electronic commerce: A managerial and social networks perspective (8th ed.). New York: Springer.
+
+
 **Scope (Features Included):** This project encompasses comprehensive e-commerce functionality including product catalogs, shopping cart, payment, order management, and inventory control. Live streaming capabilities include video streaming, real-time chat functionality, product pinning during streams, and viewer analytics. AI-powered chat integration provides personalized product recommendations based on customer skin type and concerns, alongside FAQ management with staff escalation. Email marketing systems support campaign management and customer segmentation functionality. Analytics dashboards enable business performance monitoring and reporting. Financial management modules facilitate cash flow tracking and expense recording. Human resources modules support employee record management and documentation. AI dermatology expert with text and voice chat, skin image analysis, RAG-based knowledge base with curated dermatology literature, chat history management, multi-language support, real-time audio streaming. Multi-platform support extends across web-based administrative interfaces, web-based customer interfaces, and cross-platform mobile applications for iOS and Android platforms. Web browser compatibility includes Chrome 90+, Firefox 88+, Safari 14+, and Edge 90+. Mobile support targets iOS 14+ and Android 10+.
 
 **Limitations (Features Excluded):** The project explicitly excludes advanced payment gateway integration beyond basic structural implementation, complex logistics integration with third-party fulfillment providers, augmented reality virtual try-on functionality, social commerce features, advanced marketing automation beyond email segmentation, enterprise multi-tenancy capabilities, video processing effects, and subscription business models. These exclusions reflect realistic constraints on development capacity and project scope within the defined 10-month timeline while ensuring core functionality achieves quality standards.

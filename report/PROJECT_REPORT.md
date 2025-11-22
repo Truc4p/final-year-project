@@ -4,7 +4,7 @@
 
 ### 1.1 General Overview
 
-The global beauty and personal care e-commerce market has experienced unprecedented growth, reaching USD 120 billion in 2024 with a projected value exceeding USD 200 billion by 2027, driven by digital-native consumers demanding personalized and immersive shopping experiences (Statista, 2024). However, contemporary e-commerce platforms fail to adequately address the specific requirements of beauty retail, where product evaluation barriers and sensory deficits fundamentally hinder consumer confidence. This project presents Wrencos, an integrated full-stack e-commerce platform specifically engineered for small to medium-sized beauty businesses, combining e-commerce functionality with real-time live streaming commerce, AI-powered product recommendations, comprehensive business management tools and AI-powered dermatology consultation with text and voice chat and skin image analysis to reduce uncertainty and improve guidance into a unified ecosystem (Esteva et al., 2017; Liu et al., 2020; Daneshjou et al., 2022).
+The global beauty and personal care e-commerce market has experienced unprecedented growth, reaching USD 120 billion in 2024 with a projected value exceeding USD 200 billion by 2027, driven by digital-native consumers demanding personalized and immersive shopping experiences (Statista, 2024). However, contemporary e-commerce platforms fail to adequately address the specific requirements of beauty retail, where product evaluation barriers and sensory deficits fundamentally hinder consumer confidence (Nilashi et al., 2019). This project presents Wrencos, an integrated full-stack e-commerce platform specifically engineered for small to medium-sized beauty businesses, combining e-commerce functionality with real-time live streaming commerce, AI-powered product recommendations, comprehensive business management tools and AI-powered dermatology consultation with text and voice chat and skin image analysis to reduce uncertainty and improve guidance into a unified ecosystem.
 
 ### 1.2 Problem Statement
 
@@ -62,7 +62,7 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 - Concurrent viewer support with viewer count tracking
 - Real-time chat functionality during streams with message history
 - Product pinning during streams with display ordering
-- Viewer engagement analytics (likes, view duration, peak concurrent viewers)
+- Viewer engagement analytics
 - Stream quality options
 - Stream recording and archival capabilities
 - Stream scheduling and management
@@ -130,7 +130,7 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 - Session management
 
 *API & Documentation:*
-- RESTful API with 35+ endpoints across 11 route modules
+- RESTful API with endpoints across route modules
 - Swagger/OpenAPI documentation with interactive testing
 - Comprehensive API error handling and validation
 - Rate limiting to prevent abuse
@@ -177,11 +177,20 @@ This chapter establishes the theoretical and practical context for Wrencos throu
 
 ### 2.2 Problem Domain Analysis
 
-**Historical Context and Current Trends:** E-commerce has evolved from early inventory-focused systems toward customer experience personalization (Turban et al., 2015). Mobile commerce and social platforms fundamentally altered consumer behaviour, shifting purchasing to integrated mobile-first environments (Cai et al., 2019). Beauty retail historically remained offline-dominant; the COVID-19 pandemic forced digital transformation, compelling brands to innovate online engagement mechanisms (Roggeveen & Srivastava, 2020). Live streaming commerce emerged from China's e-commerce infrastructure, demonstrating 10-15 times higher conversion rates than traditional e-commerce (McKinsey, 2021), with expansion throughout Asia-Pacific markets (Zhang et al., 2020). Simultaneously, artificial intelligence advanced substantially; machine learning technologies now enable personalized recommendation systems addressing sensory deficits in online beauty retail (Nilashi et al., 2019).
+**Historical Context and Current Trends:** 
+E-commerce began with early digital transactions like EDI in the 1970s and expanded with the internet and platforms such as Amazon and eBay (Zwass, 2016). Broadband, smartphones, and digital payments in the 2000s shifted consumers toward mobile and social commerce, where consumers could be influenced by friends and influencers, discover products instantly, and complete a secure purchase within seconds (Gao, Waechter and Bai, 2018). Cloud computing, AI, and data analytics in the 2010s–2020s enabled personalization, efficient logistics, and omnichannel retail, a seamless integration of online, mobile, and physical touchpoints for a unified customer journey (Cakir et al., 2021). 
+
+Beauty retail historically remained offline-dominant; the COVID-19 pandemic forced digital transformation, compelling brands to innovate online engagement mechanisms (Roggeveen & Srivastava, 2020). 
+
+Global e-commerce reached $5.7 trillion in 2023, with success increasingly driven by interactive, personalized experiences (eMarketer, 2024). In particular, live stream commerce has surged, especially in markets like China, because the interactivity and “social presence” significantly boost purchase intentions (Roseli, Hasan & Sauid, 2023). Meanwhile, AI personalization has improved conversion rates by building trust, satisfaction, and loyalty (Hassan, Abdelraouf & El Shihy, 2025). Companies that fail to adapt to these trends may lose competitiveness and miss out on the conversion and retention gains that modern consumers expect.
+
+
+Live streaming commerce emerged from China's e-commerce infrastructure, demonstrating 10-15 times higher conversion rates than traditional e-commerce (McKinsey, 2021), with expansion throughout Asia-Pacific markets (Zhang et al., 2020). Simultaneously, artificial intelligence advanced substantially; machine learning technologies now enable personalized recommendation systems addressing sensory deficits in online beauty retail (Nilashi et al., 2019).
+
 
 Dermatology consultation has evolved from geographically-constrained in-person services to digital telemedicine (Warshaw et al., 2011). Early implementations lacked real-time diagnostic capability (Federman et al., 2003). Recent AI advances demonstrate dermatologist-level performance: Esteva et al. (2017) achieved clinical-grade skin cancer classification; Robust datasets like HAM10000 (Tschandl, Rosendahl and Kittler, 2018) enable rigorous validation; Liu et al. (2020) developed comprehensive differential diagnosis systems. Critical fairness evaluation by Daneshjou et al. (2022) identified performance disparities across skin tones, necessitating careful deployment monitoring. 
 
-**Key Concepts and Terminology:** E-commerce encompasses digital transaction infrastructure mediated through product catalogs and shopping carts. Live streaming commerce represents synchronous video broadcasting where sellers demonstrate products in real-time while viewers engage through integrated chat and purchasing mechanisms. Sensory deficit (Dholakia et al., 2010) describes the absence of multisensory product evaluation in online retail, particularly acute in beauty retail where texture, scent, and colour matching inform purchasing confidence. AI personalization employs machine learning to recommend products and tailor offers based on customer skin type and concerns (Jiang et al., 2019), substantially improving conversion rates.
+**Key Concepts and Terminology:** E-commerce encompasses digital transaction infrastructure mediated through product catalogs and shopping carts. Live streaming commerce represents synchronous video broadcasting where sellers demonstrate products in real-time while viewers engage through integrated chat and purchasing mechanisms. Sensory deficit (Dholakia et al., 2010) describes the absence of multisensory product evaluation in online retail, particularly acute in beauty retail where texture, scent, and colour matching inform purchasing confidence. AI personalization employs machine learning to recommend products, customize content, and tailor offers (Jiang et al., 2019), substantially improving conversion rates.
 
 Business management tools for e-commerce, marketing, accounting, analytics, and operations are software systems that help businesses streamline online sales, automate promotion and financial tasks, monitor performance data, and manage day-to-day processes efficiently.
 
@@ -244,8 +253,6 @@ Wrencos addresses these identified gaps through deliberate integration. Unlike S
 
 ## References
 
-Cai, J., Liu, X., Xiao, Z., & Liu, M. (2019). Improving supply chain performance management with cloud computing. *International Journal of Information Management*, 45, 1–15.
-
 Daneshjou, R., Vodrahalli, K., Novoa, R., Jenkins, M., Rotemberg, V. and Zou, J. (2022) 'Disparities in dermatology AI performance on a diverse, real-world dataset', Science Advances, 8(34), eabq6147. doi:10.1126/sciadv.abq6147.
 
 Esteva, A., Kuprel, B., Novoa, R.A., Ko, J., Swetter, S.M., Blau, H.M. and Thrun, S. (2017) 'Dermatologist-level classification of skin cancer with deep neural networks', Nature, 542(7639), pp. 115–118. doi:10.1038/nature21056.
@@ -283,8 +290,6 @@ NPD Group. (2023). U.S. beauty returns analysis. Port Washington, NY: NPD Group.
 Roggeveen, A. L., & Srivastava, J. (2020). Marketing lessons from COVID-19. *Journal of the Academy of Marketing Science*, 48, 539–544.
 
 Statista. (2024). Global beauty and personal care market size. Hamburg: Statista GmbH.
-
-Turban, E., King, D., Lee, J. K., Liang, T. P., & Turban, D. C. (2015). Electronic commerce: A managerial and social networks perspective (8th ed.). New York: Springer.
 
 Zhang, X., Gao, S., Guo, H., & Liu, G. (2020). Understanding the acceptance of mobile payment in the Chinese market: An empirical study. *Information Systems Frontiers*, 22(2), 247–261.
 
