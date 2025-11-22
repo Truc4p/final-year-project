@@ -15,6 +15,13 @@ const isLoading = ref(true);
 const error = ref(null);
 const categories = ref([]);
 const selectedCategory = ref('all');
+const skinTypes = ref([]);
+const skinConcerns = ref([]);
+const benefits = ref([]);
+const selectedSkinTypes = ref([]);
+const selectedSkinConcerns = ref([]);
+const selectedBenefits = ref([]);
+const showFilters = ref(false);
 
 // Method to refresh cart from localStorage
 const refreshCart = () => {
@@ -49,6 +56,29 @@ const fetchProducts = async () => {
       .map(product => product.category.name))];
     
     categories.value = uniqueCategories;
+    
+    // Extract unique skin types
+    const uniqueSkinTypes = [...new Set(res.data
+      .filter(product => product.skinType && Array.isArray(product.skinType))
+      .flatMap(product => product.skinType))];
+    skinTypes.value = uniqueSkinTypes.sort();
+    
+    // Extract unique skin concerns
+    const uniqueSkinConcerns = [...new Set(res.data
+      .filter(product => product.skinConcerns && Array.isArray(product.skinConcerns))
+      .flatMap(product => product.skinConcerns))];
+    skinConcerns.value = uniqueSkinConcerns.sort();
+    
+    // Extract unique benefits
+    const uniqueBenefits = [...new Set(res.data
+      .filter(product => product.benefits && (typeof product.benefits === 'string' ? product.benefits.trim() : product.benefits.length > 0))
+      .flatMap(product => {
+        if (typeof product.benefits === 'string') {
+          return product.benefits.split(/[,\n]/).map(b => b.trim()).filter(b => b);
+        }
+        return Array.isArray(product.benefits) ? product.benefits : [];
+      }))];
+    benefits.value = uniqueBenefits.sort();
   } catch (err) {
     console.error("Error fetching products:", err);
     error.value = "Failed to load products. Please try again.";
@@ -106,14 +136,80 @@ const filteredProducts = computed(() => {
   
   // Filter by search query
   if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(product => {
-      return product.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        (product.category && product.category.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
+      return product.name.toLowerCase().includes(query) ||
+        (product.category && product.category.name.toLowerCase().includes(query)) ||
+        (product.skinType && product.skinType.some(type => type.toLowerCase().includes(query))) ||
+        (product.skinConcerns && product.skinConcerns.some(concern => concern.toLowerCase().includes(query))) ||
+        (product.benefits && (typeof product.benefits === 'string' 
+          ? product.benefits.toLowerCase().includes(query)
+          : product.benefits.some(benefit => benefit.toLowerCase().includes(query))));
+    });
+  }
+  
+  // Filter by skin types
+  if (selectedSkinTypes.value.length > 0) {
+    filtered = filtered.filter(product => 
+      product.skinType && product.skinType.some(type => selectedSkinTypes.value.includes(type))
+    );
+  }
+  
+  // Filter by skin concerns
+  if (selectedSkinConcerns.value.length > 0) {
+    filtered = filtered.filter(product => 
+      product.skinConcerns && product.skinConcerns.some(concern => selectedSkinConcerns.value.includes(concern))
+    );
+  }
+  
+  // Filter by benefits
+  if (selectedBenefits.value.length > 0) {
+    filtered = filtered.filter(product => {
+      if (!product.benefits) return false;
+      const productBenefits = typeof product.benefits === 'string'
+        ? product.benefits.split(/[,\n]/).map(b => b.trim()).filter(b => b)
+        : Array.isArray(product.benefits) ? product.benefits : [];
+      return productBenefits.some(benefit => selectedBenefits.value.includes(benefit));
     });
   }
   
   return filtered;
 });
+
+const toggleSkinType = (type) => {
+  const index = selectedSkinTypes.value.indexOf(type);
+  if (index > -1) {
+    selectedSkinTypes.value.splice(index, 1);
+  } else {
+    selectedSkinTypes.value.push(type);
+  }
+};
+
+const toggleSkinConcern = (concern) => {
+  const index = selectedSkinConcerns.value.indexOf(concern);
+  if (index > -1) {
+    selectedSkinConcerns.value.splice(index, 1);
+  } else {
+    selectedSkinConcerns.value.push(concern);
+  }
+};
+
+const toggleBenefit = (benefit) => {
+  const index = selectedBenefits.value.indexOf(benefit);
+  if (index > -1) {
+    selectedBenefits.value.splice(index, 1);
+  } else {
+    selectedBenefits.value.push(benefit);
+  }
+};
+
+const clearAllFilters = () => {
+  selectedCategory.value = 'all';
+  selectedSkinTypes.value = [];
+  selectedSkinConcerns.value = [];
+  selectedBenefits.value = [];
+  searchQuery.value = '';
+};
 
 onMounted(() => {
   fetchProducts();
@@ -135,15 +231,15 @@ onMounted(() => {
           </p>
         </div>
         
-        <!-- Search and Cart Section -->
+        <!-- Search and Filter Toggle Section -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
           <!-- Search -->
-          <div class="w-full md:w-1/4">
+          <div class="w-full md:w-1/3">
             <div class="search-container relative">
               <input 
                 type="text" 
                 v-model="searchQuery" 
-                placeholder="Search"
+                placeholder="Search products, skin types, concerns..."
                 class="search-input w-full bg-transparent border-0 text-lg text-primary-800 focus:outline-none transition-all duration-300 pr-10"
               />
               <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
@@ -153,31 +249,112 @@ onMounted(() => {
               </div>
             </div>
           </div>
+          
+          <!-- Filter Toggle Button -->
+          <button 
+            @click="showFilters = !showFilters"
+            class="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+          </button>
         </div>
         
-        <!-- Category Filter -->
-        <div class="flex flex-wrap items-center justify-center gap-3 mb-12">
-          <button 
-            @click="selectedCategory = 'all'" 
-            :class="[
-              'category-filter',
-              selectedCategory === 'all' ? 'active' : ''
-            ]"
-          >
-            {{ t('allCategories') || 'All Categories' }}
-          </button>
+        <!-- Filters Panel -->
+        <div v-if="showFilters" class="bg-white rounded-xl p-6 mb-8 shadow-sm border border-secondary-200 animate-fade-in">
+          <!-- Category Filter -->
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-secondary-900 mb-3">{{ t('category') || 'Category' }}</h3>
+            <div class="flex flex-wrap gap-2">
+              <button 
+                @click="selectedCategory = 'all'" 
+                :class="[
+                  'category-filter',
+                  selectedCategory === 'all' ? 'active' : ''
+                ]"
+              >
+                {{ t('allCategories') || 'All Categories' }}
+              </button>
+              
+              <button 
+                v-for="category in categories" 
+                :key="category"
+                @click="selectedCategory = category"
+                :class="[
+                  'category-filter',
+                  selectedCategory === category ? 'active' : ''
+                ]"
+              >
+                {{ category }}
+              </button>
+            </div>
+          </div>
           
-          <button 
-            v-for="category in categories" 
-            :key="category"
-            @click="selectedCategory = category"
-            :class="[
-              'category-filter',
-              selectedCategory === category ? 'active' : ''
-            ]"
-          >
-            {{ category }}
-          </button>
+          <!-- Skin Type Filter -->
+          <div v-if="skinTypes.length > 0" class="mb-6">
+            <h3 class="text-lg font-semibold text-secondary-900 mb-3">{{ t('skinType') || 'Skin Type' }}</h3>
+            <div class="flex flex-wrap gap-2">
+              <button 
+                v-for="type in skinTypes" 
+                :key="type"
+                @click="toggleSkinType(type)"
+                :class="[
+                  'filter-tag',
+                  selectedSkinTypes.includes(type) ? 'active' : ''
+                ]"
+              >
+                {{ type }}
+              </button>
+            </div>
+          </div>
+          
+          <!-- Skin Concerns Filter -->
+          <div v-if="skinConcerns.length > 0" class="mb-6">
+            <h3 class="text-lg font-semibold text-secondary-900 mb-3">{{ t('skinConcerns') || 'Skin Concerns' }}</h3>
+            <div class="flex flex-wrap gap-2">
+              <button 
+                v-for="concern in skinConcerns" 
+                :key="concern"
+                @click="toggleSkinConcern(concern)"
+                :class="[
+                  'filter-tag',
+                  selectedSkinConcerns.includes(concern) ? 'active' : ''
+                ]"
+              >
+                {{ concern.replace('-', ' ') }}
+              </button>
+            </div>
+          </div>
+          
+          <!-- Benefits Filter -->
+          <div v-if="benefits.length > 0" class="mb-6">
+            <h3 class="text-lg font-semibold text-secondary-900 mb-3">{{ t('benefits') || 'Benefits' }}</h3>
+            <div class="flex flex-wrap gap-2">
+              <button 
+                v-for="benefit in benefits" 
+                :key="benefit"
+                @click="toggleBenefit(benefit)"
+                :class="[
+                  'filter-tag',
+                  selectedBenefits.includes(benefit) ? 'active' : ''
+                ]"
+              >
+                {{ benefit }}
+              </button>
+            </div>
+          </div>
+          
+          <!-- Clear Filters Button -->
+          <div v-if="selectedCategory !== 'all' || selectedSkinTypes.length > 0 || selectedSkinConcerns.length > 0 || selectedBenefits.length > 0 || searchQuery.trim()" class="pt-4 border-t border-secondary-200">
+            <button 
+              @click="clearAllFilters"
+              class="text-primary-600 hover:text-primary-700 font-medium transition-colors duration-200"
+            >
+              {{ t('clearAllFilters') || 'Clear All Filters' }}
+            </button>
+          </div>
         </div>
         
         <!-- Loading State -->
@@ -244,8 +421,8 @@ onMounted(() => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
           </svg>
           <h3 class="text-2xl font-medium text-secondary-900 mb-2">{{ t('noProductsFound') || 'No Products Found' }}</h3>
-          <p class="text-secondary-500 mb-6">{{ t('tryDifferentCategory') || 'Try selecting a different category or search term' }}</p>
-          <button @click="selectedCategory = 'all'; searchQuery = ''" class="btn btn-primary">
+          <p class="text-secondary-500 mb-6">{{ t('tryDifferentCategory') || 'Try adjusting your filters, search term, or skin type selection' }}</p>
+          <button @click="clearAllFilters" class="btn btn-primary">
             {{ t('viewAllProducts') || 'View All Products' }}
           </button>
         </div>
@@ -305,6 +482,24 @@ onMounted(() => {
 .search-input:focus {
   background: linear-gradient(to bottom right, var(--primary-50)) padding-box,
               linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 50%, var(--primary-800) 100%) border-box;
+}
+
+/* Category Filter Styling */
+.category-filter {
+  @apply px-4 py-2 rounded-full font-medium text-secondary-700 bg-secondary-100 hover:bg-secondary-200 transition-all duration-200 border-2 border-transparent;
+}
+
+.category-filter.active {
+  @apply bg-primary-600 text-white border-primary-700;
+}
+
+/* Filter Tag Styling */
+.filter-tag {
+  @apply px-3 py-1 rounded-full text-sm font-medium text-secondary-700 bg-secondary-100 hover:bg-secondary-200 transition-all duration-200 border-2 border-transparent cursor-pointer;
+}
+
+.filter-tag.active {
+  @apply bg-primary-600 text-white;
 }
 
 </style>

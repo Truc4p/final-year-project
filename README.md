@@ -41,7 +41,6 @@
 - **HTTP Client**: Axios
 - **Charts**: Chart.js with Vue-ChartJS
 - **Internationalization**: Vue-i18n
-- **OCR**: Tesseract.js
 
 #### Mobile Apps
 - **Framework**: React Native with Expo

@@ -175,7 +175,6 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 - Automated task scheduling with node-cron
 - QR code generation for orders and products
 - Text-to-speech capabilities for accessibility
-- OCR functionality for document processing
 
 Out-of-scope: advanced payment gateway integration beyond basic structure, complex logistics integration with third-party fulfillment systems, AR virtual try-on functionality, social commerce feature integration (social media shopping), advanced marketing automation beyond email segmentation, enterprise multi-tenancy support, video processing effects for live streams, subscription business model implementation, real-time inventory sync with external systems, blockchain integration, advanced recommendation engine using collaborative filtering, machine learning-based customer segmentation, video compression and adaptive bitrate streaming, integration with third-party CRM systems, advanced fraud detection systems, and marketplace functionality allowing multiple sellers.
 
