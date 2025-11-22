@@ -26,7 +26,7 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 
 ### 1.5 Scope and Limitations
 
-**Scope (Features Included):** This project encompasses comprehensive e-commerce functionality including product catalogs, shopping cart, payment, order management, and inventory control. Live streaming capabilities include video streaming, real-time chat functionality, product pinning during streams, and viewer analytics. AI-powered chat integration provides personalized product recommendations based on customer skin type and concerns, alongside FAQ management with staff escalation. Email marketing systems support campaign management and customer segmentation functionality. Analytics dashboards enable business performance monitoring and reporting. Financial management modules facilitate cash flow tracking and expense recording. Human resources modules support employee record management and documentation. AI dermatology expert with text and voice chat, skin image analysis, RAG-based knowledge base with curated dermatology literature, chat history management, multi-language support, real-time audio streaming. Multi-platform support extends across web-based administrative interfaces, web-based customer interfaces, and cross-platform mobile applications for iOS and Android platforms. Web browser compatibility includes Chrome 90+, Firefox 88+, Safari 14+, and Edge 90+. Mobile support targets iOS 14+ and Android 10+.
+**Scope (Features Included):** 
 
 | Feature Category | In-Scope Components |
 |---|---|
@@ -44,7 +44,125 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 | **Browser Compatibility** | Chrome 90+, Firefox 88+, Safari 14+, Edge 90+ |
 | **Mobile Support** | iOS 14+, Android 10+ |
 
-**Limitations (Features Excluded):** The project explicitly excludes advanced payment gateway integration beyond basic structural implementation, complex logistics integration with third-party fulfillment providers, augmented reality virtual try-on functionality, social commerce features, advanced marketing automation beyond email segmentation, enterprise multi-tenancy capabilities, video processing effects, and subscription business models. These exclusions reflect realistic constraints on development capacity and project scope within the defined 18-week timeline while ensuring core functionality achieves quality standards.
+
+**In-Scope Features:**
+
+*E-Commerce Module:*
+- Complete product catalog with full-text search across name, description, ingredients, benefits, and tags
+- Shopping cart with persistent storage and quantity management
+- Checkout process with order creation and payment processing
+- Order management with status tracking and history
+- Inventory management with stock quantity tracking
+- Product categorization and filtering by skin type, concerns, and benefits
+- Product details including ingredients, usage instructions, and skincare benefits
+- Image upload and management for products
+
+*Live Streaming Module:*
+- WebSocket-based real-time video streaming infrastructure
+- Concurrent viewer support with viewer count tracking
+- Real-time chat functionality during streams with message history
+- Product pinning during streams with display ordering
+- Viewer engagement analytics (likes, view duration, peak concurrent viewers)
+- Stream quality options (480p, 720p, 1080p, 4K)
+- Stream recording and archival capabilities
+- Stream scheduling and management
+- Admin livestream broadcasting from mobile app
+
+*AI Chat Support System:*
+- Google Gemini AI integration for conversational responses
+- Context-aware dialogue with conversation history management
+- Conversational product recommendations based on skin type and concerns
+- FAQ management with predefined responses
+- Staff escalation workflow for complex queries
+- Session management for both authenticated and anonymous users
+- Message history persistence
+
+*Skin Study Feature (AI Dermatology Expert):*
+- AI dermatology expert with text-based consultation
+- Voice chat with automatic speech-to-text transcription
+- Skin image analysis with AI-powered assessment
+- Real-time audio streaming for voice interactions
+- RAG-based knowledge base with curated dermatology literature
+- Chat history management with conversation persistence
+- Multi-language support with automatic language detection and translation
+- Evidence-based recommendations with source citations
+- Integration across web and mobile platforms
+
+*Email Marketing Module:*
+- Email campaign creation and management
+- Email template design and customization
+- Customer segmentation based on purchase history and preferences
+- Newsletter subscription management
+- Subscriber list management with unsubscribe functionality
+- Campaign scheduling and automated sending
+- Email analytics (open rates, click rates, conversion tracking)
+- Audience targeting and personalization
+
+*Analytics Dashboards:*
+- Sales metrics and revenue tracking
+- Product performance analysis
+- Customer insights and behavior analytics
+- Order analytics and trends
+- Revenue forecasting and analysis
+- Viewer analytics for livestreams
+- Email campaign performance metrics
+- Conversion rate analysis
+
+*Financial Management Module:*
+- Cash flow transaction tracking
+- Expense recording and categorization
+- Financial reporting and statements
+- Profit and loss analysis
+- Budget tracking and forecasting
+- Transaction history and audit trails
+
+*HR Module:*
+- Employee record management
+- Department and role management
+- Employee document management
+- Performance tracking capabilities
+
+*Authentication & Authorization:*
+- JWT token-based authentication
+- Role-based access control (Admin/Customer roles)
+- Secure password hashing with bcryptjs
+- Token expiration and refresh mechanisms
+- Session management
+
+*API & Documentation:*
+- RESTful API with 35+ endpoints across 11 route modules
+- Swagger/OpenAPI documentation with interactive testing
+- Comprehensive API error handling and validation
+- Rate limiting to prevent abuse
+- CORS configuration for cross-origin requests
+
+*Multi-Platform Support:*
+- Vue.js web application for admin dashboard
+- Vue.js web application for customer interface
+- React Native mobile app for customers (iOS 14+, Android 10+) with integrated Skin Study
+- React Native mobile app for admin livestream management (iOS 14+, Android 10+)
+- Responsive design for desktop, tablet, and mobile devices
+- Web browser compatibility: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+- Mobile support: iOS 14+ and Android 10+
+
+*Database & Infrastructure:*
+- MongoDB with Mongoose ORM for data persistence
+- Qdrant vector database for RAG implementation
+- WebSocket infrastructure for real-time communication
+- Docker containerization for deployment
+- File upload and storage management
+- Database indexing for performance optimization
+
+*Additional Features:*
+- Internationalization (i18n) support for multiple languages
+- Performance monitoring and optimization
+- Security measures including CORS, rate limiting, input validation
+- Automated task scheduling with node-cron
+- QR code generation for orders and products
+- Text-to-speech capabilities for accessibility
+- OCR functionality for document processing
+
+**Limitations (Features Excluded):** The project explicitly excludes advanced payment gateway integration beyond basic structure, complex logistics integration with third-party fulfillment systems, AR virtual try-on functionality, social commerce feature integration (social media shopping), advanced marketing automation beyond email segmentation, enterprise multi-tenancy support, video processing effects for live streams, subscription business model implementation, real-time inventory sync with external systems, blockchain integration, advanced recommendation engine using collaborative filtering, machine learning-based customer segmentation, video compression and adaptive bitrate streaming, integration with third-party CRM systems, advanced fraud detection systems, and marketplace functionality allowing multiple sellers.
 
 ### 1.6 Report Structure
 

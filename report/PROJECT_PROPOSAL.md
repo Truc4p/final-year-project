@@ -58,9 +58,126 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 
 ## 6. Project Scope and Feasibility
 
-**Scope:** In-scope: complete e-commerce (product catalog, shopping cart, orders, inventory, categories), live streaming (WebSocket-based video streaming infrastructure, real-time chat, product pinning, viewer analytics), AI chat (Google Gemini integration, conversational product recommendations, FAQ management with staff escalation), Skin Study feature (AI dermatology expert with text and voice chat, skin image analysis, RAG-based knowledge base with curated dermatology literature, chat history management, multi-language support, real-time audio streaming), email marketing (campaigns, customer segmentation, email templates, newsletter management, audience targeting), analytics dashboards (sales metrics, customer insights, product performance), financial management (cash flow tracking, expense recording, financial reporting, profit analysis), HR module (employee records, document management), authentication (JWT tokens, role-based access control with admin/customer roles), API documentation (Swagger/OpenAPI), and multi-platform support (Vue.js web admin, Vue.js web customer, React Native iOS/Android mobile customer app with integrated Skin Study, React Native iOS/Android mobile admin app for livestream management). Web browser compatibility includes Chrome 90+, Firefox 88+, Safari 14+, and Edge 90+. Mobile support targets iOS 14+ and Android 10+.
+**Scope:** 
 
-Out-of-scope: advanced payment gateway integration beyond VNPay basic structure, complex logistics integration with third-party fulfillment, AR virtual try-on functionality, social commerce feature integration, advanced marketing automation beyond email segmentation, enterprise multi-tenancy support, video processing effects for live streams, subscription business model implementation, and real-time inventory sync with external systems.
+**In-Scope Features:**
+
+*E-Commerce Module:*
+- Complete product catalog with full-text search across name, description, ingredients, benefits, and tags
+- Shopping cart with persistent storage and quantity management
+- Checkout process with order creation and payment processing
+- Order management with status tracking and history
+- Inventory management with stock quantity tracking
+- Product categorization and filtering by skin type, concerns, and benefits
+- Product details including ingredients, usage instructions, and skincare benefits
+- Image upload and management for products
+
+*Live Streaming Module:*
+- WebSocket-based real-time video streaming infrastructure
+- Concurrent viewer support with viewer count tracking
+- Real-time chat functionality during streams with message history
+- Product pinning during streams with display ordering
+- Viewer engagement analytics (likes, view duration, peak concurrent viewers)
+- Stream quality options (480p, 720p, 1080p, 4K)
+- Stream recording and archival capabilities
+- Stream scheduling and management
+- Admin livestream broadcasting from mobile app
+
+*AI Chat Support System:*
+- Google Gemini AI integration for conversational responses
+- Context-aware dialogue with conversation history management
+- Conversational product recommendations based on skin type and concerns
+- FAQ management with predefined responses
+- Staff escalation workflow for complex queries
+- Session management for both authenticated and anonymous users
+- Message history persistence
+
+*Skin Study Feature (AI Dermatology Expert):*
+- AI dermatology expert with text-based consultation
+- Voice chat with automatic speech-to-text transcription
+- Skin image analysis with AI-powered assessment
+- Real-time audio streaming for voice interactions
+- RAG-based knowledge base with curated dermatology literature
+- Chat history management with conversation persistence
+- Multi-language support with automatic language detection and translation
+- Evidence-based recommendations with source citations
+- Integration across web and mobile platforms
+
+*Email Marketing Module:*
+- Email campaign creation and management
+- Email template design and customization
+- Customer segmentation based on purchase history and preferences
+- Newsletter subscription management
+- Subscriber list management with unsubscribe functionality
+- Campaign scheduling and automated sending
+- Email analytics (open rates, click rates, conversion tracking)
+- Audience targeting and personalization
+
+*Analytics Dashboards:*
+- Sales metrics and revenue tracking
+- Product performance analysis
+- Customer insights and behavior analytics
+- Order analytics and trends
+- Revenue forecasting and analysis
+- Viewer analytics for livestreams
+- Email campaign performance metrics
+- Conversion rate analysis
+
+*Financial Management Module:*
+- Cash flow transaction tracking
+- Expense recording and categorization
+- Financial reporting and statements
+- Profit and loss analysis
+- Budget tracking and forecasting
+- Transaction history and audit trails
+
+*HR Module:*
+- Employee record management
+- Department and role management
+- Employee document management
+- Performance tracking capabilities
+
+*Authentication & Authorization:*
+- JWT token-based authentication
+- Role-based access control (Admin/Customer roles)
+- Secure password hashing with bcryptjs
+- Token expiration and refresh mechanisms
+- Session management
+
+*API & Documentation:*
+- RESTful API with 35+ endpoints across 11 route modules
+- Swagger/OpenAPI documentation with interactive testing
+- Comprehensive API error handling and validation
+- Rate limiting to prevent abuse
+- CORS configuration for cross-origin requests
+
+*Multi-Platform Support:*
+- Vue.js web application for admin dashboard
+- Vue.js web application for customer interface
+- React Native mobile app for customers (iOS 14+, Android 10+) with integrated Skin Study
+- React Native mobile app for admin livestream management (iOS 14+, Android 10+)
+- Responsive design for desktop, tablet, and mobile devices
+- Web browser compatibility: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+- Mobile support: iOS 14+ and Android 10+
+
+*Database & Infrastructure:*
+- MongoDB with Mongoose ORM for data persistence
+- Qdrant vector database for RAG implementation
+- WebSocket infrastructure for real-time communication
+- Docker containerization for deployment
+- File upload and storage management
+- Database indexing for performance optimization
+
+*Additional Features:*
+- Internationalization (i18n) support for multiple languages
+- Performance monitoring and optimization
+- Security measures including CORS, rate limiting, input validation
+- Automated task scheduling with node-cron
+- QR code generation for orders and products
+- Text-to-speech capabilities for accessibility
+- OCR functionality for document processing
+
+Out-of-scope: advanced payment gateway integration beyond basic structure, complex logistics integration with third-party fulfillment systems, AR virtual try-on functionality, social commerce feature integration (social media shopping), advanced marketing automation beyond email segmentation, enterprise multi-tenancy support, video processing effects for live streams, subscription business model implementation, real-time inventory sync with external systems, blockchain integration, advanced recommendation engine using collaborative filtering, machine learning-based customer segmentation, video compression and adaptive bitrate streaming, integration with third-party CRM systems, advanced fraud detection systems, and marketplace functionality allowing multiple sellers.
 
 **Feasibility Analysis:** Technical feasibility is strong—Node.js, Express, MongoDB, Vue.js, and React Native are mature technologies with extensive community support. WebSocket implementation is straightforward; Gemini AI integration is well-documented; cross-platform mobile development is mainstream. Temporal feasibility: 40-60 weekly project hours over 18 weeks permits core functionality completion. Buffer activities (testing, documentation, integration phases) accommodate unforeseen challenges. Resource feasibility: development tools are open-source or free-tier; cloud services offer free tiers for development scaling with production usage. Skill feasibility: solo developer requires learning WebSocket programming and Expo-based mobile development, manageable given technology documentation quality and community resources.
 
