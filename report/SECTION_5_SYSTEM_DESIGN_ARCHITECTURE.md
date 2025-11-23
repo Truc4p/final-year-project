@@ -478,13 +478,196 @@ The Auth service manages the User entity, which is the single source of truth fo
 
 ####  E-COMMERCE SERVICE
 
+```mermaid
+erDiagram
+    User ||--o{ Order : "customer (user)"
+    Category ||--o{ Product : "1:N"
+    Product ||--o{ OrderItem : "in items"
+    Order ||--o{ OrderItem : "has items"
+
+    User {
+        ObjectId _id PK
+        String username UK
+        String email
+        String role
+    }
+
+    Category {
+        ObjectId _id PK
+        String name
+    }
+
+    Product {
+        ObjectId _id PK
+        String name
+        ObjectId category FK
+        String image
+        String description
+        Number price
+        Number stockQuantity
+        Array ingredients
+        Array skinType
+        Array benefits
+        Array tags
+        String usage
+        Array skinConcerns
+    }
+
+    Order {
+        ObjectId _id PK
+        ObjectId user FK
+        String paymentMethod
+        String paymentStatus
+        Date orderDate
+        String status
+        Number totalPrice
+        Number subtotal
+        Number tax
+        Number taxRate
+        Number shippingFee
+        String shippingLocation
+    }
+
+    OrderItem {
+        ObjectId _id PK
+        ObjectId productId FK
+        Number quantity
+        Number price
+    }
+```
+
+The E‑Commerce service manages the product catalog, category taxonomy, and customer orders. Products belong to a Category, and each Order belongs to a User. Order items are stored as embedded subdocuments in Order.products[]; in the ERD they are represented as a conceptual OrderItem entity to make the Product↔Order many‑to‑many explicit. The model also captures pricing and fulfillment details as well as inventory and rich product attributes used by search and AI recommendations.
+
 ---
 
 ####  LIVESTREAM SERVICE
 
+```mermaid
+erDiagram
+    User ||--o{ LiveStream : "createdBy"
+    LiveStream ||--o{ ChatMessage : "embedded"
+    LiveStream ||--o{ PinnedProduct : "embedded"
+    Product ||--o{ PinnedProduct : "pinned in"
+
+    User {
+        ObjectId _id PK
+        String username UK
+        String email
+        String role
+    }
+
+    LiveStream {
+        ObjectId _id PK
+        String title
+        String description
+        String videoUrl
+        String streamUrl
+        String thumbnailUrl
+        Number duration
+        Number viewCount
+        Number likes
+        Array likedBy
+        Number maxViewers
+        Date startTime
+        Date endTime
+        String quality
+        Boolean isActive
+        Boolean isRecorded
+        Array categories
+        Array tags
+        ObjectId createdBy FK
+        Date createdAt
+        Date updatedAt
+    }
+
+    ChatMessage {
+        ObjectId _id PK
+        String username
+        String message
+        Date timestamp
+        Boolean isAdmin
+    }
+
+    PinnedProduct {
+        ObjectId _id PK
+        ObjectId productId FK
+        Date pinnedAt
+        Number displayOrder
+        Boolean isActive
+    }
+
+    Product {
+        ObjectId _id PK
+        String name
+        Number price
+    }
+```
+
+The Livestream service manages live video sessions created by admin users. Each LiveStream is owned by a User (createdBy). Real‑time chat and product promotions are stored as embedded arrays in the LiveStream document; in the ERD they appear as conceptual entities (ChatMessage, PinnedProduct) so the relationships are explicit. PinnedProduct forms an associative link between LiveStream and Product (many‑to‑many), while ChatMessage captures the stream’s chat timeline. Operational and discovery fields (isActive, isRecorded, quality, tags, categories, views/likes/maxViewers) support analytics, playback, and search.
+
 ---
 
 ####  COMMUNICATION SERVICE
+
+```mermaid
+erDiagram
+    User ||--o{ ChatConversation : "userId (optional)"
+    User ||--o{ ChatConversation : "assignedStaff (staff)"
+    ChatConversation ||--o{ Message : "messages[] embedded"
+    Message }o--|| FAQ : "metadata.faqId"
+    Product ||--o{ Message : "metadata.retrievedProducts"
+
+    User {
+        ObjectId _id PK
+        String username UK
+        String email
+        String role
+        Date createdAt
+    }
+
+    ChatConversation {
+        ObjectId _id PK
+        String sessionId
+        ObjectId userId FK
+        Boolean isActive
+        Boolean isStaffChat
+        Boolean waitingForStaff
+        Boolean hasUnreadFromCustomer
+        Date lastStaffRead
+        ObjectId assignedStaff FK
+        Date lastActivity
+        Date createdAt
+    }
+
+    Message {
+        ObjectId _id PK
+        String role
+        String content
+        Date timestamp
+        String messageType
+        Object metadata
+    }
+
+    FAQ {
+        ObjectId _id PK
+        String question
+        String answer
+        String category
+        Array tags
+        Boolean isActive
+        Number priority
+        Date createdAt
+        Date updatedAt
+    }
+
+    Product {
+        ObjectId _id PK
+        String name
+        Number price
+    }
+```
+
+The Communication service orchestrates customer conversations, FAQs, and AI-assisted replies. A ChatConversation can be anonymous or linked to a User; staff can be assigned for escalation. Each conversation embeds a timeline of Message items. Message metadata optionally links to one FAQ (for predefined answers) and may reference multiple Products retrieved for recommendations. Operational flags (isActive, isStaffChat, waitingForStaff, unread, lastStaffRead, lastActivity) support routing, triage, and analytics.
 
 ---
 
@@ -602,6 +785,8 @@ erDiagram
     }
 ```
 
+The Marketing service manages email campaign orchestration, template design, and subscriber segmentation. Admins create EmailCampaigns using reusable EmailTemplates and define targeting criteria through EmailSegments. Each campaign tracks delivery and engagement metrics through EmailAnalytics, which records opens, clicks, bounces, and unsubscribes for every NewsletterSubscription recipient. Campaigns reference templates via foreign keys and apply segment criteria to target relevant subscribers; analytics link campaigns to subscriber interactions, enabling performance measurement and audience insights. All marketing assets are created and owned by admin users (createdBy), ensuring audit trails and role-based permissions.
+
 ---
 
 ####  HR SERVICE
@@ -663,86 +848,7 @@ erDiagram
     }
 ```
 
-**HR SERVICE - Entity Relationship Diagram Explanation:**
-
-The HR Service manages employee records with comprehensive workforce management capabilities. The diagram shows four main entities and their relationships:
-
-| Entity | Purpose | Key Fields | Relationships |
-|---|---|---|---|
-| **USER** | Central identity provider (from Auth Service) | _id, email, username, role | 1:1 → Employee (optional link) |
-| **EMPLOYEE** | Core HR entity for employee records | employeeId, firstName, lastName, department, position, salary, status | 1:N → Performance Reviews<br>1:N → Documents<br>1:N → Manager (self-referencing) |
-| **PERFORMANCE_REVIEW** | Performance evaluation records | reviewDate, rating (1-5), comments, reviewedBy | N:1 ← Employee |
-| **DOCUMENT** | Employee documents (contracts, certifications, etc.) | name, type, uploadDate, filePath | N:1 ← Employee |
-
-**Key Relationships Explained:**
-
-1. **USER ↔ EMPLOYEE (1:1 Optional)**
-   - Each Employee may have an associated User account (optional)
-   - Not all Users are Employees (customers don't have Employee records)
-   - Not all Employees need User accounts (can be managed via HR system only)
-   - Implementation: Employee stores userId reference (nullable)
-
-2. **EMPLOYEE ↔ EMPLOYEE (1:N Self-Referencing)**
-   - Represents manager-subordinate hierarchy
-   - Each Employee has ONE manager (nullable for top-level executives)
-   - Each manager can have MANY subordinates
-   - Implementation: Employee.manager stores ObjectId reference to another Employee
-
-3. **EMPLOYEE → PERFORMANCE_REVIEW (1:N)**
-   - Each Employee has MANY performance reviews over time
-   - Each review belongs to ONE employee
-   - Tracks historical performance ratings and feedback
-   - Implementation: PerformanceReview.employeeId references Employee
-
-4. **EMPLOYEE → DOCUMENT (1:N)**
-   - Each Employee has MANY documents (contracts, certifications, etc.)
-   - Each document belongs to ONE employee
-   - Documents stored with file paths and metadata
-   - Implementation: Document.employeeId references Employee
-
-**Field Details:**
-
-| Field | Type | Purpose | Constraints |
-|---|---|---|---|
-| **employeeId** | String | Unique employee identifier | Unique, Required |
-| **department** | String (Enum) | Department assignment | engineering, marketing, sales, finance, hr, operations, customer_service, design, management |
-| **employmentType** | String (Enum) | Employment classification | full_time, part_time, contract, intern |
-| **status** | String (Enum) | Current employment status | active, inactive, terminated, on_leave |
-| **salary** | Object | Compensation details | {amount, currency, payFrequency} |
-| **leaveBalance** | Object | Leave entitlements | {vacation, sick, personal} |
-| **benefits** | Object | Employee benefits | {healthInsurance, dentalInsurance, retirementPlan, lifeInsurance} |
-| **manager** | ObjectId (FK) | Direct manager reference | Self-referencing to Employee, nullable |
-| **skills** | Array | Employee competencies | Array of strings |
-| **emergencyContact** | Object | Emergency contact info | {name, relationship, phone, email} |
-
-**Data Integrity Constraints:**
-
-1. **Unique Constraints:**
-   - `employeeId` - Each employee has unique ID
-   - `email` - Each employee has unique email
-
-2. **Enum Constraints:**
-   - Department must be from predefined list
-   - Employment type restricted to 4 options
-   - Status limited to active/inactive/terminated/on_leave
-
-3. **Validation Rules:**
-   - Performance rating: 1-5 scale
-   - startDate must be before endDate (if endDate exists)
-   - manager field is optional (for executives with no manager)
-
-**HR Service Features Supported by This ERD:**
-
-| Feature | Entities Used | Description |
-|---|---|---|
-| **Employee Management** | Employee | Create, read, update, delete employee records |
-| **Organizational Hierarchy** | Employee (self-ref) | Track manager-subordinate relationships |
-| **Performance Tracking** | Performance Review | Record and track employee performance ratings |
-| **Document Management** | Document | Store employee contracts, certifications, etc. |
-| **Payroll Integration** | Employee.salary | Calculate payroll based on salary data |
-| **Leave Management** | Employee.leaveBalance | Track vacation, sick, personal leave |
-| **Department Analytics** | Employee.department | Generate department-level statistics |
-| **Search & Filtering** | Employee | Search by name, department, status, position |
+The HR service manages employee records, organizational hierarchy, performance evaluations, and document storage. Each Employee is linked to a User account (1:1 via userId) for authentication and system access; employees form a hierarchical structure through self-referential manager relationships, enabling multi-level reporting chains. Performance reviews track evaluation history with ratings, comments, and reviewer attribution (reviewedBy), while Documents store employment-related files (contracts, certifications, policies) with metadata. Employee records capture comprehensive HR data including compensation, benefits, leave balances, skills, and emergency contacts, providing a complete personnel management system with audit trails through createdAt/updatedAt timestamps.
 
 ---
 
@@ -805,85 +911,702 @@ erDiagram
     }
 ```
 
-**FINANCE SERVICE - Entity Relationship Diagram Explanation:**
-
-The Finance service contains two primary entities that capture company expenses and cash movements. It also references orders and users for traceability and automation.
-
-- BUSINESS_EXPENSE: Tracks non-order expenses like rent, marketing, payroll, equipment, etc. Supports recurring expenses with frequency and nextOccurrence.
-- CASH_FLOW_TRANSACTION: Unified ledger for both inflows and outflows. Inflows commonly come from completed orders (orderId FK), while outflows capture operating costs and refunds. Records whether entries are automated or manually created by admins.
-
-**Key Relationships:**
-- USER → BUSINESS_EXPENSE (1:N via createdBy): Which admin created the expense record.
-- USER → CASH_FLOW_TRANSACTION (1:N via createdBy): Which admin recorded a manual transaction.
-- ORDER → CASH_FLOW_TRANSACTION (1:N via orderId): A single order may spawn multiple transactions (e.g., sale inflow, refund outflow).
-
-**Notable Fields and Constraints:**
-- BUSINESS_EXPENSE.category: enum of rent, utilities, payroll, marketing, shipping, equipment, software, other
-- BUSINESS_EXPENSE.isRecurring + frequency: frequency is required when isRecurring = true
-- CASH_FLOW_TRANSACTION.type: inflow or outflow
-- CASH_FLOW_TRANSACTION.category: separate enum values for inflow vs outflow
-- createdAt/updatedAt: added via timestamps in both models
-
-**Typical Flows Supported:**
-- Sync completed orders to inflow transactions (cashFlowRoutes: /sync-orders)
-- Generate dashboards and forecasts from transactions (/dashboard, /history, /categories, /forecast)
-- Manual admin entries for ad-hoc cash movements (/transactions POST)
+The Finance service models operational spending and cash movements via BusinessExpense and CashFlowTransaction. Expenses capture non-order outflows (e.g., rent, marketing) with optional recurrence metadata, while cash‑flow entries record both inflows and outflows; inflows often reference an Order (orderId), and manual/adjustment entries are attributed to a User (createdBy) for auditability. This schema supports automated syncing of completed orders into the ledger, handling of refunds and ad‑hoc adjustments, and reliable dashboarding and forecasting through consistent timestamps, categories, and linkage to users and orders.
 
 ---
 
-#### RELATIONSHIPS SUMMARY
+#### SKIN STUDY SERVICE
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                 KEY RELATIONSHIPS ACROSS SERVICES                   │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│ FROM USER (Auth Service):                                          │
-│   1:N → Order (E-Commerce)                                         │
-│   1:N → LiveStream (Livestream)                                    │
-│   1:N → ChatConversation (Communication, nullable)                 │
-│   1:N → EmailCampaign (Marketing)                                  │
-│   1:N → Employee (HR)                                              │
-│   1:1 → ChatConversation assignedStaff (staff escalation)         │
-│                                                                     │
-│ E-COMMERCE SERVICE:                                                 │
-│   Category 1:N → Product (categoryId FK)                           │
-│   Product M:N → Order (via embedded Order.products[])              │
-│                                                                     │
-│ LIVESTREAM SERVICE:                                                 │
-│   LiveStream.creatorId → User (FK)                                 │
-│   LiveStream.chatMessages[] → embedded (no separate collection)    │
-│                                                                     │
-│ COMMUNICATION SERVICE:                                              │
-│   ChatConversation.userId → User (FK, nullable)                    │
-│   ChatConversation.assignedStaff → User (FK)                      │
-│   ChatConversation.messages[] → embedded array                     │
-│   Message metadata.faqId → FAQ (FK)                               │
-│   Message metadata.retrievedProducts[] → Product (FK refs)        │
-│                                                                     │
-│ MARKETING SERVICE:                                                  │
-│   EmailCampaign.creatorId → User (FK)                             │
-│   EmailCampaign.templateId → EmailTemplate (FK)                   │
-│   EmailCampaign N:N → EmailSegment (via filters)                  │
-│   EmailAnalytics.campaignId → EmailCampaign (FK)                  │
-│   NewsletterSubscription.userId → User (FK)                       │
-│                                                                     │
-│ HR SERVICE:                                                          │
-│   Employee.userId → User (FK, 1:1 relationship)                   │
-│                                                                     │
-│ FINANCE SERVICE:                                                    │
-│   BusinessExpense.createdBy → User (FK)                            │
-│   CashFlowTransaction.createdBy → User (FK, optional)             │
-│   CashFlowTransaction.orderId → Order (FK)                        │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+erDiagram
+    DERMATOLOGY_KNOWLEDGE {
+        ObjectId _id PK
+        String category
+        String subcategory
+        String title
+        String content
+        Array keywords
+        String sourceReference
+        String chapterNumber
+        String chapterTitle
+        String pageReference
+        Boolean verified
+        Date lastUpdated
+        Date createdAt
+        Date updatedAt
+    }
 ```
 
-### Use Case Diagram
+The Skin Study service provides a curated dermatology knowledge base used by the AI Dermatology Expert. Entries capture category/subcategory, title, rich content, keywords for search, and full source citations, plus verification status and update timestamps. There are no direct foreign-key relations to users or other services; instead, this collection is retrieved via text search and vector RAG (vectorService) to ground AI answers with authoritative references.
 
+### UML Diagrams
 
+#### 1. Class Diagram – Core Domain Model
 
-### Activity Diagram – Customer Purchase Flow
+```mermaid
+classDiagram
+    class User {
+        -_id: ObjectId
+        -username: String
+        -password: String
+        -role: String
+        -email: String
+        -phone: String
+        -address: String
+        -createdAt: Date
+        +register(): void
+        +login(): Token
+        +updateProfile(): void
+        +matchPassword(): Boolean
+    }
+
+    class Product {
+        -_id: ObjectId
+        -name: String
+        -price: Number
+        -description: String
+        -category: ObjectId
+        -stockQuantity: Number
+        -ingredients: Array
+        -skinType: Array
+        -benefits: Array
+        -tags: Array
+        -usage: String
+        -skinConcerns: Array
+        +getDetails(): Product
+        +updateStock(): void
+        +getRecommendations(): Array
+    }
+
+    class Order {
+        -_id: ObjectId
+        -user: ObjectId
+        -items: Array
+        -totalPrice: Number
+        -paymentStatus: String
+        -status: String
+        -orderDate: Date
+        -shippingLocation: String
+        -taxRate: Number
+        +createOrder(): Order
+        +updateStatus(): void
+        +calculateTotal(): Number
+        +trackOrder(): OrderStatus
+    }
+
+    class LiveStream {
+        -_id: ObjectId
+        -title: String
+        -description: String
+        -videoUrl: String
+        -streamUrl: String
+        -createdBy: ObjectId
+        -startTime: Date
+        -endTime: Date
+        -viewCount: Number
+        -isActive: Boolean
+        -pinnedProducts: Array
+        -chatMessages: Array
+        +startStream(): void
+        +endStream(): void
+        +pinProduct(): void
+        +getAnalytics(): Analytics
+    }
+
+    class ChatConversation {
+        -_id: ObjectId
+        -sessionId: String
+        -userId: ObjectId
+        -assignedStaff: ObjectId
+        -messages: Array
+        -isActive: Boolean
+        -isStaffChat: Boolean
+        -lastActivity: Date
+        +sendMessage(): Message
+        +escalateToStaff(): void
+        +getHistory(): Array
+        +closeConversation(): void
+    }
+
+    class EmailCampaign {
+        -_id: ObjectId
+        -name: String
+        -subject: String
+        -templateId: ObjectId
+        -createdBy: ObjectId
+        -targetAudience: String
+        -status: String
+        -scheduledAt: Date
+        -sentAt: Date
+        -analytics: Object
+        +createCampaign(): Campaign
+        +sendCampaign(): void
+        +trackAnalytics(): Analytics
+        +getOpenRate(): Number
+    }
+
+    class Employee {
+        -_id: ObjectId
+        -employeeId: String
+        -firstName: String
+        -lastName: String
+        -email: String
+        -department: String
+        -position: String
+        -manager: ObjectId
+        -salary: Object
+        -startDate: Date
+        +getDetails(): Employee
+        +updateSalary(): void
+        +assignManager(): void
+    }
+
+    class BusinessExpense {
+        -_id: ObjectId
+        -category: String
+        -amount: Number
+        -description: String
+        -date: Date
+        -vendor: String
+        -createdBy: ObjectId
+        -isRecurring: Boolean
+        +recordExpense(): void
+        +calculateTotal(): Number
+    }
+
+    class CashFlowTransaction {
+        -_id: ObjectId
+        -type: String
+        -category: String
+        -amount: Number
+        -orderId: ObjectId
+        -date: Date
+        -createdBy: ObjectId
+        +recordTransaction(): void
+        +getBalance(): Number
+    }
+
+    class FAQ {
+        -_id: ObjectId
+        -question: String
+        -answer: String
+        -category: String
+        -tags: Array
+        -isActive: Boolean
+        -priority: Number
+        +searchFAQ(): Array
+        +updateAnswer(): void
+    }
+
+    User "1" --> "*" Order : places
+    User "1" --> "*" LiveStream : creates
+    User "1" --> "*" EmailCampaign : creates
+    User "1" --> "*" ChatConversation : initiates
+    User "1" --> "*" BusinessExpense : records
+    User "1" --> "*" CashFlowTransaction : records
+    User "1" --> "*" Employee : manages
+    
+    Product "1" --> "*" Order : contains
+    Product "1" --> "*" LiveStream : pinned in
+    
+    Order "1" --> "*" CashFlowTransaction : generates
+    
+    LiveStream "1" --> "*" ChatConversation : has
+    
+    EmailCampaign "1" --> "*" FAQ : references
+```
+
+**Explanation:** This Class Diagram represents the core domain entities and their relationships. The User class is central, acting as the primary actor across all services. Products are managed in the E-Commerce service and referenced in Orders and LiveStreams. Orders generate financial transactions, while LiveStreams facilitate real-time customer engagement. EmailCampaigns manage marketing communications, and Employees represent the organizational structure. The diagram shows how entities interact through one-to-many relationships, establishing clear ownership and data flow patterns.
+
+---
+
+#### 2. Use Case Diagram – Customer and Admin Interactions
+
+```mermaid
+usecase UC1 as "Browse Products"
+usecase UC2 as "View Product Details"
+usecase UC3 as "Add to Cart"
+usecase UC4 as "Checkout & Pay"
+usecase UC5 as "Track Order"
+usecase UC6 as "Chat with AI"
+usecase UC7 as "Escalate to Staff"
+usecase UC8 as "View Recommendations"
+usecase UC9 as "Attend Livestream"
+usecase UC10 as "Subscribe Newsletter"
+
+usecase UC11 as "Manage Products"
+usecase UC12 as "View Analytics"
+usecase UC13 as "Create Livestream"
+usecase UC14 as "Manage Orders"
+usecase UC15 as "Respond to Chat"
+usecase UC16 as "Create Campaign"
+usecase UC17 as "Manage Staff"
+usecase UC18 as "View Finance Reports"
+
+actor Customer
+actor Admin
+actor System
+
+Customer --> UC1
+Customer --> UC2
+Customer --> UC3
+Customer --> UC4
+Customer --> UC5
+Customer --> UC6
+Customer --> UC7
+Customer --> UC8
+Customer --> UC9
+Customer --> UC10
+
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC16
+Admin --> UC17
+Admin --> UC18
+
+System --> UC6
+System --> UC8
+System --> UC12
+System --> UC18
+```
+
+**Explanation:** This Use Case Diagram illustrates the primary interactions between Customers, Admins, and the System. Customers engage in shopping activities (browsing, viewing details, cart management, checkout), order tracking, and communication (AI chat, staff escalation, livestream attendance). Admins perform operational tasks including product management, analytics review, livestream creation, order fulfillment, customer support, marketing campaigns, staff management, and financial reporting. The System provides automated support through AI recommendations, analytics aggregation, and financial calculations. This diagram establishes the scope of functionality and key user interactions.
+
+---
+
+#### 3. Activity Diagram – Customer Purchase Flow
+
+```mermaid
+activity
+    start
+    :Customer Browses Products;
+    :Customer Views Product Details;
+    if (Interested?) then
+        :Add Product to Cart;
+        if (Continue Shopping?) then
+            :Back to Browse;
+        else
+            :Proceed to Checkout;
+        endif
+    else
+        :Exit;
+        stop
+    endif
+    
+    :Enter Shipping Address;
+    :Select Payment Method;
+    :Review Order Summary;
+    
+    if (Confirm Order?) then
+        :Process Payment via VNPay;
+        if (Payment Successful?) then
+            :Create Order Record;
+            :Send Confirmation Email;
+            :Display Order Tracking;
+            :Customer Receives Order;
+            :Order Completed;
+            stop
+        else
+            :Payment Failed;
+            :Display Error Message;
+            :Retry Payment;
+        endif
+    else
+        :Cancel Order;
+        :Cart Saved;
+        stop
+    endif
+```
+
+**Explanation:** This Activity Diagram models the complete customer purchase flow from product discovery to order fulfillment. The flow begins with product browsing and detail viewing, followed by conditional logic for cart addition and checkout initiation. The customer then provides shipping and payment information, reviews the order, and confirms. The system processes payment through VNPay; if successful, an order record is created, confirmation email is sent, and order tracking is displayed. If payment fails, the customer can retry. The diagram captures decision points (Interested?, Continue Shopping?, Confirm Order?, Payment Successful?) and alternative paths (cancellation, payment retry), representing the complete customer journey.
+
+---
+
+#### 4. Sequence Diagram – AI Chat with Product Recommendation
+
+```mermaid
+sequenceDiagram
+    participant Customer
+    participant WebApp as Web/Mobile App
+    participant APIGateway as REST API Gateway
+    participant ChatService as Communication Service
+    participant GeminiAPI as Google Gemini API
+    participant ProductDB as Product Database
+    participant MongoDB as MongoDB
+
+    Customer->>WebApp: Send Chat Message
+    WebApp->>APIGateway: POST /chat/ai (with JWT token)
+    APIGateway->>APIGateway: Verify JWT Token
+    APIGateway->>ChatService: Route to Chat Handler
+    
+    ChatService->>MongoDB: Query FAQ Database
+    MongoDB-->>ChatService: Return Matching FAQs
+    
+    ChatService->>ProductDB: Search Products by Keywords
+    ProductDB-->>ChatService: Return Matching Products
+    
+    ChatService->>GeminiAPI: Send Message + Context + Products
+    GeminiAPI->>GeminiAPI: Process with AI Model
+    GeminiAPI-->>ChatService: Return AI Response + Recommendations
+    
+    ChatService->>MongoDB: Save ChatConversation
+    MongoDB-->>ChatService: Conversation Saved
+    
+    ChatService-->>APIGateway: Return Response
+    APIGateway-->>WebApp: JSON Response
+    WebApp->>Customer: Display AI Response + Product Recommendations
+```
+
+**Explanation:** This Sequence Diagram illustrates the AI-powered chat interaction flow. When a customer sends a message, the Web/Mobile app transmits it to the REST API Gateway with JWT authentication. The gateway verifies the token and routes the request to the Communication Service. The service simultaneously queries the FAQ database and searches the product catalog for relevant context. This context, along with the customer message and conversation history, is sent to Google Gemini API, which generates an intelligent response with product recommendations. The entire conversation is persisted to MongoDB for audit trails and future reference. The response flows back through the API Gateway to the frontend, where AI-generated recommendations and answers are displayed to the customer.
+
+---
+
+#### 5. Sequence Diagram – Livestream with Product Pinning and Purchase
+
+```mermaid
+sequenceDiagram
+    participant Admin
+    participant WebApp as Admin Dashboard
+    participant APIGateway as REST API Gateway
+    participant LivestreamService as Livestream Service
+    participant WebSocketServer as WebSocket Server
+    participant Customer
+    participant CustomerApp as Customer App
+    participant EcommerceService as E-Commerce Service
+    participant MongoDB as MongoDB
+
+    Admin->>WebApp: Create Livestream
+    WebApp->>APIGateway: POST /livestreams
+    APIGateway->>LivestreamService: Create Stream Record
+    LivestreamService->>MongoDB: Save Livestream Document
+    MongoDB-->>LivestreamService: Stream Created
+    
+    Admin->>WebApp: Start Broadcasting
+    WebApp->>WebSocketServer: Connect to Stream
+    WebSocketServer->>MongoDB: Update isActive = true
+    
+    Customer->>CustomerApp: Join Livestream
+    CustomerApp->>WebSocketServer: Connect to Stream
+    WebSocketServer-->>CustomerApp: Stream Video Feed
+    
+    Admin->>WebApp: Pin Product to Stream
+    WebApp->>APIGateway: POST /livestreams/:id/pin-product
+    APIGateway->>LivestreamService: Add Product to pinnedProducts[]
+    LivestreamService->>MongoDB: Update Livestream
+    
+    WebSocketServer->>CustomerApp: Broadcast Pinned Product
+    CustomerApp->>Customer: Display Pinned Product
+    
+    Customer->>CustomerApp: Click "Add to Cart"
+    CustomerApp->>APIGateway: POST /cart/items
+    APIGateway->>EcommerceService: Add to Cart
+    EcommerceService->>MongoDB: Update Cart
+    
+    Customer->>CustomerApp: Proceed to Checkout
+    CustomerApp->>APIGateway: POST /cart/checkout
+    APIGateway->>EcommerceService: Process Order
+    EcommerceService->>MongoDB: Create Order Record
+    
+    Admin->>WebApp: View Stream Analytics
+    WebApp->>APIGateway: GET /livestreams/:id/analytics
+    APIGateway->>LivestreamService: Aggregate Analytics
+    LivestreamService-->>WebApp: Return Metrics
+```
+
+**Explanation:** This Sequence Diagram demonstrates the complete livestream experience with product pinning and purchase integration. An admin creates a livestream, starts broadcasting via WebSocket connection, and pins products during the stream. Customers join the livestream, receive the video feed and pinned product notifications in real-time via WebSocket. When a customer clicks on a pinned product, it's added to their cart and they can proceed to checkout. The E-Commerce Service processes the order, and the admin can view comprehensive analytics including viewer count, engagement metrics, and conversion data. This diagram shows the seamless integration between livestream broadcasting, real-time notifications, and e-commerce transactions.
+
+---
+
+#### 6. Sequence Diagram – Email Campaign Creation and Delivery
+
+```mermaid
+sequenceDiagram
+    participant Admin
+    participant AdminDash as Admin Dashboard
+    participant APIGateway as REST API Gateway
+    participant MarketingService as Marketing Service
+    participant EmailService as Email Service
+    participant SMTPServer as SMTP Server
+    participant MongoDB as MongoDB
+    participant Customer
+    participant CustomerEmail as Customer Email
+
+    Admin->>AdminDash: Create Email Campaign
+    AdminDash->>APIGateway: POST /campaigns
+    APIGateway->>MarketingService: Create Campaign
+    MarketingService->>MongoDB: Save EmailCampaign
+    
+    Admin->>AdminDash: Select Email Template
+    AdminDash->>APIGateway: GET /templates/:id
+    APIGateway->>MarketingService: Fetch Template
+    MarketingService->>MongoDB: Query EmailTemplate
+    MongoDB-->>MarketingService: Return Template
+    
+    Admin->>AdminDash: Define Target Segment
+    AdminDash->>APIGateway: POST /segments
+    APIGateway->>MarketingService: Create Segment
+    MarketingService->>MongoDB: Query NewsletterSubscriptions
+    MongoDB-->>MarketingService: Return Matching Subscribers
+    
+    Admin->>AdminDash: Schedule/Send Campaign
+    AdminDash->>APIGateway: POST /campaigns/:id/send
+    APIGateway->>EmailService: Trigger Send
+    
+    EmailService->>MongoDB: Get Subscriber List
+    MongoDB-->>EmailService: Return Subscribers
+    
+    loop For Each Subscriber
+        EmailService->>SMTPServer: Send Email
+        SMTPServer->>CustomerEmail: Deliver Email
+        EmailService->>MongoDB: Create EmailAnalytics Record
+    end
+    
+    Customer->>CustomerEmail: Open Email
+    EmailService->>MongoDB: Record Open Event
+    
+    Customer->>CustomerEmail: Click Link
+    EmailService->>MongoDB: Record Click Event
+    
+    Admin->>AdminDash: View Campaign Analytics
+    AdminDash->>APIGateway: GET /campaigns/:id/analytics
+    APIGateway->>MarketingService: Aggregate Analytics
+    MarketingService->>MongoDB: Query EmailAnalytics
+    MongoDB-->>MarketingService: Return Metrics
+    MarketingService-->>AdminDash: Display Open Rate, Click Rate, Conversions
+```
+
+**Explanation:** This Sequence Diagram illustrates the complete email marketing campaign lifecycle. An admin creates a campaign, selects a template, and defines a target audience segment based on subscriber criteria. The Marketing Service queries the database to identify matching subscribers. When the campaign is sent, the Email Service retrieves the subscriber list and uses SMTP to deliver emails to each recipient. The system tracks engagement metrics: opens, clicks, and unsubscribes are recorded in the EmailAnalytics collection. The admin can then view comprehensive campaign performance metrics including open rates, click-through rates, and conversion data. This diagram demonstrates the integration between marketing, email delivery, and analytics services.
+
+---
+
+#### 7. Component Diagram – Service Architecture
+
+```mermaid
+graph TB
+    subgraph ClientLayer["Client Layer"]
+        WebPortal["Web Portal<br/>(Vue.js 3)"]
+        MobileApp["Mobile App<br/>(React Native)"]
+        AdminDash["Admin Dashboard<br/>(Vue.js 3)"]
+    end
+
+    subgraph APILayer["API Gateway Layer"]
+        APIGateway["REST API Gateway<br/>(Express.js)<br/>- Routing<br/>- Auth Middleware<br/>- CORS<br/>- Rate Limiting"]
+    end
+
+    subgraph ServiceLayer["Backend Services Layer"]
+        AuthService["Auth Service<br/>- User Registration<br/>- Login/Logout<br/>- JWT Generation<br/>- Password Management"]
+        
+        EcommerceService["E-Commerce Service<br/>- Product Catalog<br/>- Shopping Cart<br/>- Order Management<br/>- Inventory"]
+        
+        LivestreamService["Livestream Service<br/>- Stream Management<br/>- Product Pinning<br/>- Viewer Analytics<br/>- Chat Integration"]
+        
+        CommunicationService["Communication Service<br/>- FAQ Management<br/>- AI Chat (Gemini)<br/>- Staff Escalation<br/>- Conversation History"]
+        
+        MarketingService["Marketing Service<br/>- Email Campaigns<br/>- Audience Segmentation<br/>- Template Management<br/>- Campaign Analytics"]
+        
+        AnalyticsService["Analytics Service<br/>- Sales Reports<br/>- Customer Analytics<br/>- Performance Metrics<br/>- Dashboard Data"]
+        
+        FinanceService["Finance Service<br/>- Expense Tracking<br/>- Cash Flow Analysis<br/>- Financial Reports<br/>- Profit Calculation"]
+        
+        HRService["HR Service<br/>- Employee Management<br/>- Staff Records<br/>- Performance Reviews<br/>- Payroll"]
+    end
+
+    subgraph DataLayer["Data Layer"]
+        MongoDB["MongoDB Atlas<br/>- User Collection<br/>- Product Collection<br/>- Order Collection<br/>- Livestream Collection<br/>- Chat Collection<br/>- Campaign Collection<br/>- Employee Collection<br/>- Finance Collection"]
+    end
+
+    subgraph ExternalServices["External Services"]
+        GeminiAPI["Google Gemini API<br/>(AI Engine)"]
+        VNPayAPI["VNPay API<br/>(Payment Gateway)"]
+        SMTPServer["SMTP Server<br/>(Email Delivery)"]
+        WebSocketServer["WebSocket Server<br/>(Real-time Communication)"]
+    end
+
+    WebPortal -->|HTTP/REST| APIGateway
+    MobileApp -->|HTTP/REST| APIGateway
+    AdminDash -->|HTTP/REST| APIGateway
+    
+    APIGateway -->|Routes| AuthService
+    APIGateway -->|Routes| EcommerceService
+    APIGateway -->|Routes| LivestreamService
+    APIGateway -->|Routes| CommunicationService
+    APIGateway -->|Routes| MarketingService
+    APIGateway -->|Routes| AnalyticsService
+    APIGateway -->|Routes| FinanceService
+    APIGateway -->|Routes| HRService
+    
+    AuthService -->|CRUD| MongoDB
+    EcommerceService -->|CRUD| MongoDB
+    LivestreamService -->|CRUD| MongoDB
+    CommunicationService -->|CRUD| MongoDB
+    MarketingService -->|CRUD| MongoDB
+    AnalyticsService -->|Read| MongoDB
+    FinanceService -->|CRUD| MongoDB
+    HRService -->|CRUD| MongoDB
+    
+    CommunicationService -->|API Call| GeminiAPI
+    EcommerceService -->|API Call| VNPayAPI
+    MarketingService -->|API Call| SMTPServer
+    LivestreamService -->|WebSocket| WebSocketServer
+    CommunicationService -->|WebSocket| WebSocketServer
+```
+
+**Explanation:** This Component Diagram illustrates the layered architecture of the Wrencos platform. The Client Layer contains three frontend applications (Web Portal, Mobile App, Admin Dashboard) that communicate exclusively through the REST API Gateway. The API Gateway layer handles cross-cutting concerns including routing, authentication middleware, CORS, and rate limiting. The Backend Services Layer contains eight independent services, each responsible for a specific business domain. All services interact with MongoDB Atlas as the single source of truth for data persistence. External services (Google Gemini, VNPay, SMTP, WebSocket) are integrated at the service level for specialized functionality. This architecture ensures separation of concerns, scalability, and maintainability.
+
+---
+
+#### 8. State Diagram – Order Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending: Customer Creates Order
+    
+    Pending --> Processing: Payment Verified
+    Pending --> Cancelled: Payment Failed
+    Pending --> Cancelled: Customer Cancels
+    
+    Processing --> Packed: Order Confirmed
+    Processing --> Cancelled: System Error
+    
+    Packed --> Shipped: Warehouse Ships
+    Packed --> Cancelled: Out of Stock
+    
+    Shipped --> InTransit: Carrier Picks Up
+    
+    InTransit --> Delivered: Package Arrives
+    InTransit --> Delayed: Delivery Issue
+    
+    Delayed --> Delivered: Issue Resolved
+    Delayed --> Returned: Customer Requests Return
+    
+    Delivered --> Completed: Delivery Confirmed
+    Delivered --> Returned: Customer Initiates Return
+    
+    Returned --> ReturnProcessing: Return Approved
+    
+    ReturnProcessing --> Refunded: Refund Processed
+    
+    Refunded --> [*]
+    Cancelled --> [*]
+    Completed --> [*]
+```
+
+**Explanation:** This State Diagram models the complete lifecycle of an order from creation to completion or cancellation. An order begins in the Pending state after customer creation. Upon successful payment verification, it transitions to Processing. From Processing, it moves to Packed once confirmed. The Packed state transitions to Shipped when the warehouse processes it. During transit, the order can be Delayed due to logistics issues, which can be resolved or result in a return. Once Delivered, the order reaches Completed state or transitions to Returned if the customer initiates a return. Returns follow a separate flow through ReturnProcessing to Refunded. Cancelled orders can occur at multiple points (payment failure, customer cancellation, system errors, stock issues) and terminate the flow. This diagram captures all possible order states and transitions, enabling robust order management and customer communication.
+
+---
+
+#### 9. Deployment Diagram – Infrastructure Architecture
+
+```mermaid
+graph TB
+    subgraph Cloud["Cloud Infrastructure (AWS/GCP)"]
+        subgraph Frontend["Frontend Hosting"]
+            WebServer["Web Server<br/>(Vue.js SPA)<br/>Nginx/Vercel"]
+            MobileServer["Mobile App<br/>(React Native)<br/>Expo/App Store"]
+        end
+        
+        subgraph Backend["Backend Hosting"]
+            APIServer["API Server<br/>(Node.js/Express)<br/>Docker Container"]
+            WebSocketServer["WebSocket Server<br/>(Node.js ws)<br/>Docker Container"]
+        end
+        
+        subgraph Database["Database Tier"]
+            MongoDB["MongoDB Atlas<br/>Managed Database<br/>Replication & Backup"]
+            VectorDB["Vector Database<br/>(Qdrant)<br/>RAG Storage"]
+        end
+        
+        subgraph Storage["Storage Services"]
+            S3["Object Storage<br/>(AWS S3/GCP Storage)<br/>Product Images<br/>User Avatars<br/>Livestream Videos"]
+            CDN["Content Delivery<br/>Network (CloudFront)<br/>Image Optimization<br/>Video Streaming"]
+        end
+    end
+    
+    subgraph External["External Services"]
+        GeminiAPI["Google Gemini API"]
+        VNPayAPI["VNPay Payment API"]
+        SMTPServer["Email SMTP Server"]
+        AgoraSDK["Agora SDK<br/>(Livestream)"]
+    end
+    
+    subgraph Monitoring["Monitoring & Logging"]
+        CloudWatch["CloudWatch<br/>Performance Metrics"]
+        LogService["Log Aggregation<br/>Error Tracking"]
+    end
+    
+    WebServer -->|HTTPS| APIServer
+    MobileServer -->|HTTPS| APIServer
+    
+    APIServer -->|Query/Update| MongoDB
+    WebSocketServer -->|Query/Update| MongoDB
+    
+    APIServer -->|Store/Retrieve| S3
+    S3 -->|Distribute| CDN
+    
+    APIServer -->|API Call| GeminiAPI
+    APIServer -->|API Call| VNPayAPI
+    APIServer -->|SMTP| SMTPServer
+    WebSocketServer -->|API Call| AgoraSDK
+    
+    APIServer -->|Metrics| CloudWatch
+    APIServer -->|Logs| LogService
+    WebSocketServer -->|Metrics| CloudWatch
+    WebSocketServer -->|Logs| LogService
+```
+
+**Explanation:** This Deployment Diagram illustrates the cloud infrastructure architecture for the Wrencos platform. Frontend applications (Web and Mobile) are hosted on cloud platforms with CDN distribution. The backend consists of containerized Node.js services (API Server and WebSocket Server) running on cloud infrastructure. MongoDB Atlas provides managed database services with replication and automated backups. Object storage (S3) and CDN services handle media distribution for product images, user avatars, and livestream videos. External services (Google Gemini, VNPay, SMTP, Agora) are integrated via APIs. Monitoring and logging services track performance metrics and errors. This architecture ensures scalability, reliability, and high availability for the platform.
+
+---
+
+#### 10. Data Flow Diagram – Customer Purchase to Analytics
+
+```mermaid
+graph LR
+    Customer["Customer"]
+    WebApp["Web/Mobile App"]
+    APIGateway["API Gateway"]
+    
+    subgraph Services["Backend Services"]
+        EcommService["E-Commerce<br/>Service"]
+        PaymentService["Payment<br/>Service"]
+        AnalyticsService["Analytics<br/>Service"]
+        EmailService["Email<br/>Service"]
+    end
+    
+    subgraph Data["Data Storage"]
+        OrderDB["Order<br/>Collection"]
+        AnalyticsDB["Analytics<br/>Collection"]
+        EmailDB["Email<br/>Collection"]
+    end
+    
+    Dashboard["Admin<br/>Dashboard"]
+    
+    Customer -->|Browse & Add to Cart| WebApp
+    WebApp -->|POST /cart/checkout| APIGateway
+    APIGateway -->|Route| EcommService
+    
+    EcommService -->|Process Payment| PaymentService
+    PaymentService -->|Verify| VNPay["VNPay<br/>Gateway"]
+    VNPay -->|Payment Status| PaymentService
+    
+    PaymentService -->|Create Order| EcommService
+    EcommService -->|Save Order| OrderDB
+    
+    EcommService -->|Send Confirmation| EmailService
+    EmailService -->|Save Email Log| EmailDB
+    EmailService -->|Send via SMTP| SMTP["SMTP<br/>Server"]
+    
+    OrderDB -->|Aggregate Data| AnalyticsService
+    AnalyticsService -->|Store Metrics| AnalyticsDB
+    
+    AnalyticsDB -->|Query| Dashboard
+    Dashboard -->|Display| Admin["Admin User"]
+```
+
+**Explanation:** This Data Flow Diagram traces the complete flow of data from a customer purchase through to analytics reporting. A customer browses products and initiates checkout via the Web/Mobile app. The API Gateway routes the request to the E-Commerce Service, which processes payment through the Payment Service and VNPay gateway. Upon successful payment, an order is created and stored in the Order Collection. The E-Commerce Service triggers the Email Service to send a confirmation email, which is logged in the Email Collection. The Analytics Service aggregates order data and stores metrics in the Analytics Collection. Admins query the Analytics Collection through the Admin Dashboard to view business intelligence and performance metrics. This diagram illustrates the complete data pipeline from transaction to insight.
+
 
 
 
