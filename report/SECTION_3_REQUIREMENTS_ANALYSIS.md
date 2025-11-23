@@ -7,15 +7,14 @@
 | Item | Details |
 |---|---|
 | Approach | Mixed-methods (quantitative surveys + qualitative interviews) |
-| Survey instrument | Google Forms (25 questions, distributed via beauty business communities and LinkedIn groups) |
-| Responses & timeframe | 127 responses over 12 weeks |
-| Demographics — Gender | 62% female, 38% male |
-| Demographics — Age | 20–55 (mean 38.4) |
-| Demographics — Business size | 1–50 employees (mean 8.3) |
-| Demographics — Revenue | USD 100K–2M (median USD 450K) |
-| Interviews | 6 in-depth interviews (45–60 minutes each): 2 subscription service founders, 2 independent skincare retailers, 2 luxury cosmetics managers |
-| Sampling | Purposive selection representing diverse SME beauty business models |
-
+| Survey instrument | Google Forms (25 questions, distributed to SME beauty businesses communities, industry forums and end-use customers via online communities) |
+| Responses & timeframe | 127 responses (business owners/managers + customers) collected over 12 weeks |
+| Demographics — Gender | 62% female, 38% male (combined business and customer respondents) |
+| Demographics — Age | 25–55 (mean 38.4) across both respondent groups |
+| Demographics — Business size | For business respondents: 1–50 employees (mean 8.3) |
+| Demographics — Revenue | For business respondents: USD 100K–2M (median USD 450K) |
+| Interviews | 7 in-depth interviews (45–60 minutes each): 2 independent skincare retailers, 2 beauty business owners, 3 end-use customers |
+| Sampling | Purposive sampling to capture variation across SME beauty businesses and diverse customer perspectives |
 
 ## 3.2 Market Analysis and User Needs
 
@@ -80,6 +79,98 @@ This data validates the platform's three core pillars: **integration, personaliz
 
 **Detailed User Personas:**
 
+### Persona B1 — Amelia Nguyen (Female, 34)
+- Role: Independent Skincare Retailer Owner (SME)
+- Image: [Stock photo placeholder — search keywords: "female small business owner beauty shop, 30s, Asian"]
+- Bio: Amelia runs a boutique skincare store with 8 employees. She carries 600+ SKUs (Stock Keeping Unit) and sells via a Shopify site plus in-store POS (Point of Sale). Her day is split between supplier calls, staff scheduling, TikTok/Instagram content, and end-of-day reconciliation. She’s tech-capable but tired of juggling scattered tools.
+- Goals:
+  - Consolidate inventory, orders, CRM, and marketing into one platform to cut costs and save time.
+  - Launch weekly live shopping events to increase AOV (Average Order Value) and clear seasonal stock.
+  - Get real-time analytics (revenue, cohorts, top SKUs) and simple dashboards for staff.
+  - Personalize campaigns using customer segmentation and AI-powered recommendations.
+- Frustrations:
+  - Platform fragmentation (Shopify + Klaviyo + QuickBooks + streaming apps) causes double entry and errors.
+  - Complex UIs make onboarding new staff slow and error-prone.
+  - No native live commerce; hacks are unstable with poor analytics.
+- Motivations:
+  - ROI (Return on Investment) and time saved; wants a calm, reliable stack that scales peak seasons.
+  - Building brand trust with credible, dermatology-aligned guidance.
+- Key platform features she’ll use:
+  - Consolidated inventory/orders (ADM_01, ADM_07)
+  - Real-time analytics dashboards (ADM_02)
+  - Customer segmentation and campaigns (ADM_03)
+  - Live streaming commerce setup + engagement analytics (USR_05, ADM_04/ADM_08)
+  - AI recommendations and AI assistant (USR_01, USR_06)
+  - Configure AI dermatology expert; review/export consultation insights (ADM_09A, ADM_09B)
+  - Data migration tools and easy onboarding (Operational Barriers → addressed)
+  - Role-based access control for staff (ADM_05)
+  - Financial reporting (ADM_06)
+  - Employee HR records and document management (ADM_10)
+
+### Persona B2 — Marcus Johnson (Male, 42)
+- Role: Founder, Subscription Skincare Startup
+- Image: [Stock photo placeholder — search keywords: "male tech founder 40s office"]
+- Bio: Marcus runs a DTC (Direct to Consumer) subscription brand with ~5,000 active subscribers and a lean team of 6. He tracks CAC/LTV (Lifetime Value to Customer Acquisition Cost Ratio), churn, and cohorts in spreadsheets. He’s comfortable with APIs but doesn’t have a full data team and needs pragmatic automation.
+- Goals:
+  - Reduce churn with personalized AI routines and timely nudges.
+  - Centralize analytics for cohort/retention without stitching five exports.
+  - Standardize live events for launches and education, with conversion tracking.
+  - Implement access control and audit logs as the team scales.
+- Frustrations:
+  - Siloed data and unreliable attribution; manual reporting every week.
+  - Migrating data is risky and time-consuming; previous attempts caused outages.
+  - Fragile streaming overlays and no unified measurement of event ROI.
+- Motivations:
+  - Investor readiness and operational excellence; wants crisp dashboards and predictable growth levers.
+  - Reducing tool bloat while maintaining security/compliance.
+- Key platform features he’ll use:
+  - Unified analytics/dashboarding (ADM_02) and financial reporting (ADM_06)
+  - AI recommendations + dermatologist-aligned guidance (USR_01, USR_06A/06B)
+  - Customer segmentation and lifecycle campaigns (ADM_03)
+  - Live streaming commerce with product pins + viewer analytics (USR_05, ADM_04/ADM_08)
+  - Data migration assistance + tooling (Operational Barriers → addressed)
+  - RBAC/least-privilege access (ADM_05) and auditability (Security NFRs)
+
+### Persona C1 — Zara Lee (Female, 22)
+- Role: End-use Customer; College senior, budget-conscious
+- Image: [Stock photo placeholder — search keywords: "female student 20s laptop skincare"]
+- Bio: Zara juggles classes, a part-time job, and social content. She wants clear skin for confidence on camera. She’s overwhelmed by options and wary of overhyped products.
+- Goals:
+  - Get a simple, affordable routine that works for acne and sensitivity.
+  - Quick answers via AI chat, with ingredient clarity and usage steps.
+  - Try live shopping Q&As for tips and deals before buying.
+- Frustrations:
+  - Endless scrolling and inconsistent advice; too many conflicting reviews.
+  - Complicated checkouts and shipping uncertainty.
+- Motivations:
+  - Visible results and social validation; wants to feel informed without wasting time.
+- Key platform features she’ll use:
+  - AI dermatology consultation + AI recommendations (USR_06A/06B, USR_01)
+  - Product search with ingredient filters (USR_02)
+  - Live shopping with chat and product pins (USR_05)
+  - Secure checkout, order tracking, and notifications (USR_03, USR_04)
+  - Reviews and routine builder for consistency (USR_08, USR_10)
+
+### Persona C2 — Priya Desai (Female, 40)
+- Role: End-use Customer; Senior Manager, time-poor, quality-focused
+- Image: [Stock photo placeholder — search keywords: "professional woman 40s home office skincare"]
+- Bio: Priya leads a busy team and wants a high-efficacy, low-irritation regimen. She’s willing to pay for clinical credibility and convenience, but expects privacy and transparency.
+- Goals:
+  - Confidently choose products suited for aging and hyperpigmentation without irritation.
+  - See dermatologist-aligned guidance with confidence scores and disclaimers.
+  - Reorder favorites quickly and receive curated email recommendations.
+- Frustrations:
+  - Hidden ingredients, vague claims, and generic suggestions.
+  - Fragmented purchase history across stores; reordering is annoying.
+- Motivations:
+  - Safety, efficacy, and time saved; values clear, professional UX.
+- Key platform features she’ll use:
+  - Ingredient transparency + compatibility filters (USR_02)
+  - AI dermatology expert with confidence scores and safety disclaimers (USR_06A/06B; NF_11)
+  - Purchase history and easy reorders (USR_07)
+  - Email recommendations and exclusive offers (USR_09)
+  - Secure checkout and reliable order tracking (USR_03, USR_04)
+
 
 
 ---
@@ -142,3 +233,67 @@ This data validates the platform's three core pillars: **integration, personaliz
 
 ---
 
+## Appendix A: Survey Instrument (Google Forms)
+
+Overview and branching logic
+- Audience: SME beauty business owners/managers and end-use customers
+- Total questions: 25
+- Branching: Role-based routing after Q2. If Business → Section 2A; if Customer → Section 2B.
+- Consent routing: If Q1 = "I do not consent" → End (Submit)
+
+Section 0 — Intro & Consent (All)
+
+| Q# | Type | Audience | Prompt | Options | Required | Logic |
+|---|---|---|---|---|---|---|
+| Q1 | Multiple choice | All | I consent to participate in this anonymous survey. | I consent; I do not consent | Yes | If "I do not consent" → End |
+
+Section 1 — Screening & Demographics (All)
+
+| Q# | Type | Audience | Prompt | Options | Required | Logic |
+|---|---|---|---|---|---|---|
+| Q2 | Multiple choice | All | Your role | Business owner/manager; End-use customer | Yes | Go to section based on answer |
+| Q3 | Multiple choice | All | Gender | Female; Male; Prefer to self-describe; Prefer not to say | No | If self-describe → short answer |
+| Q4 | Multiple choice | All | Age | 18–24; 25–34; 35–44; 45–55; 56+ | Yes | — |
+| Q5 | Multiple choice + short answer | All | Willing to be contacted for a short follow-up interview? | Yes (email below); No | No | If Yes → Short answer email |
+
+Section 2A — Business respondents (Shown if Q2 = Business owner/manager)
+
+| Q# | Type | Audience | Prompt | Options | Required |
+|---|---|---|---|---|---|
+| Q6 | Multiple choice | Business | Company size (employees) | 1; 2–5; 6–10; 11–25; 26–50; 51+ | Yes |
+| Q7 | Multiple choice | Business | Annual revenue (USD) | <100K; 100K–249K; 250K–499K; 500K–999K; 1M–2M; >2M; Prefer not to say | Yes |
+| Q8 | Multiple choice | Business | Weekly platforms used for operations | 1–2; 3–4; 5–6; 7–8; 9+ | Yes |
+| Q9 | Multiple choice | Business | Monthly software spend (USD) | <250; 250–499; 500–999; 1,000–1,999; 2,000–2,999; 3,000+ | Yes |
+| Q10 | Multiple choice | Business | Daily time switching between systems | <1 hour; 1–2 hours; 2–3 hours; 3–4 hours; >4 hours | Yes |
+| Q11 | Linear scale (1–5) | Business | Satisfaction with current tools’ UI/UX | 1=Very dissatisfied … 5=Very satisfied | Yes |
+| Q12 | Grid (Likert 1–5) | Business | Interest in potential features | Rows: AI derm consultation; AI recommendations; Live shopping; Unified analytics; Customer segmentation; Data migration tools. Cols: 1–5 | Yes |
+| Q13 | Multiple choice | Business | Willingness to pay premium for clinical-grade guidance | Yes; No; Depends on value/pricing | Yes |
+| Q14 | Linear scale (1–5) | Business | Likelihood to migrate to an integrated alternative | 1=Very unlikely … 5=Very likely | Yes |
+| Q15 | Grid (Likert 1–5) | Business | Barriers to adopting a new platform | Rows: Setup complexity; Migration difficulty; Security/compliance; Staff resistance; Lack of native live streaming; Platform fragmentation. Cols: 1–5 | Yes |
+
+Section 2B — End-use customers (Shown if Q2 = End-use customer)
+
+| Q# | Type | Audience | Prompt | Options | Required |
+|---|---|---|---|---|---|
+| Q6 | Multiple choice | Customer | Purchase frequency (skincare/cosmetics) | Weekly; 2–3 times/month; Monthly; Every 2–3 months; Less often | Yes |
+| Q7 | Multiple choice | Customer | Monthly spend on skincare/cosmetics (USD) | <25; 25–49; 50–99; 100–199; 200+ | Yes |
+| Q8 | Checkboxes | Customer | Where do you usually buy? | Brand sites; Marketplaces; Specialty retailers; Social/live shopping; In-store; Other | Yes |
+| Q9 | Multiple choice | Customer | Your skin type | Normal; Oily; Dry; Combination; Sensitive; Not sure; Prefer not to say | No |
+| Q10 | Checkboxes (limit 3) | Customer | Main skin concerns (select up to 3) | Acne; Sensitivity; Aging/fine lines; Hyperpigmentation; Dryness; Redness/rosacea; Pores/texture; Other | No |
+| Q11 | Linear scale (1–5) | Customer | Satisfaction with current personalization | 1=Very dissatisfied … 5=Very satisfied | Yes |
+| Q12 | Linear scale (1–5) | Customer | Trust in AI-based dermatology guidance | 1=Do not trust … 5=Trust completely | Yes |
+| Q13 | Linear scale (1–5) | Customer | Interest in live shopping with experts | 1=Not interested … 5=Very interested | Yes |
+| Q14 | Multiple choice | Customer | Willingness to share skin profile for better recommendations | Yes; No; Maybe | Yes |
+| Q15 | Paragraph | Customer | Biggest frustration when shopping for skincare/cosmetics | Free text | No |
+
+Notes
+- Mark required questions accordingly. Use response validation for Q10 (customers) to limit to 3 selections.
+- Maintain anonymity; only Q5 may collect optional email.
+
+---
+
+## Appendix B: Google Forms Import (CSV for add-ons)
+
+The following CSV works with common Google Forms builder add-ons. Columns: section, qid, audience, type, title, options, required, logic.
+
+File: report/APPENDIX_GOOGLE_FORMS_SURVEY.csv
