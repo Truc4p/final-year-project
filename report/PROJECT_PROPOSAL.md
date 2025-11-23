@@ -48,13 +48,13 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 
 ## 5. Proposed Project Development and Methodology
 
-**Methodology:** The project employs Agile Scrum development, formalized in the Agile Manifesto (Beck et al., 2001), emphasizing iterative delivery, customer collaboration, and continuous learning. Two-week sprints structure development: Week 1 (Sprint Planning) defines backlog objectives prioritized via MoSCoW; Week 2 (Implementation & Daily Standups) delivers features with 15-minute synchronization meetings; Week 2 Conclusion (Sprint Review & Retrospective) demonstrates working increments and identifies improvements. Agile practices include continuous integration through daily Git commits, automated testing (Jest backend, Vitest frontend) targeting ≥70% code coverage for critical logic, and sprint-based delivery of working increments. Product backlog prioritized by business value; Definition of Done enforces code review, testing, documentation, and staging deployment before production.
+**Methodology:** The project employs Agile Scrum development, formalized in the Agile Manifesto (Beck et al., 2001), emphasizing iterative delivery, customer collaboration, and continuous learning. Two-week sprints structure development: Week 1 (Sprint Planning) defines backlog objectives prioritized via MoSCoW; Week 2 (Implementation & Daily Standups) delivers features with 15-minute synchronization meetings; Week 2 Conclusion (Sprint Review & Retrospective) demonstrates working increments and identifies improvements. Agile practices include continuous integration through daily Git commits, automated testing (Jest backend, Vitest frontend) targeting ≥70% code coverage for critical logic, and sprint-based delivery of working increments. Product backlog prioritized by business value; Definition of Done enforces code review, testing, documentation, and staging deployment before production. Over the 10-month project duration, approximately 20 two-week sprints enable comprehensive feature development with iterative refinement and quality assurance.
 
 **Tools and Technologies:** Backend uses Node.js and Express.js for event-driven I/O handling concurrent connections efficiently (Netflix achieved 70% startup time improvement with Node.js, Netflix Tech Blog 2023). Express middleware includes body-parser, cors, express-rate-limit, express-validator, morgan, and multer for request parsing, cross-origin handling, rate limiting, input validation, logging, and file uploads. MongoDB with Mongoose ORM provides schema flexibility and data validation. Qdrant vector database enables RAG (Retrieval-Augmented Generation) for context-aware AI responses with curated dermatology knowledge base (Lewis et al., 2020). Vue.js with Vite build tool, Tailwind CSS styling, Vue-router navigation, Axios HTTP client, Chart.js for dashboards, and Vue-i18n for internationalization. React Native with Expo tooling, React Navigation, AsyncStorage for persistence, React Native Vector Icons, Expo Image Picker, Expo Audio (for voice recording), and Expo Speech (for text-to-speech). Backend utilities include node-cron (task scheduling), nodemailer (email service), qrcode (QR generation), moment.js (date/time), qs (query parsing), and dotenv (configuration). Google Gemini AI integration (text, vision, and audio capabilities), Google Cloud Text-to-Speech, WebSocket for real-time communication, JWT for authentication, bcryptjs for password hashing, and Swagger/OpenAPI for API documentation.
 
 **Data Management:** Product data seeding creates representative beauty product catalogs for testing without real customer data privacy concerns. User data remains minimal during development—demonstrations function with simulated users. MongoDB Atlas provides cloud database hosting with automated backups and monitoring.
 
-**Development Plan:** Phase One (Weeks 1-3) comprises planning, requirements finalization, and technical validation. Phase Two (Weeks 4-10) implements core functionality: backend API, Vue.js frontend, mobile foundation, and feature modules. Phase Three (Weeks 11-14) adds advanced features (live streaming, business modules) and integration. Phase Four (Weeks 15-18) encompasses comprehensive testing, documentation, and deployment.
+**Development Plan:** Phase One (Weeks 1-4) comprises planning, requirements finalization, and technical validation. Phase Two (Weeks 5-18) implements core functionality: backend API, Vue.js frontend, mobile foundation, and feature modules. Phase Three (Weeks 19-32) adds advanced features (live streaming, business modules) and integration. Phase Four (Weeks 33-40) encompasses comprehensive testing, documentation, and deployment.
 
 ## 6. Project Scope and Feasibility
 
@@ -190,17 +190,19 @@ Out-of-scope: advanced payment gateway integration beyond basic structure, compl
 
 **Milestones and Timeline:**
 
-**Weeks 1-3 (Planning & Design):** Requirements finalization, system design, entity-relationship diagrams, API specifications, UI wireframes, technical validation through prototypes.
+**Weeks 1-4 (Planning & Design):** Requirements finalization, system design, entity-relationship diagrams, API specifications, UI wireframes, technical validation through prototypes, infrastructure setup, development environment configuration.
 
-**Weeks 4-5 (Backend Foundation):** Express.js application structure, MongoDB schemas, JWT authentication, core API endpoints, Swagger documentation.
+**Weeks 5-8 (Backend Foundation - Phase 1):** Express.js application structure, MongoDB schemas, JWT authentication, core API endpoints (auth, products, orders), Swagger documentation, database indexing strategy.
 
-**Weeks 6-7 (Frontend & Mobile Foundation):** Vue.js application initialization, component library, customer/admin interfaces, mobile app skeleton.
+**Weeks 9-12 (Frontend & Mobile Foundation):** Vue.js application initialization, component library, customer interface foundation, admin dashboard skeleton, React Native mobile app setup, navigation structure, responsive design implementation.
 
-**Weeks 8-10 (Feature Implementation):** AI chat integration, email marketing system, analytics dashboards, WebSocket infrastructure, database optimization.
+**Weeks 13-18 (Feature Implementation - Phase 1):** AI chat integration with Gemini API, email marketing system foundation, analytics dashboards (sales, product performance), WebSocket infrastructure setup, real-time communication testing, database optimization.
 
-**Weeks 11-14 (Advanced Features & Integration):** Live streaming implementation, business modules (finance, HR), mobile completion, comprehensive testing, security validation.
+**Weeks 19-24 (Advanced Features - Phase 1):** Live streaming implementation (video streaming, concurrent viewer support, real-time chat), business modules foundation (analytics, finance, HR), mobile app feature expansion, Qdrant vector database setup for RAG.
 
-**Weeks 15-18 (Testing, Documentation & Deployment):** Unit/integration/user acceptance testing, vulnerability scanning, production deployment, user documentation, project report.
+**Weeks 25-32 (Advanced Features - Phase 2 & Integration):** Skin Study feature with AI dermatology expert (text chat, voice chat, image analysis), business modules completion (marketing campaigns, segmentation, templates), mobile app completion for both customer and admin, comprehensive integration testing, security validation, performance optimization.
+
+**Weeks 33-40 (Testing, Documentation & Deployment):** Unit/integration/user acceptance testing across all modules, vulnerability scanning and security hardening, production deployment preparation, Docker containerization, comprehensive user documentation, technical documentation, project report, final quality assurance and bug fixes.
 
 ## 9. Expected Outcomes and Contributions
 
