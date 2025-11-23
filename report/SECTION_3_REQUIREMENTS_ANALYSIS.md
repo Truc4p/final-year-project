@@ -7,7 +7,7 @@
 | Item | Details |
 |---|---|
 | Approach | Mixed-methods (quantitative surveys + qualitative interviews) |
-| Survey instrument | Google Forms (25 questions, distributed to SME beauty businesses communities, industry forums and end-use customers via online communities) |
+| Survey instrument | Google Forms (25 questions, distributed to SME beauty businesses communities and end-use customers via online communities) |
 | Responses & timeframe | 127 responses (business owners/managers + customers) collected over 12 weeks |
 | Demographics — Gender | 62% female, 38% male (combined business and customer respondents) |
 | Demographics — Age | 25–55 (mean 38.4) across both respondent groups |
@@ -46,6 +46,7 @@
 | Limited personalization | 42% lack skin-type-based recommendations |
 | No native streaming | 31% cite absence of live shopping capability |
 | Lack of expert guidance | 56% report uncertainty about product suitability for their skin conditions |
+| Trial-and-error costs | Many customers report wasted time and money on unsuitable products and routines due to lack of trusted, educational guidance |
 | Migration propensity | 68% likely/very likely to migrate to an integrated alternative consolidating 5+ systems |
 
 **Operational Requirements (Table):**
@@ -73,6 +74,8 @@
 - **AI Recommendations (84%, M=4.3/5)**: Highest-rated feature overall; addresses "Limited personalization" frustration (42% lack skin-type recommendations)
 - **Live Streaming Commerce (76%, M=4.1/5)**: Significant demand; 31% cite absence of native streaming as frustration
 
+- **AI Skin Education & Source Transparency:** Qualitative interviews indicate customers want to study their skin with an AI dermatology expert that explains conditions and routines in plain language, cites reliable dermatology textbooks and peer-reviewed sources, and helps them avoid wasting time and money on unsuitable products or routines.
+
 This data validates the platform's three core pillars: **integration, personalization, and engagement**.
 
 **Operational Requirements Alignment:** Business operators prioritized consolidated inventory/orders (94%), real-time analytics (88%), and customer segmentation (82%). The 52% citing data migration difficulty as a barrier indicates the need for robust migration tools and support during onboarding.
@@ -99,7 +102,7 @@ This data validates the platform's three core pillars: **integration, personaliz
   - Consolidated inventory/orders (ADM_01, ADM_07)
   - Real-time analytics dashboards (ADM_02)
   - Customer segmentation and campaigns (ADM_03)
-  - Live streaming commerce setup + engagement analytics (USR_05, ADM_04/ADM_08)
+  - Live streaming commerce with product pins + viewer analytics (USR_05, ADM_04/ADM_08)
   - AI recommendations and AI assistant (USR_01, USR_06)
   - Configure AI dermatology expert; review/export consultation insights (ADM_09A, ADM_09B)
   - Data migration tools and easy onboarding (Operational Barriers → addressed)
@@ -107,38 +110,15 @@ This data validates the platform's three core pillars: **integration, personaliz
   - Financial reporting (ADM_06)
   - Employee HR records and document management (ADM_10)
 
-### Persona B2 — Marcus Johnson (Male, 42)
-- Role: Founder, Subscription Skincare Startup
-- Image: [Stock photo placeholder — search keywords: "male tech founder 40s office"]
-- Bio: Marcus runs a DTC (Direct to Consumer) subscription brand with ~5,000 active subscribers and a lean team of 6. He tracks CAC/LTV (Lifetime Value to Customer Acquisition Cost Ratio), churn, and cohorts in spreadsheets. He’s comfortable with APIs but doesn’t have a full data team and needs pragmatic automation.
-- Goals:
-  - Reduce churn with personalized AI routines and timely nudges.
-  - Centralize analytics for cohort/retention without stitching five exports.
-  - Standardize live events for launches and education, with conversion tracking.
-  - Implement access control and audit logs as the team scales.
-- Frustrations:
-  - Siloed data and unreliable attribution; manual reporting every week.
-  - Migrating data is risky and time-consuming; previous attempts caused outages.
-  - Fragile streaming overlays and no unified measurement of event ROI.
-- Motivations:
-  - Investor readiness and operational excellence; wants crisp dashboards and predictable growth levers.
-  - Reducing tool bloat while maintaining security/compliance.
-- Key platform features he’ll use:
-  - Unified analytics/dashboarding (ADM_02) and financial reporting (ADM_06)
-  - AI recommendations + dermatologist-aligned guidance (USR_01, USR_06A/06B)
-  - Customer segmentation and lifecycle campaigns (ADM_03)
-  - Live streaming commerce with product pins + viewer analytics (USR_05, ADM_04/ADM_08)
-  - Data migration assistance + tooling (Operational Barriers → addressed)
-  - RBAC/least-privilege access (ADM_05) and auditability (Security NFRs)
-
 ### Persona C1 — Zara Lee (Female, 22)
 - Role: End-use Customer; College senior, budget-conscious
 - Image: [Stock photo placeholder — search keywords: "female student 20s laptop skincare"]
-- Bio: Zara juggles classes, a part-time job, and social content. She wants clear skin for confidence on camera. She’s overwhelmed by options and wary of overhyped products.
+- Bio: Zara juggles classes, a part-time job, and social content. She wants clear skin for confidence. She’s overwhelmed by options and wary of overhyped products.
 - Goals:
   - Get a simple, affordable routine that works for acne and sensitivity.
   - Quick answers via AI chat, with ingredient clarity and usage steps.
   - Try live shopping Q&As for tips and deals before buying.
+  - Learn skin basics and condition-specific guidance from an AI dermatology expert with citations to reliable sources, to avoid trial-and-error and wasted spend.
 - Frustrations:
   - Endless scrolling and inconsistent advice; too many conflicting reviews.
   - Complicated checkouts and shipping uncertainty.
@@ -147,7 +127,7 @@ This data validates the platform's three core pillars: **integration, personaliz
 - Key platform features she’ll use:
   - AI dermatology consultation + AI recommendations (USR_06A/06B, USR_01)
   - Product search with ingredient filters (USR_02)
-  - Live shopping with chat and product pins (USR_05)
+  - Live shopping with chat (USR_05)
   - Secure checkout, order tracking, and notifications (USR_03, USR_04)
   - Reviews and routine builder for consistency (USR_08, USR_10)
 
@@ -157,7 +137,7 @@ This data validates the platform's three core pillars: **integration, personaliz
 - Bio: Priya leads a busy team and wants a high-efficacy, low-irritation regimen. She’s willing to pay for clinical credibility and convenience, but expects privacy and transparency.
 - Goals:
   - Confidently choose products suited for aging and hyperpigmentation without irritation.
-  - See dermatologist-aligned guidance with confidence scores and disclaimers.
+  - See dermatologist-aligned guidance with confidence scores, citations to reliable sources (textbooks and peer‑reviewed literature), and clear disclaimers.
   - Reorder favorites quickly and receive curated email recommendations.
 - Frustrations:
   - Hidden ingredients, vague claims, and generic suggestions.
@@ -171,47 +151,49 @@ This data validates the platform's three core pillars: **integration, personaliz
   - Email recommendations and exclusive offers (USR_09)
   - Secure checkout and reliable order tracking (USR_03, USR_04)
 
-
-
 ---
 
 ## 3.3 Functional Requirements with MoSCoW Prioritisation
 
 | ID | Description | Priority | Estimation |
 |---|---|---|---|
-| USR_01 | As a customer, I want to receive personalized product recommendations based on my skin type and concerns, so that I find products matching my specific needs without trial-and-error. | Must | 8 days |
-| USR_02 | As a customer, I want to browse and search products with detailed ingredient lists and compatibility filters, so that I can make informed purchasing decisions aligned to my skin profile. | Must | 5 days |
-| USR_03 | As a customer, I want to add products to cart, apply discounts, and complete checkout securely, so that I can purchase products with confidence. | Must | 8 days |
-| USR_04 | As a customer, I want to track order status and receive notifications, so that I have visibility into delivery timelines. | Must | 5 days |
+| USR_01 | As a customer, I want to receive personalized product recommendations based on my skin type and concerns, so that I find products matching my specific needs without trial-and-error. | Must | 12 days |
+| USR_02 | As a customer, I want to browse and search products with detailed ingredient lists and compatibility filters, so that I can make informed purchasing decisions aligned to my skin profile. | Must | 10 days |
+| USR_03 | As a customer, I want to add products to cart, apply discounts, and complete checkout securely, so that I can purchase products with confidence. | Must | 12 days |
+| USR_04 | As a customer, I want to track order status and receive notifications, so that I have visibility into delivery timelines. | Must | 8 days |
 | USR_05 | As a customer, I want to watch live streaming commerce events with real-time product display and chat, so that I can interact with experts before purchasing. | Must | 8 days |
+| USR_05A | As a customer, I want to view livestreams on both web and mobile app platforms, so that I can watch conveniently on any device with optimal screen viewing experience. | Must | 6 days |
 | USR_06 | As a customer, I want to chat with an AI assistant about product recommendations, ingredients, and usage, so that I receive expert guidance without waiting for staff. | Should | 8 days |
-| USR_06A | As a customer, I want to consult with an AI dermatology expert about my skin concerns (acne, sensitivity, aging, hyperpigmentation), so that I receive clinical-grade guidance before purchasing. | Should | 10 days |
-| USR_06B | As a customer, I want the AI dermatology expert to analyze my skin profile and recommend products from the catalog matched to dermatological best practices, so that I purchase with clinical confidence. | Should | 8 days |
-| USR_07 | As a customer, I want to view my purchase history and reorder previous products, so that I can repurchase skincare routines efficiently. | Should | 3 days |
-| USR_08 | As a customer, I want to write product reviews and view reviews from other customers, so that I can assess product quality through peer feedback. | Should | 5 days |
-| USR_09 | As a customer, I want to receive email recommendations and exclusive offers matched to my profile, so that I discover relevant products. | Could | 3 days |
-| USR_10 | As a customer, I want to create and save skincare routines, so that I can organize product recommendations into personalized regimens. | Could | 5 days |
-| ADM_01 | As a business admin, I want to manage product catalog (create, edit, delete products with attributes), so that I maintain accurate inventory and product information. | Must | 5 days |
-| ADM_02 | As a business admin, I want to view real-time sales analytics (revenue, orders, top products, conversion metrics), so that I monitor business performance and identify trends. | Must | 8 days |
-| ADM_03 | As a business admin, I want to manage customer segmentation and email campaigns with audience filtering, so that I execute targeted marketing campaigns. | Should | 8 days |
-| ADM_04 | As a business admin, I want to configure live streaming events (schedule, product pins, viewer analytics), so that I conduct organized live commerce sessions. | Should | 8 days |
-| ADM_05 | As a business admin, I want to manage staff accounts with role-based access control (admin, staff, viewer), so that I protect sensitive data and restrict access appropriately. | Should | 5 days |
-| ADM_06 | As a business admin, I want to view financial reports (revenue, expenses, cash flow, profitability by product), so that I monitor financial health and make data-driven decisions. | Should | 8 days |
-| ADM_07 | As a business admin, I want to manage orders (view, update status, process refunds, export), so that I handle order fulfillment efficiently. | Should | 5 days |
-| ADM_08 | As a business admin, I want to manage live streaming with real-time viewer engagement metrics and product pinning, so that I optimize live commerce performance. | Could | 8 days |
-| ADM_09 | As a business admin, I want to configure AI chatbot responses and FAQ management, so that I customize customer support interactions. | Could | 5 days |
-| ADM_09A | As a business admin, I want to configure the AI dermatology expert (knowledge base, skin concern categories, product-to-concern mappings), so that I ensure recommendations align with my brand and product catalog. | Should | 6 days |
-| ADM_09B | As a business admin, I want to review and export dermatology consultation logs and customer skin profiles, so that I understand customer needs and optimize product offerings. | Should | 4 days |
-| ADM_10 | As a business admin, I want to access employee HR records and document management, so that I centralize HR operations. | Could | 5 days |
+| USR_06A | As a customer, I want to consult with an AI dermatology expert about my skin concerns (acne, sensitivity, aging, hyperpigmentation), so that I receive clinical-grade guidance before purchasing. | Should | 14 days |
+| USR_06B | As a customer, I want the AI dermatology expert to analyze my skin profile and recommend products from the catalog matched to dermatological best practices, so that I purchase with clinical confidence. | Should | 12 days |
+| USR_07 | As a customer, I want to view my purchase history and reorder previous products, so that I can repurchase skincare routines efficiently. | Should | 6 days |
+| USR_08 | As a customer, I want to write product reviews and view reviews from other customers, so that I can assess product quality through peer feedback. | Should | 8 days |
+| USR_09 | As a customer, I want to receive email recommendations and exclusive offers matched to my profile, so that I discover relevant products. | Could | 6 days |
+| USR_10 | As a customer, I want to create and save skincare routines, so that I can organize product recommendations into personalized regimens. | Could | 8 days |
+| ADM_01 | As a business admin, I want to manage product catalog (create, edit, delete products with attributes), so that I maintain accurate inventory and product information. | Must | 10 days |
+| ADM_02 | As a business admin, I want to view real-time sales analytics (revenue, orders, top products, conversion metrics), so that I monitor business performance and identify trends. | Must | 12 days |
+| ADM_03 | As a business admin, I want to manage customer segmentation and email campaigns with audience filtering, so that I execute targeted marketing campaigns. | Should | 12 days |
+| ADM_04 | As a business admin, I want to configure live streaming events (schedule, product pins, viewer analytics), so that I conduct organized live commerce sessions. | Should | 10 days |
+| ADM_04A | As a business admin, I want to livestream on both web and mobile app platforms, so that I can reach customers across all devices and maximize engagement. | Should | 10 days |
+| ADM_05 | As a business admin, I want to manage staff accounts with role-based access control (admin, staff, viewer), so that I protect sensitive data and restrict access appropriately. | Should | 8 days |
+| ADM_06 | As a business admin, I want to view financial reports (revenue, expenses, cash flow, profitability by product), so that I monitor financial health and make data-driven decisions. | Should | 10 days |
+| ADM_07 | As a business admin, I want to manage orders (view, update status, process refunds, export), so that I handle order fulfillment efficiently. | Should | 8 days |
+| ADM_08 | As a business admin, I want to manage live streaming with real-time viewer engagement metrics and product pinning, so that I optimize live commerce performance. | Could | 10 days |
+| ADM_09 | As a business admin, I want to configure AI chatbot responses and FAQ management, so that I customize customer support interactions. | Could | 8 days |
+| ADM_09A | As a business admin, I want to configure the AI dermatology expert (knowledge base, skin concern categories, product-to-concern mappings), so that I ensure recommendations align with my brand and product catalog. | Should | 10 days |
+| ADM_09B | As a business admin, I want to review and export dermatology consultation logs and customer skin profiles, so that I understand customer needs and optimize product offerings. | Should | 8 days |
+| ADM_10 | As a business admin, I want to access employee HR records and document management, so that I centralize HR operations. | Could | 8 days |
 
 ### MoSCoW Summary
 
-| Priority | Number of Features | Number of Days |
-|---|---|---|
-| Must | 5 | 26 |
-| Should | 9 | 59 |
-| Could | 3 | 15 |
-| **TOTAL** | **17** | **100** |
+| Priority | Number of Features | Number of Days (Development) | Allocation |
+|---|---|---|---|
+| Must | 6 | 62 | Core features (essential for MVP) |
+| Should | 11 | 112 | High-priority features (enhance value) |
+| Could | 4 | 32 | Nice-to-have features (polish & extras) |
+| **TOTAL (Development)** | **21** | **206** | ~69% of 10-month project |
+| **Remaining Time** | — | **~94 days** | Testing, QA, deployment, documentation, report, buffer |
+| **10-Month Project** | — | **~300 days** | Full timeline (10 months × 30 days) |
 
 ---
 
@@ -271,6 +253,9 @@ Section 2A — Business respondents (Shown if Q2 = Business owner/manager)
 | Q14 | Linear scale (1–5) | Business | Likelihood to migrate to an integrated alternative | 1=Very unlikely … 5=Very likely | Yes |
 | Q15 | Grid (Likert 1–5) | Business | Barriers to adopting a new platform | Rows: Setup complexity; Migration difficulty; Security/compliance; Staff resistance; Lack of native live streaming; Platform fragmentation. Cols: 1–5 | Yes |
 
+"Section 2A — Business","Q12A_BIZ","Business","linear_scale_1_5","Importance of offering AI skin education with cited sources to customers","1=Not important|5=Very important","Yes",""
+"Section 2A — Business","Q13A_BIZ","Business","multiple_choice","Would you enable an AI skin education module (with citations and disclaimers)?","Yes|No|Maybe","Yes",""
+
 Section 2B — End-use customers (Shown if Q2 = End-use customer)
 
 | Q# | Type | Audience | Prompt | Options | Required |
@@ -285,6 +270,11 @@ Section 2B — End-use customers (Shown if Q2 = End-use customer)
 | Q13 | Linear scale (1–5) | Customer | Interest in live shopping with experts | 1=Not interested … 5=Very interested | Yes |
 | Q14 | Multiple choice | Customer | Willingness to share skin profile for better recommendations | Yes; No; Maybe | Yes |
 | Q15 | Paragraph | Customer | Biggest frustration when shopping for skincare/cosmetics | Free text | No |
+
+"Section 2B — Customers","Q12A_CUST","Customer","linear_scale_1_5","Interest in AI skin education with cited sources (textbooks/peer‑reviewed)","1=Not interested|5=Very interested","Yes",""
+"Section 2B — Customers","Q12B_CUST","Customer","checkboxes","Topics you want the AI to teach/explain","Skin basics & condition overviews|Ingredient explanations|Routine building with rationale|Side effects/contraindications|Budget-friendly alternatives|Citations/links to sources","No",""
+"Section 2B — Customers","Q14B_CUST","Customer","linear_scale_1_5","Agreement: I waste time and money on unsuitable products or routines","1=Strongly disagree|5=Strongly agree","Yes",""
+
 
 Notes
 - Mark required questions accordingly. Use response validation for Q10 (customers) to limit to 3 selections.

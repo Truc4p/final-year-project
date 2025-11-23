@@ -11,7 +11,9 @@ section,qid,audience,type,title,options,required,logic
 "Section 2A — Business","Q10_BIZ","Business","multiple_choice","Daily time switching between systems","<1 hour|1–2 hours|2–3 hours|3–4 hours|>4 hours","Yes",""
 "Section 2A — Business","Q11_BIZ","Business","linear_scale_1_5","Satisfaction with current tools’ UI/UX","1=Very dissatisfied|5=Very satisfied","Yes",""
 "Section 2A — Business","Q12_BIZ","Business","grid_likert_1_5","Interest in potential features","rows: AI dermatology consultation; AI product recommendations; Live streaming commerce; Unified analytics dashboard; Customer segmentation; Data migration tools | scale: 1=Not interested;2;3;4;5=Very interested","Yes",""
+"Section 2A — Business","Q12A_BIZ","Business","linear_scale_1_5","Importance of offering AI skin education with cited sources to customers","1=Not important|5=Very important","Yes",""
 "Section 2A — Business","Q13_BIZ","Business","multiple_choice","Willingness to pay premium for clinical-grade guidance","Yes|No|Depends on value and pricing","Yes",""
+"Section 2A — Business","Q13A_BIZ","Business","multiple_choice","Would you enable an AI skin education module (with citations and disclaimers)?","Yes|No|Maybe","Yes",""
 "Section 2A — Business","Q14_BIZ","Business","linear_scale_1_5","Likelihood to migrate to an integrated alternative consolidating 5+ systems","1=Very unlikely|5=Very likely","Yes",""
 "Section 2A — Business","Q15_BIZ","Business","grid_likert_1_5","Barriers to adopting a new platform","rows: Setup complexity/training; Data migration difficulty; Security/compliance concerns; Staff resistance to change; Lack of native live streaming; Platform fragmentation | scale: 1=Not a barrier;2;3;4;5=Major barrier","Yes",""
 "Section 2B — Customers","Q6_CUST","Customer","multiple_choice","Purchase frequency (skincare/cosmetics)","Weekly|2–3 times per month|Monthly|Every 2–3 months|Less often","Yes",""
@@ -21,9 +23,18 @@ section,qid,audience,type,title,options,required,logic
 "Section 2B — Customers","Q10_CUST","Customer","checkboxes_max_3","Main skin concerns (select up to 3)","Acne|Sensitivity|Aging/fine lines|Hyperpigmentation|Dryness|Redness/rosacea|Pores/texture|Other","No","Limit selections to 3"
 "Section 2B — Customers","Q11_CUST","Customer","linear_scale_1_5","Satisfaction with current personalization","1=Very dissatisfied|5=Very satisfied","Yes",""
 "Section 2B — Customers","Q12_CUST","Customer","linear_scale_1_5","Trust in AI-based dermatology guidance","1=Do not trust at all|5=Trust completely","Yes",""
+"Section 2B — Customers","Q12A_CUST","Customer","linear_scale_1_5","Interest in AI skin education with cited sources (textbooks/peer‑reviewed)","1=Not interested|5=Very interested","Yes",""
+"Section 2B — Customers","Q12B_CUST","Customer","checkboxes","Topics you want the AI to teach/explain","Skin basics & condition overviews|Ingredient explanations|Routine building with rationale|Side effects/contraindications|Budget-friendly alternatives|Citations/links to sources","No",""
 "Section 2B — Customers","Q13_CUST","Customer","linear_scale_1_5","Interest in live shopping with experts","1=Not interested|5=Very interested","Yes",""
 "Section 2B — Customers","Q14_CUST","Customer","multiple_choice","Willingness to share skin profile for better recommendations","Yes|No|Maybe","Yes",""
+"Section 2B — Customers","Q14B_CUST","Customer","linear_scale_1_5","Agreement: I waste time and money on unsuitable products or routines","1=Strongly disagree|5=Strongly agree","Yes",""
 "Section 2B — Customers","Q15_CUST","Customer","paragraph","Biggest frustration when shopping for skincare/cosmetics","","No",""
 
+"Section 2A — Business","Q12A_BIZ","Business","linear_scale_1_5","Importance of offering AI skin education with cited sources to customers","1=Not important|5=Very important","Yes",""
+"Section 2A — Business","Q13A_BIZ","Business","multiple_choice","Would you enable an AI skin education module (with citations and disclaimers)?","Yes|No|Maybe","Yes",""
+
+"Section 2B — Customers","Q12A_CUST","Customer","linear_scale_1_5","Interest in AI skin education with cited sources (textbooks/peer‑reviewed)","1=Not interested|5=Very interested","Yes",""
+"Section 2B — Customers","Q12B_CUST","Customer","checkboxes","Topics you want the AI to teach/explain","Skin basics & condition overviews|Ingredient explanations|Routine building with rationale|Side effects/contraindications|Budget-friendly alternatives|Citations/links to sources","No",""
+"Section 2B — Customers","Q14B_CUST","Customer","linear_scale_1_5","Agreement: I waste time and money on unsuitable products or routines","1=Strongly disagree|5=Strongly agree","Yes",""
 
 

@@ -1,5 +1,30 @@
 rep
 
+### Persona B2 — Marcus Johnson (Male, 42)
+- Role: Founder, Subscription Skincare Startup
+- Image: [Stock photo placeholder — search keywords: "male tech founder 40s office"]
+- Bio: Marcus runs a DTC (Direct to Consumer) subscription brand with ~5,000 active subscribers and a lean team of 6. He tracks CAC/LTV (Lifetime Value to Customer Acquisition Cost Ratio), churn, and cohorts in spreadsheets. He’s comfortable with APIs but doesn’t have a full data team and needs pragmatic automation.
+- Goals:
+  - Reduce churn with personalized AI routines and timely nudges.
+  - Centralize analytics for cohort/retention without stitching five exports.
+  - Standardize live events for launches and education, with conversion tracking.
+  - Implement access control and audit logs as the team scales.
+- Frustrations:
+  - Siloed data and unreliable attribution; manual reporting every week.
+  - Migrating data is risky and time-consuming; previous attempts caused outages.
+  - Fragile streaming overlays and no unified measurement of event ROI.
+- Motivations:
+  - Investor readiness and operational excellence; wants crisp dashboards and predictable growth levers.
+  - Reducing tool bloat while maintaining security/compliance.
+- Key platform features he’ll use:
+  - Unified analytics/dashboarding (ADM_02) and financial reporting (ADM_06)
+  - AI recommendations + dermatologist-aligned guidance (USR_01, USR_06A/06B)
+  - Customer segmentation and lifecycle campaigns (ADM_03)
+  - Live streaming commerce with product pins + viewer analytics (USR_05, ADM_04/ADM_08)
+  - Data migration assistance + tooling (Operational Barriers → addressed)
+  - RBAC (Role-Based Access Control)/least-privilege access (ADM_05) and auditability (Security NFRs)
+
+
 In the early 2000s, e-commerce focused on internal logistics, making sure the system works, tracking inventory, and processing orders
 
 Nowadays, e-commerce focuses on external customer service, using data to create unique, tailored shopping experiences and personalized recommendations for every single user
