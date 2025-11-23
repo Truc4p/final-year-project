@@ -10,50 +10,132 @@
 
 ## 4.2 Project Plan & Timeline
 
+**Project Duration:** 10 months (~300 working days, accounting for weekends and holidays)
+
 **Project Phases & Milestones:**
 
-### Phase 1: Planning & Design (Weeks 1–3)
-- **Deliverables:** Requirements finalization, system architecture diagram, entity-relationship diagrams (database schema), REST API specification (Swagger), UI wireframes for admin/customer/mobile interfaces, technical prototype validating critical components (JWT authentication, WebSocket connection, Gemini AI integration).
+### Phase 1: Planning & Design (Weeks 1–3, ~21 days)
+- **Deliverables:** Requirements finalization, system architecture diagram, entity-relationship diagrams (database schema), REST API specification (Swagger), UI wireframes for admin/customer/mobile interfaces, technical prototype validating critical components (JWT authentication, WebSocket connection, Gemini AI integration, skin study analysis).
 - **Key Milestone:** Technical Validation Complete—proof that core technologies integrate without insurmountable blockers.
 
-### Phase 2: Backend & Frontend Foundation (Weeks 4–7)
-- **Weeks 4–5 (Backend):** Express.js application structure, MongoDB schema implementation, JWT authentication, core API endpoints (products, users, orders), Swagger documentation.
-- **Weeks 6–7 (Frontend/Mobile):** Vue.js project initialization, component library (buttons, cards, modals, forms), customer interface scaffolding, admin dashboard layout, React Native app skeleton with navigation.
-- **Key Milestone:** MVP Backend Complete—API endpoints operational with authentication; MVP Frontend Complete—basic navigation and product browsing functional.
+### Phase 2: Backend & Frontend Foundation (Weeks 4–9, ~42 days)
+- **Weeks 4–6 (Backend):** Express.js application structure, MongoDB schema implementation, JWT authentication, core API endpoints (products, users, orders, skin study), Swagger documentation, WebSocket infrastructure setup.
+- **Weeks 7–9 (Frontend/Mobile):** Vue.js project initialization, component library (buttons, cards, modals, forms), customer interface scaffolding, admin dashboard layout, React Native apps (customer + admin) skeleton with navigation, admin livestream mobile interface.
+- **Key Milestone:** MVP Backend Complete—API endpoints operational with authentication; MVP Frontend Complete—basic navigation and product browsing functional; Mobile Apps Initialized.
 
-### Phase 3: Feature Implementation (Weeks 8–10)
-- **Deliverables:** Gemini AI chatbot integration with conversation history and staff escalation, email marketing system with customer segmentation, real-time analytics dashboards, WebSocket infrastructure for live streaming, database query optimization.
-- **Key Milestone:** Core Features Complete—personalization, analytics, and real-time infrastructure operational.
+### Phase 3: Core Feature Implementation (Weeks 10–16, ~49 days)
+- **Deliverables:** 
+  - Gemini AI chatbot integration with conversation history and staff escalation
+  - Email marketing system with customer segmentation
+  - Real-time analytics dashboards
+  - Skin study feature (analysis, recommendations, tracking)
+  - Database query optimization
+  - Admin mobile app livestream controls and monitoring
+- **Key Milestone:** Core Features Complete—personalization, analytics, skin study analysis, and real-time infrastructure operational.
 
-### Phase 4: Advanced Features & Integration (Weeks 11–14)
-- **Deliverables:** Live streaming implementation (video broadcast, product pinning, viewer chat, engagement metrics), business modules (financial reporting, HR records, expense tracking), mobile app feature parity with web, comprehensive security testing (OWASP Top 10, penetration testing).
-- **Key Milestone:** Advanced Features Complete—live commerce and business management operational; Security Validation Complete.
+### Phase 4: Advanced Features & Integration (Weeks 17–25, ~56 days)
+- **Deliverables:** 
+  - Live streaming implementation (video broadcast, product pinning, viewer chat, engagement metrics)
+  - Admin mobile app livestream management (broadcast control, viewer analytics, product management during stream)
+  - Business modules (financial reporting, HR records, expense tracking)
+  - Mobile app feature parity with web
+  - Comprehensive security testing (OWASP Top 10, penetration testing)
+  - Performance optimization and load testing
+- **Key Milestone:** Advanced Features Complete—live commerce and business management operational; Admin Mobile Livestream Fully Functional; Security Validation Complete.
 
-### Phase 5: Testing, Documentation & Deployment (Weeks 15–18)
-- **Deliverables:** Unit testing (Jest/Vitest), integration testing (API contract validation), user acceptance testing with 5-10 test users, vulnerability scanning (SNYK), API documentation (Swagger), deployment guides, technical architecture documentation, user manuals.
+### Phase 5: Testing, Documentation & Deployment (Weeks 26–35, ~70 days)
+- **Deliverables:** 
+  - Unit testing (Jest/Vitest) with ≥70% code coverage
+  - Integration testing (API contract validation)
+  - User acceptance testing with 10-15 test users
+  - Vulnerability scanning (SNYK)
+  - API documentation (Swagger)
+  - Deployment guides and runbooks
+  - Technical architecture documentation
+  - User manuals and admin guides
+  - Performance monitoring setup
 - **Key Milestone:** Production Deployment—platform live and accessible; Documentation Complete; User Satisfaction Feedback gathered.
+
+### Phase 6: Optimization & Buffer (Weeks 36–40, ~35 days)
+- **Deliverables:**
+  - Performance optimization based on real-world usage
+  - Bug fixes and refinements
+  - Additional feature polish
+  - Extended UAT if needed
+  - Contingency for unforeseen issues
+- **Key Milestone:** Production Stability Achieved—all systems running smoothly; Ready for long-term maintenance.
 
 **Visual Timeline (Gantt Chart Summary):**
 
 ```
-Week    1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
-Phase 1 |===========|
-         Planning & Design
-                        Phase 2 |===========|
-                         Backend/Frontend
-                                    Phase 3 |===========|
-                                     Features
-                                           Phase 4 |===========|
-                                            Advanced
-                                                    Phase 5 |===========|
-                                                     Testing/Deploy
+Week    1-3  4-9  10-16  17-25  26-35  36-40
+Phase 1 |===|
+        Planning & Design
+             |======|
+             Backend/Frontend Foundation
+                    |========|
+                    Core Features (incl. Skin Study & Admin Mobile)
+                            |========|
+                            Advanced Features & Live Commerce
+                                     |==========|
+                                     Testing/Documentation/Deploy
+                                              |====|
+                                              Optimization & Buffer
+
+Total: ~300 working days (10 months)
 ```
+
+**Feature Breakdown by Phase:**
+
+| Feature Category | Phase | Status |
+|---|---|---|
+| **Must-Have (6 features, ~62 days)** | | |
+| E-commerce core (products, orders, checkout) | 2-3 | Foundation |
+| User authentication & profiles | 2 | Foundation |
+| Gemini AI chatbot | 3 | Core |
+| Real-time analytics | 3 | Core |
+| Live streaming infrastructure | 3-4 | Core/Advanced |
+| Admin dashboard | 2-3 | Foundation/Core |
+| **Should-Have (11 features, ~112 days)** | | |
+| Skin study analysis & recommendations | 3 | Core |
+| Email marketing system | 3 | Core |
+| Business modules (Finance, HR) | 4 | Advanced |
+| Admin mobile app (general) | 2-4 | Foundation/Advanced |
+| Admin mobile livestream controls | 4 | Advanced |
+| Customer mobile app | 2-4 | Foundation/Advanced |
+| Live streaming engagement features | 4 | Advanced |
+| Product recommendations | 3 | Core |
+| Customer segmentation | 3 | Core |
+| Performance optimization | 4-5 | Advanced/Testing |
+| Security hardening | 4-5 | Advanced/Testing |
+| **Could-Have (4 features, ~32 days)** | | |
+| Advanced AI personalization | 4-5 | Advanced/Testing |
+| Multi-language support | 5 | Testing |
+| Advanced reporting & exports | 4-5 | Advanced/Testing |
+| Social media integration | 5 | Testing |
+
+### MoSCoW Summary
+
+| Priority | Number of Features | Number of Days (Development) | Allocation |
+|---|---|---|---|
+| Must | 6 | 62 | Core features (essential for MVP) |
+| Should | 11 | 112 | High-priority features (enhance value) |
+| Could | 4 | 32 | Nice-to-have features (polish & extras) |
+| **TOTAL (Development)** | **21** | **206** | ~69% of 10-month project |
+| **Remaining Time** | — | **~94 days** | Testing, QA, deployment, documentation, report, buffer |
+| **10-Month Project** | — | **~300 days** | Full timeline (10 months × 30 days) |
+
+Notes:
+- Development time (206 days) maps primarily to Phases 2–4.
+- Remaining time (94 days) aligns with Phases 5–6 (testing, docs, deployment, optimization, buffer).
+- Skin study feature and Admin Mobile Livestream are included in Must/Should features, influencing Phase 3–4 scope.
 
 **Key Dependencies & Risk Buffers:**
 - Phase 1 outputs (API spec, wireframes) required before Phase 2 begins.
 - Phase 2 backend completion prerequisite for Phase 3 integration.
-- Phase 4 live streaming depends on Phase 3 WebSocket infrastructure.
-- Buffer weeks: Phase 4 includes 1-week buffer for security remediation; Phase 5 includes 2-week buffer for UAT revisions.
+- Phase 3 WebSocket infrastructure prerequisite for Phase 4 live streaming.
+- Phase 4 live streaming completion prerequisite for admin mobile livestream features.
+- Buffer allocation: Phase 4 includes 1-week buffer for security remediation; Phase 5 includes 2-week buffer for UAT revisions; Phase 6 provides 5-week contingency buffer for unforeseen challenges.
 
 ---
 
@@ -61,7 +143,11 @@ Phase 1 |===========|
 
 **Technical Feasibility: Strong.** Node.js, Express, MongoDB, Vue.js, React Native are production-grade technologies with extensive community support, documented API integration patterns, and mature SDKs. WebSocket real-time communication is proven architecture (Netflix, Discord, Slack). Gemini AI provides REST API with clear documentation. Solo developer learning curve manageable: WebSocket programming (2-3 days), Expo mobile development (3-5 days), Gemini integration (2-3 days)—learnable within project timeline given quality documentation.
 
-**Temporal Feasibility: Feasible.** Project allocates 40–60 hours weekly over 18 weeks (720–1,080 total hours). MVP core functionality (e-commerce, recommendations, analytics) achievable in 500–600 hours; advanced features (live streaming, business modules) require 200–250 hours; testing/documentation/deployment 150–200 hours. Total 850–1,050 hours fits within 18-week window with 30-hour weekly buffer for unforeseen challenges (deployment issues, API integration problems, performance optimization).
+**Temporal Feasibility: Strong.** Project allocates 40–50 hours weekly over 10 months (~300 working days, ~1,200–1,500 total hours). With expanded timeline:
+- MVP core functionality (e-commerce, recommendations, analytics, skin study) achievable in 500–600 hours
+- Advanced features (live streaming, business modules, admin mobile livestream) require 300–350 hours
+- Testing/documentation/deployment/optimization 250–300 hours
+- Total 1,050–1,250 hours fits comfortably within 10-month window with 150–450 hour buffer (~10-30% contingency) for unforeseen challenges (deployment issues, API integration problems, performance optimization, security hardening). Expanded timeline enables thorough testing, comprehensive documentation, and quality polish.
 
 **Economic Feasibility: Strong.** Development tools are open-source (Node.js, Vue.js, MongoDB) or free-tier: GitHub (free private repos), Vite (free build tool), Jest (free testing), Sentry (free tier error monitoring). Cloud hosting: MongoDB Atlas free tier supports development; AWS/Google Cloud free tiers accommodate staging deployment. Domain registration (USD 15/year). Zero licensing costs. Production deployment at USD 50–200/month achievable via containerized hosting (AWS Lightsail, Google Cloud Run).
 
@@ -81,7 +167,7 @@ Phase 1 |===========|
 | **Database Performance** | 100ms query execution for 90% of operations | Enables rapid dashboard updates and real-time data display |
 | **Concurrent Users** | Platform supports 1,000 concurrent users without >10% performance degradation | Validates scalability for SME growth trajectory |
 | **Live Streaming Latency** | <5 second latency for 500 concurrent viewers | Enables real-time interaction feeling; >5s creates awkward conversation gaps |
-| **Feature Completeness** | 100% of Must-have requirements (5 features); 95% of Should-have (6/7 features); 50% of Could-have (2/3 features) | Prioritization ensures critical functionality ships on time; secondary features may defer |
+| **Feature Completeness** | 100% of Must-have requirements (6/6 features); 95% of Should-have (10/11 features); 50% of Could-have (2/4 features) | Prioritization ensures critical functionality ships on time; secondary features may defer |
 | **Code Quality** | Modular architecture with clear separation of concerns; unit test coverage ≥70% for critical business logic; zero critical security vulnerabilities in vulnerability scanning | Enables future maintenance and reduces operational risk |
 | **Specification Compliance** | All acceptance criteria for user stories met; all API endpoints documented in Swagger | Validates delivery against requirements |
 | **Browser/Device Coverage** | Functional on Chrome 90+, Firefox 88+, Safari 14+, Edge 90+; iOS 14+, Android 10+ | Covers 95%+ of target user devices |
