@@ -1120,416 +1120,226 @@ classDiagram
 
 ---
 
-#### 2. Use Case Diagram - Customer
+#### 2. Use Case Diagram
+#### 2.1 Use Case Diagram - Customer
 
 ```mermaid
 graph TB
-    Customer["Customer"]
-
-    subgraph AuthenticationUseCases["Authentication & Account Management"]
-        UC1["Register Account"]
-        UC2["Login"]
-        UC3["Manage Profile"]
-        UC4["Logout"]
+    subgraph CustomerActors["Customer Actors"]
+        GuestCustomer["Guest Customer<br/>(No Account)"]
+        RegisteredCustomer["Registered Customer<br/>(Logged In)"]
     end
 
-    subgraph ECommerceUseCases["E-Commerce & Shopping"]
-        UC5["Browse Products"]
-        UC6["View Product Details"]
-        UC7["Search Products"]
-        UC8["Add to Cart"]
-        UC9["Manage Cart"]
-        UC10["Checkout"]
-        UC11["Process Payment"]
-        UC12["View Order History"]
-        UC13["Track Order"]
-        UC14["Submit Review"]
+    subgraph BrowsingFeatures["Browsing & Discovery"]
+        ViewProducts["View Product Catalog"]
+        SearchProducts["Search Products<br/>(by name, category, concern)"]
+        FilterProducts["Filter Products<br/>(by skin type, price, rating)"]
+        ViewDetails["View Product Details<br/>(ingredients, reviews, usage)"]
+        ViewReviews["View Customer Reviews<br/>& Ratings"]
+        GetRecommendations["Get AI Recommendations<br/>(Gemini-powered)"]
     end
 
-    subgraph AIRecommendationUseCases["AI-Powered Recommendations"]
-        UC15["Get AI Recommendations"]
-        UC16["Chat with AI Assistant"]
-        UC17["View Related Products"]
+    subgraph ChatFeatures["Communication & Support"]
+        AccessFAQ["Access FAQ<br/>(Self-service)"]
+        ChatWithAI["Chat with AI Bot<br/>(Product recommendations)"]
+        EscalateToStaff["Escalate to Staff<br/>(Human support)"]
+        ViewChatHistory["View Chat History<br/>(Registered only)"]
     end
 
-    subgraph CommunicationUseCases["Customer Communication"]
-        UC18["Browse FAQs"]
-        UC19["Search FAQs"]
-        UC20["Escalate to Staff"]
-        UC21["Chat with Staff"]
-        UC22["View Chat History"]
+    subgraph ShoppingFeatures["Shopping & Cart"]
+        AddToCart["Add Product to Cart"]
+        ViewCart["View Shopping Cart"]
+        UpdateQuantity["Update Item Quantity"]
+        RemoveFromCart["Remove Item from Cart"]
+        SaveForLater["Save for Later<br/>(Registered only)"]
     end
 
-    subgraph LivestreamUseCases["Livestream & Shopping"]
-        UC23["View Livestream"]
-        UC24["Join Livestream Chat"]
-        UC25["View Pinned Products"]
-        UC26["Purchase from Livestream"]
+    subgraph CheckoutFeatures["Checkout & Payment"]
+        EnterShippingInfo["Enter Shipping Address"]
+        SelectPaymentMethod["Select Payment Method<br/>(VNPay)"]
+        ReviewOrder["Review Order Summary"]
+        ApplyCoupon["Apply Coupon/Discount<br/>(if available)"]
+        CompletePayment["Complete Payment<br/>(VNPay Gateway)"]
     end
 
-    subgraph ExternalIntegrations["External System Integrations"]
-        UC65["Google Gemini AI"]
-        UC66["VNPay Payment"]
-        UC68["Agora Livestream"]
+    subgraph OrderFeatures["Order Management"]
+        ViewOrders["View Order History<br/>(Registered only)"]
+        TrackOrder["Track Order Status<br/>& Delivery"]
+        ViewOrderDetails["View Order Details<br/>(items, receipt, tracking)"]
+        CancelOrder["Cancel Order<br/>(if eligible)"]
+        RequestReturn["Request Return/Refund<br/>(if eligible)"]
     end
 
-    %% Customer Use Cases
-    Customer --> UC1
-    Customer --> UC2
-    Customer --> UC3
-    Customer --> UC4
-    Customer --> UC5
-    Customer --> UC6
-    Customer --> UC7
-    Customer --> UC8
-    Customer --> UC9
-    Customer --> UC10
-    Customer --> UC11
-    Customer --> UC12
-    Customer --> UC13
-    Customer --> UC14
-    Customer --> UC15
-    Customer --> UC16
-    Customer --> UC17
-    Customer --> UC18
-    Customer --> UC19
-    Customer --> UC20
-    Customer --> UC21
-    Customer --> UC22
-    Customer --> UC23
-    Customer --> UC24
-    Customer --> UC25
-    Customer --> UC26
+    subgraph LivestreamFeatures["Livestream & Events"]
+        ViewLivestreams["View Upcoming Livestreams"]
+        JoinLivestream["Join Livestream<br/>(Watch live video)"]
+        ChatInLivestream["Chat in Livestream<br/>(Real-time messages)"]
+        ViewPinnedProducts["View Pinned Products<br/>(from livestream)"]
+        BuyFromLivestream["Buy Pinned Product<br/>(direct checkout)"]
+    end
 
-    %% External System Integrations
-    UC11 --> UC66
-    UC16 --> UC65
-    UC23 --> UC68
+    subgraph AccountFeatures["Account Management"]
+        Register["Register Account<br/>(email, password)"]
+        Login["Login to Account"]
+        UpdateProfile["Update Profile<br/>(name, email, phone, address)"]
+        ChangePassword["Change Password"]
+        ManagePreferences["Manage Preferences<br/>(notifications, language)"]
+        Logout["Logout"]
+    end
 
-    %% Use Case Dependencies
-    UC1 --> UC2
-    UC2 --> UC3
-    UC2 --> UC5
-    UC5 --> UC6
-    UC6 --> UC7
-    UC6 --> UC8
-    UC8 --> UC9
-    UC9 --> UC10
-    UC10 --> UC11
-    UC11 --> UC12
-    UC12 --> UC13
-    UC6 --> UC14
-    UC6 --> UC15
-    UC15 --> UC17
-    UC16 --> UC17
-    UC18 --> UC19
-    UC19 --> UC20
-    UC20 --> UC21
-    UC21 --> UC22
-    UC23 --> UC24
-    UC24 --> UC25
-    UC25 --> UC26
-    UC26 --> UC11
+    subgraph NewsletterFeatures["Newsletter & Marketing"]
+        SubscribeNewsletter["Subscribe to Newsletter"]
+        UnsubscribeNewsletter["Unsubscribe from Newsletter"]
+        ViewPromotions["View Promotions<br/>& Special Offers"]
+    end
 
-    style Customer fill:#e1f5ff,stroke:#01579b,stroke-width:3px
-    style AuthenticationUseCases fill:#fff3e0,stroke:#e65100
-    style ECommerceUseCases fill:#f3e5f5,stroke:#4a148c
-    style AIRecommendationUseCases fill:#e8f5e9,stroke:#1b5e20
-    style CommunicationUseCases fill:#fce4ec,stroke:#880e4f
-    style LivestreamUseCases fill:#f1f8e9,stroke:#33691e
-    style ExternalIntegrations fill:#ffccbc,stroke:#bf360c
+    subgraph ReviewFeatures["Reviews & Feedback"]
+        SubmitReview["Submit Product Review<br/>(rating, comment)"]
+        RateProduct["Rate Product<br/>(1-5 stars)"]
+        ReportReview["Report Inappropriate Review"]
+    end
+
+    %% Guest Customer Use Cases
+    GuestCustomer --> ViewProducts
+    GuestCustomer --> SearchProducts
+    GuestCustomer --> FilterProducts
+    GuestCustomer --> ViewDetails
+    GuestCustomer --> ViewReviews
+    GuestCustomer --> AccessFAQ
+    GuestCustomer --> ChatWithAI
+    GuestCustomer --> EscalateToStaff
+    GuestCustomer --> AddToCart
+    GuestCustomer --> ViewCart
+    GuestCustomer --> UpdateQuantity
+    GuestCustomer --> RemoveFromCart
+    GuestCustomer --> EnterShippingInfo
+    GuestCustomer --> SelectPaymentMethod
+    GuestCustomer --> ReviewOrder
+    GuestCustomer --> CompletePayment
+    GuestCustomer --> ViewLivestreams
+    GuestCustomer --> JoinLivestream
+    GuestCustomer --> ChatInLivestream
+    GuestCustomer --> ViewPinnedProducts
+    GuestCustomer --> Register
+
+    %% Registered Customer Use Cases (all guest features + more)
+    RegisteredCustomer --> ViewProducts
+    RegisteredCustomer --> SearchProducts
+    RegisteredCustomer --> FilterProducts
+    RegisteredCustomer --> ViewDetails
+    RegisteredCustomer --> ViewReviews
+    RegisteredCustomer --> GetRecommendations
+    RegisteredCustomer --> AccessFAQ
+    RegisteredCustomer --> ChatWithAI
+    RegisteredCustomer --> EscalateToStaff
+    RegisteredCustomer --> ViewChatHistory
+    RegisteredCustomer --> AddToCart
+    RegisteredCustomer --> ViewCart
+    RegisteredCustomer --> UpdateQuantity
+    RegisteredCustomer --> RemoveFromCart
+    RegisteredCustomer --> SaveForLater
+    RegisteredCustomer --> EnterShippingInfo
+    RegisteredCustomer --> SelectPaymentMethod
+    RegisteredCustomer --> ReviewOrder
+    RegisteredCustomer --> ApplyCoupon
+    RegisteredCustomer --> CompletePayment
+    RegisteredCustomer --> ViewOrders
+    RegisteredCustomer --> TrackOrder
+    RegisteredCustomer --> ViewOrderDetails
+    RegisteredCustomer --> CancelOrder
+    RegisteredCustomer --> RequestReturn
+    RegisteredCustomer --> ViewLivestreams
+    RegisteredCustomer --> JoinLivestream
+    RegisteredCustomer --> ChatInLivestream
+    RegisteredCustomer --> ViewPinnedProducts
+    RegisteredCustomer --> BuyFromLivestream
+    RegisteredCustomer --> UpdateProfile
+    RegisteredCustomer --> ChangePassword
+    RegisteredCustomer --> ManagePreferences
+    RegisteredCustomer --> Logout
+    RegisteredCustomer --> SubscribeNewsletter
+    RegisteredCustomer --> UnsubscribeNewsletter
+    RegisteredCustomer --> ViewPromotions
+    RegisteredCustomer --> SubmitReview
+    RegisteredCustomer --> RateProduct
+    RegisteredCustomer --> ReportReview
+
+    %% Dependencies and Extensions
+    AddToCart --> ViewCart
+    ViewCart --> UpdateQuantity
+    ViewCart --> RemoveFromCart
+    ViewCart --> CompletePayment
+    CompletePayment --> SelectPaymentMethod
+    SelectPaymentMethod --> ReviewOrder
+    ReviewOrder --> EnterShippingInfo
+    EnterShippingInfo --> ApplyCoupon
+    ApplyCoupon --> CompletePayment
+    
+    JoinLivestream --> ChatInLivestream
+    JoinLivestream --> ViewPinnedProducts
+    ViewPinnedProducts --> BuyFromLivestream
+    BuyFromLivestream --> CompletePayment
+    
+    ViewDetails --> SubmitReview
+    ViewDetails --> RateProduct
+    ViewDetails --> GetRecommendations
+    
+    ChatWithAI --> GetRecommendations
+    ChatWithAI --> EscalateToStaff
+    
+    ViewOrders --> TrackOrder
+    ViewOrders --> ViewOrderDetails
+    ViewOrderDetails --> CancelOrder
+    ViewOrderDetails --> RequestReturn
+
+    style GuestCustomer fill:#e1f5ff
+    style RegisteredCustomer fill:#c8e6c9
+    style BrowsingFeatures fill:#fff9c4
+    style ChatFeatures fill:#ffe0b2
+    style ShoppingFeatures fill:#f8bbd0
+    style CheckoutFeatures fill:#d1c4e9
+    style OrderFeatures fill:#b2dfdb
+    style LivestreamFeatures fill:#ffccbc
+    style AccountFeatures fill:#c5cae9
+    style NewsletterFeatures fill:#f0f4c3
+    style ReviewFeatures fill:#dcedc8
 ```
 
-**Customer Use Case Diagram Explanation:**
+**Explanation:**
 
-This Use Case Diagram focuses exclusively on customer interactions with the Wrencos platform. It illustrates 26 primary use cases organized into 5 functional areas:
+This Use Case Diagram illustrates all customer-facing features in the Wrencos ecommerce platform, divided into two actor types and multiple feature categories:
 
-**Customer Actor:**
-- End-user shopping for beauty products, engaging with AI-powered recommendations, participating in livestreams, and communicating with customer support
+**Actor Types:**
+1. **Guest Customer** - Unregistered users with limited functionality (browsing, shopping, guest checkout)
+2. **Registered Customer** - Logged-in users with full access (order history, saved items, personalized recommendations, account management)
 
-**Customer Use Cases (26 total):**
+**Feature Categories:**
 
-1. **Authentication & Account Management (4 use cases):**
-   - Register Account: Create new customer account
-   - Login: Authenticate with credentials
-   - Manage Profile: Update personal information and preferences
-   - Logout: End session securely
+| Category | Use Cases | Description |
+|---|---|---|
+| **Browsing & Discovery** | View Catalog, Search, Filter, View Details, View Reviews, Get AI Recommendations | Core product discovery features; AI recommendations available only to registered customers |
+| **Communication & Support** | Access FAQ, Chat with AI, Escalate to Staff, View Chat History | Multi-channel customer support; AI chat powered by Google Gemini; staff escalation for complex issues |
+| **Shopping & Cart** | Add to Cart, View Cart, Update Quantity, Remove Item, Save for Later | Shopping cart management; "Save for Later" exclusive to registered customers |
+| **Checkout & Payment** | Enter Shipping, Select Payment, Review Order, Apply Coupon, Complete Payment | Secure checkout flow; VNPay integration; coupon support for registered customers |
+| **Order Management** | View Orders, Track Status, View Details, Cancel, Request Return | Post-purchase order tracking and management; exclusive to registered customers |
+| **Livestream & Events** | View Livestreams, Join Stream, Chat, View Pinned Products, Buy from Livestream | Real-time shopping experience; product pinning during streams; direct purchase from livestream |
+| **Account Management** | Register, Login, Update Profile, Change Password, Manage Preferences, Logout | User account lifecycle and personalization |
+| **Newsletter & Marketing** | Subscribe, Unsubscribe, View Promotions | Email marketing engagement; promotional content access |
+| **Reviews & Feedback** | Submit Review, Rate Product, Report Review | Community-driven product feedback and quality control |
 
-2. **E-Commerce & Shopping (10 use cases):**
-   - Browse Products: View product catalog
-   - View Product Details: Access detailed product information
-   - Search Products: Find products by keywords, filters, or categories
-   - Add to Cart: Add selected products to shopping cart
-   - Manage Cart: Update quantities, remove items, view cart summary
-   - Checkout: Initiate purchase process
-   - Process Payment: Complete transaction via VNPay
-   - View Order History: Access past orders and receipts
-   - Track Order: Monitor order status and delivery
-   - Submit Review: Rate and review purchased products
+**Key Relationships:**
+- Dependencies show logical flow (e.g., "Add to Cart" → "View Cart" → "Complete Payment")
+- Extensions show conditional features (e.g., "Escalate to Staff" extends "Chat with AI")
+- Registered customers inherit all guest capabilities plus exclusive features
 
-3. **AI-Powered Recommendations (3 use cases):**
-   - Get AI Recommendations: Receive personalized product suggestions based on skin profile
-   - Chat with AI Assistant: Engage in conversational AI for product guidance
-   - View Related Products: See complementary products suggested by AI
+**Business Value:**
+- **Guest checkout** reduces friction for first-time buyers
+- **AI recommendations** increase average order value for registered users
+- **Livestream integration** creates urgency and drives impulse purchases
+- **Multi-channel support** (FAQ, AI, staff) improves customer satisfaction
+- **Order tracking** reduces support inquiries and builds trust
 
-4. **Customer Communication (5 use cases):**
-   - Browse FAQs: Access predefined frequently asked questions
-   - Search FAQs: Find specific FAQ answers
-   - Escalate to Staff: Request human support
-   - Chat with Staff: Communicate with customer service representatives
-   - View Chat History: Review previous conversations
-
-5. **Livestream & Shopping (4 use cases):**
-   - View Livestream: Watch live product demonstrations
-   - Join Livestream Chat: Participate in real-time chat during livestreams
-   - View Pinned Products: See featured products during livestream
-   - Purchase from Livestream: Buy products directly from livestream interface
-
-**External System Integrations:**
-- **Google Gemini API:** Powers AI recommendations and chatbot conversations
-- **VNPay API:** Processes online payments securely
-- **Agora SDK:** Enables livestream video viewing and real-time chat
-
-**Key Workflows:**
-- Authentication is the prerequisite for all protected operations
-- Product browsing naturally leads to AI recommendations and cart management
-- Cart management flows into checkout and payment processing
-- Livestream viewing integrates seamlessly with product pinning and direct purchases
-- Customer communication provides multiple support channels (FAQ, AI chat, staff escalation)
-
----
-
-#### 3. Use Case Diagram - Admin
-
-```mermaid
-graph TB
-    Admin["Admin"]
-
-    subgraph AdminProductUseCases["Product Management"]
-        UC27["Create Product"]
-        UC28["Update Product"]
-        UC29["Delete Product"]
-        UC30["Manage Inventory"]
-        UC31["Manage Categories"]
-    end
-
-    subgraph AdminLiveStreamUseCases["Livestream Management"]
-        UC32["Create Livestream"]
-        UC33["Start Broadcasting"]
-        UC34["Pin Products"]
-        UC35["End Livestream"]
-        UC36["View Stream Analytics"]
-    end
-
-    subgraph AdminCommunicationUseCases["Communication Management"]
-        UC37["Create FAQ"]
-        UC38["Update FAQ"]
-        UC39["Delete FAQ"]
-        UC40["View Customer Chats"]
-        UC41["Reply to Customer"]
-        UC42["Escalate Chat"]
-    end
-
-    subgraph AdminMarketingUseCases["Email Marketing"]
-        UC43["Create Email Template"]
-        UC44["Create Email Campaign"]
-        UC45["Define Audience Segment"]
-        UC46["Schedule Campaign"]
-        UC47["Send Campaign"]
-        UC48["View Campaign Analytics"]
-    end
-
-    subgraph AdminAnalyticsUseCases["Analytics & Reporting"]
-        UC49["View Sales Dashboard"]
-        UC50["View Customer Analytics"]
-        UC51["View Livestream Analytics"]
-        UC52["Generate Reports"]
-        UC53["Export Data"]
-    end
-
-    subgraph AdminFinanceUseCases["Finance Management"]
-        UC54["Record Expense"]
-        UC55["View Cash Flow"]
-        UC56["Generate Financial Report"]
-        UC57["Track Revenue"]
-    end
-
-    subgraph AdminHRUseCases["HR Management"]
-        UC58["Manage Employees"]
-        UC59["View Staff Records"]
-        UC60["Manage Permissions"]
-    end
-
-    subgraph AdminOrderUseCases["Order Management"]
-        UC61["View All Orders"]
-        UC62["Update Order Status"]
-        UC63["Process Refund"]
-        UC64["View Order Details"]
-    end
-
-    subgraph ExternalIntegrations["External System Integrations"]
-        UC67["SMTP Email Service"]
-        UC68["Agora Livestream"]
-    end
-
-    %% Admin Use Cases
-    Admin --> UC27
-    Admin --> UC28
-    Admin --> UC29
-    Admin --> UC30
-    Admin --> UC31
-    Admin --> UC32
-    Admin --> UC33
-    Admin --> UC34
-    Admin --> UC35
-    Admin --> UC36
-    Admin --> UC37
-    Admin --> UC38
-    Admin --> UC39
-    Admin --> UC40
-    Admin --> UC41
-    Admin --> UC42
-    Admin --> UC43
-    Admin --> UC44
-    Admin --> UC45
-    Admin --> UC46
-    Admin --> UC47
-    Admin --> UC48
-    Admin --> UC49
-    Admin --> UC50
-    Admin --> UC51
-    Admin --> UC52
-    Admin --> UC53
-    Admin --> UC54
-    Admin --> UC55
-    Admin --> UC56
-    Admin --> UC57
-    Admin --> UC58
-    Admin --> UC59
-    Admin --> UC60
-    Admin --> UC61
-    Admin --> UC62
-    Admin --> UC63
-    Admin --> UC64
-
-    %% External System Integrations
-    UC47 --> UC67
-    UC33 --> UC68
-
-    %% Use Case Dependencies
-    UC27 --> UC30
-    UC28 --> UC30
-    UC29 --> UC30
-    UC32 --> UC33
-    UC33 --> UC34
-    UC34 --> UC36
-    UC37 --> UC38
-    UC38 --> UC39
-    UC40 --> UC41
-    UC41 --> UC42
-    UC43 --> UC44
-    UC44 --> UC45
-    UC45 --> UC46
-    UC46 --> UC47
-    UC47 --> UC48
-    UC49 --> UC50
-    UC50 --> UC51
-    UC51 --> UC52
-    UC52 --> UC53
-    UC54 --> UC55
-    UC55 --> UC56
-    UC56 --> UC57
-    UC58 --> UC59
-    UC59 --> UC60
-
-    style Admin fill:#fff3e0,stroke:#e65100,stroke-width:3px
-    style AdminProductUseCases fill:#ede7f6,stroke:#512da8
-    style AdminLiveStreamUseCases fill:#e0f2f1,stroke:#004d40
-    style AdminCommunicationUseCases fill:#fff9c4,stroke:#f57f17
-    style AdminMarketingUseCases fill:#f0f4c3,stroke:#827717
-    style AdminAnalyticsUseCases fill:#dcedc8,stroke:#558b2f
-    style AdminFinanceUseCases fill:#c8e6c9,stroke:#1b5e20
-    style AdminHRUseCases fill:#b2dfdb,stroke:#00695c
-    style AdminOrderUseCases fill:#b2ebf2,stroke:#01579b
-    style ExternalIntegrations fill:#ffccbc,stroke:#bf360c
-```
-
-**Admin Use Case Diagram Explanation:**
-
-This Use Case Diagram focuses exclusively on administrative and operational interactions with the Wrencos platform. It illustrates 38 primary use cases organized into 8 functional areas:
-
-**Admin/Staff Actor:**
-- Platform administrators and staff members managing products, livestreams, marketing campaigns, customer communications, analytics, finance, HR, and orders
-
-**Admin Use Cases (38 total):**
-
-1. **Product Management (5 use cases):**
-   - Create Product: Add new beauty products to catalog
-   - Update Product: Modify product information and attributes
-   - Delete Product: Remove products from catalog
-   - Manage Inventory: Track and update stock quantities
-   - Manage Categories: Organize products into categories and subcategories
-
-2. **Livestream Management (5 use cases):**
-   - Create Livestream: Schedule new livestream events
-   - Start Broadcasting: Begin video transmission to customers
-   - Pin Products: Feature specific products during livestream
-   - End Livestream: Conclude broadcast session
-   - View Stream Analytics: Analyze viewer metrics, engagement, and conversions
-
-3. **Communication Management (6 use cases):**
-   - Create FAQ: Add new frequently asked questions
-   - Update FAQ: Modify existing FAQ content
-   - Delete FAQ: Remove outdated FAQs
-   - View Customer Chats: Monitor all active customer conversations
-   - Reply to Customer: Send responses to customer inquiries
-   - Escalate Chat: Route complex issues to appropriate staff members
-
-4. **Email Marketing (6 use cases):**
-   - Create Email Template: Design reusable email layouts
-   - Create Email Campaign: Compose marketing campaigns
-   - Define Audience Segment: Target specific customer groups
-   - Schedule Campaign: Set delivery time for campaigns
-   - Send Campaign: Dispatch emails to subscribers
-   - View Campaign Analytics: Track open rates, click-through rates, conversions
-
-5. **Analytics & Reporting (5 use cases):**
-   - View Sales Dashboard: Monitor revenue and order metrics
-   - View Customer Analytics: Analyze customer behavior and demographics
-   - View Livestream Analytics: Review livestream performance metrics
-   - Generate Reports: Create comprehensive business reports
-   - Export Data: Download analytics data for external analysis
-
-6. **Finance Management (4 use cases):**
-   - Record Expense: Log business expenses and costs
-   - View Cash Flow: Monitor incoming and outgoing transactions
-   - Generate Financial Report: Create profit/loss and financial statements
-   - Track Revenue: Monitor sales revenue and income streams
-
-7. **HR Management (3 use cases):**
-   - Manage Employees: Add, update, or remove staff records
-   - View Staff Records: Access employee information and history
-   - Manage Permissions: Control user roles and access levels
-
-8. **Order Management (4 use cases):**
-   - View All Orders: Access complete order database
-   - Update Order Status: Change order fulfillment status
-   - Process Refund: Handle customer refunds and returns
-   - View Order Details: Access detailed order information
-
-**External System Integrations:**
-- **SMTP Server:** Sends email campaigns and transactional emails
-- **Agora SDK:** Manages livestream video broadcasting infrastructure
-
-**Key Workflows:**
-- Product management provides the foundation for livestream and e-commerce operations
-- Livestream management integrates with product catalog and customer engagement
-- Communication management handles both proactive (FAQs) and reactive (chat) support
-- Email marketing depends on audience segmentation and template design
-- Analytics aggregates data from all operational areas for business intelligence
-- Finance and HR management support organizational operations
-- Order management tracks fulfillment and customer satisfaction
-
+#### 2.2 Use Case Diagram - Admin
 ---
 
 #### 3. Activity Diagram – Customer Purchase Flow
