@@ -31,7 +31,7 @@ Objective 1: To design and implement a RESTful API backend with database support
 
 Objective 2: To develop a web application providing administrative interfaces for business management and customer interfaces for product discovery, shopping, and order management, alongside mobile applications for cross-platform customer access for shopping, viewing livestream, understanding about skin, and a admin mobile application for livestream.
 
-Objective 3: To integrate Google Gemini AI for conversational product recommendations based on customer skin type and concerns, implementing context-aware dialogue systems that maintain conversation history and enable staff escalation, alongside a Skin Study feature with AI dermatology expert consultation, image analysis, and voice interaction capabilities (Liu et al., 2020; Tschandl, Rosendahl and Kittler, 2018; Daneshjou et al., 2022).
+Objective 3: To integrate Google Gemini AI for conversational product recommendations based on customer skin type and concerns, implementing context-aware dialogue systems that maintain conversation history and enable staff escalation, alongside a Skin Study feature with AI dermatology expert consultation, image analysis, and voice interaction capabilities.
 
 Objective 4: To implement WebSocket infrastructure supporting real-time live video streaming with concurrent viewer support, product pinning during streams, real-time chat functionality, and viewer analytics.
 
