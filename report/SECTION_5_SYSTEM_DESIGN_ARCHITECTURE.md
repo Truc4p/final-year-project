@@ -4,27 +4,6 @@
 
 ### Rich Picture Narrative
 
-**Overview:** Wrencos is an integrated full-stack e-commerce platform engineered for small to medium-sized beauty businesses, consolidating fragmented technology ecosystems into a unified solution. The platform addresses the beauty market's dual challenge: (1) customers' inability to physically evaluate products (sensory deficit); (2) businesses' operational complexity managing 5–8 disconnected platforms.
-
-**Key Actors:**
-- **Customers:** Browse products, receive AI-powered recommendations (Google Gemini), attend live streams, participate in real-time chat, purchase with VNPay, track orders, subscribe to newsletters
-- **Business Admins/Staff:** Manage product catalog, conduct live streams with product pinning, respond to customer chats (AI escalations), view analytics dashboards, configure email campaigns, manage orders/inventory, track finances and cash flow, manage HR and employees
-
-**System Components:**
-- **Client Layer:** Vue.js 3 web app, React Native mobile app, Admin dashboard
-- **Backend API:** Node.js + Express.js with 8 service modules (E-Commerce, Live Streaming, Communication, Marketing, Analytics, Finance, HR, Auth)
-- **Real-Time Layer:** WebSocket server for live streaming, chat, notifications
-- **AI Integration:** Google Gemini API for conversational product recommendations
-- **Data Layer:** MongoDB Atlas with 15+ collections via Mongoose ODM
-- **External Services:** VNPay (payments), SMTP (email), Google Gemini (AI)
-
-**Core Data Flows:**
-1. **Shopping Journey:** Browse → AI Chat → Cart → VNPay Checkout → Order Tracking → Email Confirmation
-2. **Live Streaming:** Admin creates stream → Broadcasts (WebSocket) → Customers view (WebRTC) → Real-time chat → Product pinning → Purchases
-3. **AI Assistance:** Customer query → FAQ/Product search → Gemini API → Personalized response → Optional staff escalation
-4. **Email Marketing:** Create campaign → Select template → Target segment → Bulk send (Nodemailer) → Track analytics
-5. **Analytics:** Services → MongoDB aggregation → Chart.js visualizations → Dashboard insights
-
 ---
 
 ## 5.2 System Architecture
