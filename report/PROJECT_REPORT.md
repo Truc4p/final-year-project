@@ -56,6 +56,7 @@ This report proceeds as follows: Section 2 elaborates upon the problem statement
 
 ### 2.1 Introduction
 
+This chapter critically reviews existing literature and competing solutions to establish the context and justify the need for the proposed integrated e-commerce platform. The review focuses on beauty e-commerce platforms and SME business management systems released within the last ten years, with specific emphasis on solutions utilizing live streaming commerce, AI-powered personalization, and dermatology AI. It examines competitive platforms, while assessing enabling technologies. Sources were gathered from academic databases including IEEE Xplore, ACM Digital Library, and Google Scholar, as well as commercial platform documentation, market research reports from analysts (Gartner, Forrester, McKinsey, Statista).
 
 ### 2.2 Problem Domain Analysis
 
