@@ -40,12 +40,6 @@
 │              │Portal │     │ App   │     │  Web   │                      │
 │              │(Cust) │     │(Cust) │     │(Admin) │                      │
 │              └───────┘     └───────┘     └────────┘                      │
-│                                                                          │
-│  ┌──────────────────────────────────────────────────────────────────┐    │
-│  │              AWS/GCP (Cloud Infrastructure)                      │    │
-│  │  • Application Hosting  • File Storage  • Database Backups       │    │
-│  └──────────────────────────────────────────────────────────────────┘    │
-│                                                                          │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -92,7 +86,7 @@ The System Context Diagram provides the highest-level view of the Wrencos platfo
 │    │    ┌─────────┐ ┌─────────┐ ┌───────────────┐       │           │
 │    │    │ Finance │ │  Auth   │ │ Communication │       │           │
 │    │    │Service  │ │Service  │ │   Service     │       │           │ 
-│    │    │         │ │         │ └───────────────┘       │           │             
+│    │    │         │ │         │ └───────────────┘       │                       
 │    │    └─────────┘ └─────────┘                         │           │    
 │    │                                                    │           │   
 │    └────────────────────┬───────────────────────────────┘           │
@@ -116,7 +110,6 @@ The System Context Diagram provides the highest-level view of the Wrencos platfo
 │ • Google Gemini API (AI Engine)          │
 │ • VNPay API (Payment Gateway)            │
 │ • SMTP Server (Email Delivery)           │
-│ • AWS/GCP (File Storage & Hosting)       │
 └──────────────────────────────────────────┘
 ```
 

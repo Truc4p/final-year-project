@@ -186,14 +186,12 @@ This data validates the platform's three core pillars: **integration, personaliz
 
 ### MoSCoW Summary
 
-| Priority | Number of Features | Number of Days (Development) | Allocation |
-|---|---|---|---|
-| Must | 6 | 62 | Core features (essential for MVP) |
-| Should | 11 | 112 | High-priority features (enhance value) |
-| Could | 4 | 32 | Nice-to-have features (polish & extras) |
-| **TOTAL (Development)** | **21** | **206** | ~69% of 10-month project |
-| **Remaining Time** | — | **~94 days** | Testing, QA, deployment, documentation, report, buffer |
-| **10-Month Project** | — | **~300 days** | Full timeline (10 months × 30 days) |
+| Priority | Number of Features | Allocation |
+|---|---|---|
+| Must | 6 | Core features (essential for MVP) |
+| Should | 11 | High-priority features (enhance value) |
+| Could | 4 | Nice-to-have features (polish & extras) |
+| **TOTAL** | **21** |  |
 
 ---
 
@@ -253,9 +251,6 @@ Section 2A — Business respondents (Shown if Q2 = Business owner/manager)
 | Q14 | Linear scale (1–5) | Business | Likelihood to migrate to an integrated alternative | 1=Very unlikely … 5=Very likely | Yes |
 | Q15 | Grid (Likert 1–5) | Business | Barriers to adopting a new platform | Rows: Setup complexity; Migration difficulty; Security/compliance; Staff resistance; Lack of native live streaming; Platform fragmentation. Cols: 1–5 | Yes |
 
-"Section 2A — Business","Q12A_BIZ","Business","linear_scale_1_5","Importance of offering AI skin education with cited sources to customers","1=Not important|5=Very important","Yes",""
-"Section 2A — Business","Q13A_BIZ","Business","multiple_choice","Would you enable an AI skin education module (with citations and disclaimers)?","Yes|No|Maybe","Yes",""
-
 Section 2B — End-use customers (Shown if Q2 = End-use customer)
 
 | Q# | Type | Audience | Prompt | Options | Required |
@@ -270,10 +265,11 @@ Section 2B — End-use customers (Shown if Q2 = End-use customer)
 | Q13 | Linear scale (1–5) | Customer | Interest in live shopping with experts | 1=Not interested … 5=Very interested | Yes |
 | Q14 | Multiple choice | Customer | Willingness to share skin profile for better recommendations | Yes; No; Maybe | Yes |
 | Q15 | Paragraph | Customer | Biggest frustration when shopping for skincare/cosmetics | Free text | No |
+| Q16 | Linear scale (1–5) | Customer | Interest in AI skin education with cited sources (textbooks/peer-reviewed) | 1=Not interested|5=Very interested | Yes |
+| Q17 | Checkboxes | Customer | Topics you want the AI to teach/explain | Skin basics & condition overviews; Ingredient explanations; Routine building with rationale; Side effects/contraindications; Budget-friendly alternatives; Citations/links to sources | No |
+| Q18 | Linear scale (1–5) | Customer | Agreement: I waste time and money on unsuitable products or routines | 1=Strongly disagree|5=Strongly agree | Yes |
 
-"Section 2B — Customers","Q12A_CUST","Customer","linear_scale_1_5","Interest in AI skin education with cited sources (textbooks/peer‑reviewed)","1=Not interested|5=Very interested","Yes",""
-"Section 2B — Customers","Q12B_CUST","Customer","checkboxes","Topics you want the AI to teach/explain","Skin basics & condition overviews|Ingredient explanations|Routine building with rationale|Side effects/contraindications|Budget-friendly alternatives|Citations/links to sources","No",""
-"Section 2B — Customers","Q14B_CUST","Customer","linear_scale_1_5","Agreement: I waste time and money on unsuitable products or routines","1=Strongly disagree|5=Strongly agree","Yes",""
+
 
 
 Notes
