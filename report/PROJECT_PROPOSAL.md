@@ -188,7 +188,7 @@ Out-of-scope: advanced payment gateway integration beyond basic structure, compl
 
 **Milestones and Timeline:**
 
-**Weeks 1-4 (Planning & Design)Requirements finalization, system design, entity-relationship diagrams, API specifications, UI wireframes, technical validation through prototypes, infrastructure setup, development environment configuration.
+**Weeks 1-4 (Planning & Design):** Requirements finalization, system design, entity-relationship diagrams, API specifications, UI wireframes, technical validation through prototypes, infrastructure setup, development environment configuration.
 
 **Weeks 5-8 (Backend Foundation - Phase 1):** Express.js application structure, MongoDB schemas, JWT authentication, core API endpoints (auth, products, orders), Swagger documentation, database indexing strategy.
 

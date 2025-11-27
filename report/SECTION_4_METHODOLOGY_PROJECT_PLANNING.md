@@ -2,36 +2,125 @@
 
 ## 4.1 Development Methodology
 
-This project adopted **Agile Scrum** methodology to enable iterative development, continuous stakeholder feedback, and adaptive planning throughout the project lifecycle. Agile Scrum was selected for its suitability to full-stack development projects requiring frequent integration testing, user feedback incorporation, and risk mitigation through incremental delivery.
+This project adopted the Agile Scrum methodology for its suitability to full-stack development. This approach enabled iterative development and incremental delivery, allowing for adaptive planning and effective risk mitigation. Systematic delivery of functional increments were ensured by incorporating continuous feedback from supervisor reviews and user validation sessions, which required frequent integration testing and user input.
 
-**Sprint Structure and Ceremonies:** Development was organized into **2-week sprints**, each comprising sprint planning, daily standups (self-directed progress tracking), sprint reviews, and retrospectives. Sprint reviews and retrospectives were hosted by the project supervisor to evaluate feature completeness, provide technical guidance, and assess alignment with project objectives. This cadence enabled regular checkpoint validation while maintaining development momentum.
+**Sprint Structure and Ceremonies:** Development was organized into 2-week sprints, each comprising sprint planning, daily standups (self-directed progress tracking), sprint reviews, and retrospectives. Sprint reviews and retrospectives were hosted by the project supervisor to evaluate feature completeness, provide technical guidance, and assess alignment with project objectives. This cadence enabled regular checkpoint validation while maintaining development momentum.
 
 **Requirements Prioritization:** Requirements derived from Section 3.3 were prioritized using the MoSCoW framework, ensuring critical e-commerce and authentication functionality shipped first, followed by differentiating features (live streaming, AI chat, Skin Study), and optional enhancements (business management tools) in later sprints.
 
-**Sprint Planning and Feature Allocation:** 
+**Sprint Planning and Feature Allocation:** The table below maps functional requirements to 20 development sprints across the 10-month project timeline, demonstrating progression from foundational backend infrastructure through customer-facing interfaces and advanced AI features.
 
 | Sprint | Duration | Focus Area | Requirements Covered | Deliverables |
 |---|---|---|---|---|
-| **Sprint 1** | Weeks 1–2 | Backend Foundation & Authentication | ADMIN_01, ADMIN_02 (partial), CUSTOMER_01 (partial) | RESTful API structure, PostgreSQL schema, JWT authentication, RBAC implementation, product catalog CRUD endpoints |
-| **Sprint 2** | Weeks 3–4 | E-Commerce Core (Backend + Frontend) | CUSTOMER_01, CUSTOMER_02, CUSTOMER_03 | Shopping cart, checkout flow, order management endpoints, web customer UI for product browsing and purchasing |
-| **Sprint 3** | Weeks 5–6 | Admin Dashboard & Business Management | ADMIN_01, ADMIN_02, ADMIN_03, ADMIN_06 | Web admin UI for product/order management, sales analytics dashboard, financial reporting module |
-| **Sprint 4** | Weeks 7–8 | AI Chat & Personalization | CUSTOMER_04, ADMIN_09 (partial) | Google Gemini integration, conversational recommendation engine, FAQ management, staff escalation logic |
-| **Sprint 5** | Weeks 9–10 | Live Streaming Infrastructure | CUSTOMER_05, CUSTOMER_06, ADMIN_05, ADMIN_08 | WebSocket server, real-time video streaming, product pinning, viewer analytics, web and mobile livestream viewing |
-| **Sprint 6** | Weeks 11–12 | Skin Study Module (AI Dermatology) | CUSTOMER_08, ADMIN_07 | AI dermatology expert with text/voice chat, skin image analysis, RAG knowledge base integration with Qdrant, chat history management |
-| **Sprint 7** | Weeks 13–14 | Mobile Applications (Customer & Admin) | CUSTOMER_05, CUSTOMER_06, ADMIN_05 | React Native customer app with Skin Study module, admin app for livestream management, cross-platform deployment (iOS/Android) |
-| **Sprint 8** | Weeks 15–16 | Email Marketing & Advanced Features | ADMIN_04, CUSTOMER_10, CUSTOMER_07, CUSTOMER_09 | Email campaign management, customer segmentation, newsletter templates, real-time chat with staff, purchase history |
-| **Sprint 9** | Weeks 17–18 | Testing, Documentation & Deployment | All requirements validation | UAT execution, Swagger API documentation finalization, deployment pipeline setup, performance optimization |
-| **Sprint 10** | Weeks 19–20 | Polish & Contingency | ADMIN_10 (Could), final fixes | HR module (optional), bug fixes, UX refinements, final stakeholder demo preparation |
+| **Sprint 1** | Weeks 1–2 | Project Setup & Backend Foundation | — | Development environment setup, Git repository, MongoDB database schema, Node.js/Express API structure, Mongoose ODM configuration |
+| **Sprint 2** | Weeks 3–4 | Authentication & Authorization | ADMIN_01 (partial) | JWT authentication, RBAC implementation, user registration/login endpoints, password hashing |
+| **Sprint 3** | Weeks 5–6 | Product Catalog Management (Backend) | ADMIN_01 | Product CRUD endpoints, category management, inventory tracking, image upload functionality |
+| **Sprint 4** | Weeks 7–8 | E-Commerce Core (Backend) | CUSTOMER_02, CUSTOMER_03 (partial) | Shopping cart endpoints, checkout flow, order creation, payment integration structure |
+| **Sprint 5** | Weeks 9–10 | Order Management System | ADMIN_02, CUSTOMER_03 | Order status tracking, order processing endpoints, refund logic, order export functionality |
+| **Sprint 6** | Weeks 11–12 | Web Customer UI (Product & Shopping) | CUSTOMER_01, CUSTOMER_02 | Vue.js customer frontend, product browsing, search/filter, shopping cart UI, checkout interface |
+| **Sprint 7** | Weeks 13–14 | Web Admin UI (Product & Order Management) | ADMIN_01, ADMIN_02 | Vue.js admin dashboard, product management UI, order management interface, inventory monitoring |
+| **Sprint 8** | Weeks 15–16 | Analytics Dashboard | ADMIN_03 | Real-time sales analytics, revenue tracking, top products reporting, conversion metrics, chart visualizations |
+| **Sprint 9** | Weeks 17–18 | Financial Management Module | ADMIN_06 | Cash flow tracking, expense recording, financial reporting, profitability analysis by product |
+| **Sprint 10** | Weeks 19–20 | AI Chat Foundation | CUSTOMER_04 (partial) | Google Gemini API integration, basic conversational interface, product recommendation logic |
+| **Sprint 11** | Weeks 21–22 | AI Chat Enhancement | CUSTOMER_04, ADMIN_09 | Context-aware dialogue, conversation history, FAQ management, staff escalation mechanism |
+| **Sprint 12** | Weeks 23–24 | Live Streaming Backend | CUSTOMER_05 (partial), ADMIN_08 (partial) | WebSocket server, real-time video streaming infrastructure, product pinning logic, viewer tracking |
+| **Sprint 13** | Weeks 25–26 | Live Streaming Frontend (Web) | CUSTOMER_05, CUSTOMER_06 (partial), ADMIN_05 (partial) | Web livestream viewer interface, real-time chat UI, product display during streams, host controls |
+| **Sprint 14** | Weeks 27–28 | Skin Study Module (Backend & RAG) | CUSTOMER_08 (partial), ADMIN_07 (partial) | Qdrant vector database setup, knowledge base curation (500+ entries), RAG implementation, text chat endpoints |
+| **Sprint 15** | Weeks 29–30 | Skin Study Module (Voice & Image Analysis) | CUSTOMER_08, ADMIN_07 | Voice integration, real-time audio streaming, skin image analysis AI, multi-language support |
+| **Sprint 16** | Weeks 31–32 | Mobile App (Customer) - Core Features | CUSTOMER_01, CUSTOMER_02, CUSTOMER_06 (partial) | React Native customer app, product browsing, shopping cart, checkout, order tracking |
+| **Sprint 17** | Weeks 33–34 | Mobile App (Customer) - Skin Study Integration | CUSTOMER_08 | Skin Study module in mobile app, text chat, live chat, multi-languages integration, image upload, chat history management |
+| **Sprint 18** | Weeks 35–36 | Mobile App (Admin) - Livestream Management | ADMIN_05, CUSTOMER_06 | React Native admin app, livestream scheduling, stream management, viewer analytics, cross-platform deployment (iOS/Android) |
+| **Sprint 19** | Weeks 37–38 | Email Marketing & HR Features | ADMIN_04, CUSTOMER_10, CUSTOMER_07, CUSTOMER_09, ADMIN_10 (Could) | Email campaign management, customer segmentation, newsletter templates, staff chat, purchase history, HR module (optional) |
+| **Sprint 20** | Weeks 39–40 | Testing, Documentation & Deployment | All requirements validation | UAT execution, bug fixes, Swagger API documentation, performance optimization, deployment pipeline, final demo preparation |
 
-**Rationale for Sprint Allocation:** Sprint 1–2 established foundational infrastructure (authentication, database, API framework) required for all subsequent features. Sprint 3 delivered admin capabilities enabling supervisor review of business workflows. Sprint 4–6 implemented differentiating features (AI chat, livestreaming, Skin Study) validated through supervisor feedback. Sprint 7 extended platform reach via mobile applications. Sprint 8–9 completed secondary features and ensured production readiness. Sprint 10 provided buffer for polish and contingency.
+**Rationale for Sprint Allocation:** Sprints 1–5 established foundational infrastructure (authentication, database, core e-commerce APIs) required for all subsequent features. Sprints 6–7 delivered web interfaces enabling early user validation. Sprints 8–9 implemented business management modules for supervisor review. Sprints 10–11 added AI chat personalization. Sprints 12–13 introduced live streaming commerce. Sprints 14–15 implemented the complex Skin Study module with RAG knowledge base and voice/image analysis. Sprints 16–18 extended platform reach via mobile applications for both customer and admin users. Sprint 19 completed secondary features and optional modules. Sprint 20 ensured production readiness through comprehensive testing and deployment preparation.
 
 **Risk Mitigation Through Agile:** Agile Scrum enabled early identification and resolution of technical risks. For example, Sprint 5 livestreaming implementation revealed WebSocket scalability challenges, addressed through architecture refinement before Sprint 7 mobile integration. Sprint 6 Skin Study RAG implementation required knowledge base curation, identified during sprint planning and mitigated through parallel documentation effort.
 
 **Tools and Collaboration:** Version control via Git/GitHub enabled collaborative development and supervisor code review. API documentation via Swagger ensured contract-driven development between frontend and backend. Issue tracking and sprint planning via GitHub Projects maintained visibility into progress and blockers.
 
-This Agile Scrum approach balanced structured planning with adaptive execution, ensuring systematic delivery of functional increments while incorporating continuous feedback from supervisor reviews and user validation sessions.
-
 ## 4.2 Project Plan & Timeline
+
+This section presents the project timeline spanning 10 months (40 weeks) from March to December 2025, organized into five major phases: Discovery & Planning, Foundation Development, Feature Development, Integration & Testing, and Deployment & Finalization. The Gantt chart below visualizes the temporal allocation of sprints and key milestones.
+
+### Timeline Overview (10 Months, 20 Sprints)
+
+| Phase | Sprints | Weeks | Key Activities | Milestones |
+|---|---|---|---|---|
+| **Phase 1: Discovery & Planning** | Sprint 1 | Weeks 1–2 (Mar) | Requirements analysis, technology stack selection, environment setup, database schema design | M1: Development environment ready |
+| **Phase 2: Foundation Development** | Sprints 2–5 | Weeks 3–10 (Mar–Apr) | Authentication, product catalog, e-commerce backend, order management | M2: Core backend APIs functional |
+| **Phase 3: Feature Development (Core)** | Sprints 6–13 | Weeks 11–26 (May–Jul) | Web UIs, analytics, financial module, AI chat, live streaming | M3: Web platform MVP complete |
+| **Phase 4: Feature Development (Advanced)** | Sprints 14–18 | Weeks 27–36 (Aug–Oct) | Skin Study module (RAG, voice, image), mobile apps (customer & admin) | M4: Mobile apps deployed |
+| **Phase 5: Integration & Finalization** | Sprints 19–20 | Weeks 37–40 (Nov–Dec) | Marketing, HR features, UAT, documentation, deployment | M5: Production deployment |
+
+### Gantt Chart (Visual Timeline)
+
+```
+Phase/Sprint          Month 1-2    Month 3-4    Month 5-6    Month 7-8    Month 9-10
+                      Mar-Apr      May-Jun      Jul-Aug      Sep-Oct      Nov-Dec
+=====================================================================================
+PHASE 1: DISCOVERY & PLANNING
+Sprint 1              ██
+                      M1
+
+PHASE 2: FOUNDATION DEVELOPMENT
+Sprint 2              ██
+Sprint 3                  ██
+Sprint 4                      ██
+Sprint 5                          ██
+                                  M2
+
+PHASE 3: FEATURE DEVELOPMENT (CORE)
+Sprint 6                              ██
+Sprint 7                                  ██
+Sprint 8                                      ██
+Sprint 9                                          ██
+Sprint 10                                             ██
+Sprint 11                                                 ██
+Sprint 12                                                     ██
+Sprint 13                                                         ██
+                                                                  M3
+
+PHASE 4: FEATURE DEVELOPMENT (ADVANCED)
+Sprint 14                                                             ██
+Sprint 15                                                                 ██
+Sprint 16                                                                     ██
+Sprint 17                                                                         ██
+Sprint 18                                                                             ██
+                                                                                      M4
+
+PHASE 5: INTEGRATION & FINALIZATION
+Sprint 19                                                                                 ██
+Sprint 20                                                                                     ██
+                                                                                              M5
+```
+
+### Key Milestones
+
+| Milestone | Week | Description | Success Criteria |
+|---|---|---|---|
+| **M1: Development Environment Ready** | Week 2 | Infrastructure and tooling setup complete | Git repository configured, MongoDB Atlas connected, API framework running, development environment documented |
+| **M2: Core Backend APIs Functional** | Week 10 | E-commerce backend operational | Authentication working, product CRUD operational, shopping cart and checkout endpoints tested, order management functional |
+| **M3: Web Platform MVP Complete** | Week 26 | Full-featured web application deployed | Customer frontend enables product browsing and purchasing, admin dashboard manages products/orders/analytics, AI chat provides recommendations, live streaming functional on web |
+| **M4: Mobile Apps Deployed** | Week 36 | Cross-platform mobile applications launched | Customer app (iOS/Android) with Skin Study module published, admin app with livestream management deployed, mobile-web feature parity achieved |
+| **M5: Production Deployment** | Week 40 | Platform production-ready with documentation | UAT completed with stakeholder sign-off, Swagger API documentation finalized, deployment pipeline operational, performance metrics met, final demonstration delivered |
+
+### Phase Descriptions
+
+**Phase 1: Discovery & Planning (Weeks 1–2)** — Established project foundation through requirements finalization, technology stack selection (Node.js, MongoDB, Vue.js, React Native), development environment configuration, and database schema design. This phase ensured alignment between project objectives and technical architecture.
+
+**Phase 2: Foundation Development (Weeks 3–10)** — Implemented core backend infrastructure including JWT authentication with RBAC, product catalog management, e-commerce transaction logic, and order processing systems. This phase delivered the foundational APIs required for all customer-facing and administrative features.
+
+**Phase 3: Feature Development Core (Weeks 11–26)** — Developed customer and admin web interfaces, business management modules (analytics, financial reporting), AI-powered chat with product recommendations, and live streaming commerce infrastructure. This phase delivered the web platform MVP enabling stakeholder validation.
+
+**Phase 4: Feature Development Advanced (Weeks 27–36)** — Implemented advanced AI capabilities (Skin Study module with RAG knowledge base, voice chat, image analysis) and cross-platform mobile applications. This phase extended platform reach and differentiation through specialized dermatology consultation and mobile accessibility.
+
+**Phase 5: Integration & Finalization (Weeks 37–40)** — Completed secondary features (email marketing, staff chat, HR module), conducted comprehensive User Acceptance Testing (UAT), finalized technical documentation, optimized performance, and deployed production infrastructure. This phase ensured production readiness and stakeholder satisfaction.
+
+### Risk Buffer and Contingency Planning
+
+The timeline incorporates buffer time through strategic phase overlap and Sprint 20's dedicated testing period. Should technical risks materialize (e.g., WebSocket scalability issues, RAG knowledge base curation delays), the project plan prioritizes Must-have requirements (Section 3.3) with Should-have and Could-have features deferrable to post-deployment iterations. Weekly supervisor reviews enable early risk identification and adaptive re-planning within 2-week sprint boundaries.
+
 
 ## 4.3 Feasibility Analysis
 
