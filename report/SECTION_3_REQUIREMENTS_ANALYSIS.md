@@ -112,32 +112,28 @@ Data sharing willingness supports personalization implementation: **58% confirme
 
 | ID | Description | Priority | Estimation |
 |---|---|---|---|
-| USR_01 | As a customer, I want to receive personalized product recommendations based on my skin type and concerns, so that I find products matching my specific needs without trial-and-error. | Must | 12 days |
 | USR_02 | As a customer, I want to browse and search products with detailed ingredient lists and compatibility filters, so that I can make informed purchasing decisions aligned to my skin profile. | Must | 10 days |
-| USR_03 | As a customer, I want to add products to cart, apply discounts, and complete checkout securely, so that I can purchase products with confidence. | Must | 12 days |
+| USR_03 | As a customer, I want to add products to cart, and complete checkout securely, so that I can purchase products with confidence. | Must | 12 days |
 | USR_04 | As a customer, I want to track order status and receive notifications, so that I have visibility into delivery timelines. | Must | 8 days |
 | USR_05 | As a customer, I want to watch live streaming commerce events with real-time product display and chat, so that I can interact with experts before purchasing. | Must | 8 days |
 | USR_05A | As a customer, I want to view livestreams on both web and mobile app platforms, so that I can watch conveniently on any device with optimal screen viewing experience. | Must | 6 days |
-| USR_06 | As a customer, I want to chat with an AI assistant about product recommendations, ingredients, and usage, so that I receive expert guidance without waiting for staff. | Should | 8 days |
-| USR_06A | As a customer, I want to consult with an AI dermatology expert about my skin concerns (acne, sensitivity, aging, hyperpigmentation), so that I receive clinical-grade guidance before purchasing. | Should | 14 days |
-| USR_06B | As a customer, I want the AI dermatology expert to analyze my skin profile and recommend products from the catalog matched to dermatological best practices, so that I purchase with clinical confidence. | Should | 12 days |
+| USR_06 | As a customer, I want to chat with an real staff, so that I ... | Should | 8 days |
+| USR_01 | As a customer, I want to chat with an AI assistant, receive personalized product recommendations, so that I find products matching my specific needs without trial-and-error. | Must | 12 days |
+| USR_06A | As a customer, I want to consult with an AI dermatology expert about my skin concerns, so that I receive clinical-grade guidance. | Should | 14 days |
 | USR_07 | As a customer, I want to view my purchase history and reorder previous products, so that I can repurchase skincare routines efficiently. | Should | 6 days |
-| USR_08 | As a customer, I want to write product reviews and view reviews from other customers, so that I can assess product quality through peer feedback. | Should | 8 days |
 | USR_09 | As a customer, I want to receive email recommendations and exclusive offers matched to my profile, so that I discover relevant products. | Could | 6 days |
-| USR_10 | As a customer, I want to create and save skincare routines, so that I can organize product recommendations into personalized regimens. | Could | 8 days |
+| USR_08 | As a customer, I want to write product reviews and view reviews from other customers, so that I can assess product quality through peer feedback. | Should | 8 days |
 | ADM_01 | As a business admin, I want to manage product catalog (create, edit, delete products with attributes), so that I maintain accurate inventory and product information. | Must | 10 days |
 | ADM_02 | As a business admin, I want to view real-time sales analytics (revenue, orders, top products, conversion metrics), so that I monitor business performance and identify trends. | Must | 12 days |
-| ADM_03 | As a business admin, I want to manage customer segmentation and email campaigns with audience filtering, so that I execute targeted marketing campaigns. | Should | 12 days |
-| ADM_04 | As a business admin, I want to configure live streaming events (schedule, product pins, viewer analytics), so that I conduct organized live commerce sessions. | Should | 10 days |
-| ADM_04A | As a business admin, I want to livestream on both web and mobile app platforms, so that I can reach customers across all devices and maximize engagement. | Should | 10 days |
-| ADM_05 | As a business admin, I want to manage staff accounts with role-based access control (admin, staff, viewer), so that I protect sensitive data and restrict access appropriately. | Should | 8 days |
+| ADM_04 | As a business admin, I want to livestream on both web and mobile app platforms, so that I can reach customers across all devices and maximize engagement. | Should | 10 days |
 | ADM_06 | As a business admin, I want to view financial reports (revenue, expenses, cash flow, profitability by product), so that I monitor financial health and make data-driven decisions. | Should | 10 days |
 | ADM_07 | As a business admin, I want to manage orders (view, update status, process refunds, export), so that I handle order fulfillment efficiently. | Should | 8 days |
 | ADM_08 | As a business admin, I want to manage live streaming with real-time viewer engagement metrics and product pinning, so that I optimize live commerce performance. | Could | 10 days |
 | ADM_09 | As a business admin, I want to configure AI chatbot responses and FAQ management, so that I customize customer support interactions. | Could | 8 days |
-| ADM_09A | As a business admin, I want to configure the AI dermatology expert (knowledge base, skin concern categories, product-to-concern mappings), so that I ensure recommendations align with my brand and product catalog. | Should | 10 days |
-| ADM_09B | As a business admin, I want to review and export dermatology consultation logs and customer skin profiles, so that I understand customer needs and optimize product offerings. | Should | 8 days |
+| ADM_09A | As a business admin, I want to configure the AI dermatology expert (knowledge base, product-to-concern mappings), so that I ensure recommendations align with my brand and product catalog. | Should | 10 days |
 | ADM_10 | As a business admin, I want to access employee HR records and document management, so that I centralize HR operations. | Could | 8 days |
+| ADM_03 | As a business admin, I want to manage customer segmentation and email campaigns with audience filtering, so that I execute targeted marketing campaigns. | Should | 12 days |
+
 
 ### MoSCoW Summary
 
@@ -169,7 +165,7 @@ Data sharing willingness supports personalization implementation: **58% confirme
 Overview and branching logic
 - Audience: SME beauty business owners/managers and end-use customers
 - Total questions: 25
-- Branching: Role-based routing after Q2. If Business → Section 2A; if Customer → Section 2B.
+- Branching: Role-based routing after Q5. If Business → Section 3; if Customer → Section 4.
 - Consent routing: If Q1 = "I do not consent" → End (Submit)
 
 Section 0 — Intro & Consent (All)
@@ -182,12 +178,12 @@ Section 1 — Screening & Demographics (All)
 
 | Q# | Type | Audience | Prompt | Options | Required | Logic |
 |---|---|---|---|---|---|---|
-| Q2 | Multiple choice | All | Your role | Business owner/manager; End-use customer | Yes | Go to section based on answer |
-| Q3 | Multiple choice | All | Gender | Female; Male; Prefer to self-describe; Prefer not to say | No | If self-describe → short answer |
-| Q4 | Multiple choice | All | Age | 18–24; 25–34; 35–44; 45–55; 56+ | Yes | — |
-| Q5 | Multiple choice + short answer | All | Willing to be contacted for a short follow-up interview? | Yes (email below); No | No | If Yes → Short answer email |
+| Q2 | Multiple choice | All | Gender | Female; Male; Prefer to self-describe; Prefer not to say | No | If self-describe → short answer |
+| Q3 | Multiple choice | All | Age | 18–24; 25–34; 35–44; 45–55; 56+ | Yes | — |
+| Q4 | Multiple choice + short answer | All | Willing to be contacted for a short follow-up interview? | Yes (email below); No | No | If Yes → Short answer email |
+| Q5 | Multiple choice | All | Your role | Business owner/manager; End-use customer | Yes | Go to section based on answer |
 
-Section 2A — Business respondents (Shown if Q2 = Business owner/manager)
+Section 3 — Business respondents (Shown if Q5 = Business owner/manager)
 
 | Q# | Type | Audience | Prompt | Options | Required |
 |---|---|---|---|---|---|
@@ -202,7 +198,7 @@ Section 2A — Business respondents (Shown if Q2 = Business owner/manager)
 | Q14 | Linear scale (1–5) | Business | Likelihood to migrate to an integrated alternative | 1=Very unlikely … 5=Very likely | Yes |
 | Q15 | Grid (Likert 1–5) | Business | Barriers to adopting a new platform | Rows: Setup complexity; Migration difficulty; Security/compliance; Staff resistance; Lack of native live streaming; Platform fragmentation. Cols: 1–5 | Yes |
 
-Section 2B — End-use customers (Shown if Q2 = End-use customer)
+Section 4 — End-use customers (Shown if Q5 = End-use customer)
 
 | Q# | Type | Audience | Prompt | Options | Required |
 |---|---|---|---|---|---|
@@ -220,15 +216,6 @@ Section 2B — End-use customers (Shown if Q2 = End-use customer)
 | Q17 | Checkboxes | Customer | Topics you want the AI to teach/explain | Skin basics & condition overviews; Ingredient explanations; Routine building with rationale; Side effects/contraindications; Budget-friendly alternatives; Citations/links to sources | No |
 | Q18 | Linear scale (1–5) | Customer | Agreement: I waste time and money on unsuitable products or routines | 1=Strongly disagree|5=Strongly agree | Yes |
 
+https://forms.gle/5rphtesVeFDCUJH67
 
 
-
-Notes
-- Mark required questions accordingly. Use response validation for Q10 (customers) to limit to 3 selections.
-- Maintain anonymity; only Q5 may collect optional email.
-
-## Appendix B: Google Forms Import (CSV for add-ons)
-
-The following CSV works with common Google Forms builder add-ons. Columns: section, qid, audience, type, title, options, required, logic.
-
-File: report/APPENDIX_GOOGLE_FORMS_SURVEY.csv
