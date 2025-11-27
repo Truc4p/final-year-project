@@ -159,31 +159,30 @@ Qdrant provides specialized vector database functionality for the AI dermatology
 
 **Development Methodologies**
 
-| **Evaluation Criteria** | **Waterfall** | **Agile/Scrum** |
+| **Evaluation Criteria** | **Waterfall** | **Agile** |
 |---|---|---|
-| **Process Model** | Sequential, linear phases (requirements, design, implementation, testing, deployment) | Iterative, incremental sprints with continuous feedback cycles |
-| **Requirements Handling** | Fixed upfront; changes expensive and disruptive (Royce, 1970) | Evolving; welcomes changing requirements throughout development (Beck et al., 2001) |
-| **Customer Involvement** | Limited to initial requirements and final delivery | Continuous collaboration through sprint reviews and daily stakeholder communication (Dingsøyr et al., 2019) |
-| **Delivery Cycle** | Single delivery at project conclusion | Frequent incremental releases (typically 2–4 week sprints) producing working software (Schwaber & Sutherland, 2020) |
-| **Risk Management** | High risk concentrated at end; late discovery of issues | Low risk distributed across iterations; early identification and mitigation (Boehm & Turner, 2004) |
-| **Flexibility** | Rigid; difficult to accommodate changes after requirements phase | Highly flexible; adaptive planning enables response to emerging requirements (Dingsøyr et al., 2019) |
-| **Documentation** | Comprehensive upfront documentation required | Minimal sufficient documentation; prioritizes working software over documentation (Beck et al., 2001) |
-| **Testing Approach** | Testing phase occurs after full implementation | Continuous testing integrated into each sprint with test-driven development (TDD) (Schwaber & Sutherland, 2020) |
-| **Team Structure** | Hierarchical with specialized roles and handoffs between phases | Self-organizing, cross-functional teams with collective ownership (Moe et al., 2019) |
-| **Progress Measurement** | Completion of phases and milestones | Working software increments and velocity metrics (Schwaber & Sutherland, 2020) |
-| **Suitability** | Well-defined stable requirements, regulated domains (aerospace, construction) | Evolving requirements, innovative projects, uncertain domains (Boehm & Turner, 2004) |
-| **Time to Market** | Long; no value delivered until final release | Short; incremental value delivered throughout project lifecycle (Dingsøyr et al., 2019) |
-| **Stakeholder Feedback** | Delayed until late-stage testing or deployment | Continuous throughout development via sprint reviews and retrospectives (Schwaber & Sutherland, 2020) |
+| **Process Model** | Sequential, linear phases (requirements, design, implementation, testing, deployment) | Iterative, incremental cycles with continuous feedback |
+| **Requirements Handling** | Fixed upfront; changes expensive and disruptive | Evolving; welcomes changing requirements throughout development |
+| **Delivery Cycle** | Single delivery at project conclusion | Frequent incremental releases producing working software |
+| **Risk Management** | High risk concentrated at end; late discovery of issues | Low risk distributed across iterations; early identification and mitigation |
+| **Flexibility** | Rigid; difficult to accommodate changes after requirements phase | Highly flexible; adaptive planning enables response to emerging requirements |
+| **Documentation** | Comprehensive upfront documentation required | Minimal sufficient documentation; prioritizes working software |
+| **Suitability** | Well-defined stable requirements, regulated domains | Evolving requirements, innovative projects, uncertain domains |
+
+**Agile Framework Comparison: Scrum vs. Kanban**
+
+| **Evaluation Criteria** | **Scrum** | **Kanban** |
+|---|---|---|
+| **Iteration Structure** | Fixed-length sprints (2–4 weeks) with defined goals | Continuous flow without fixed iterations |
+| **Planning** | Sprint planning at iteration start with commitment to sprint backlog | Continuous planning; pull items as capacity allows |
+| **Changes** | Not allowed during sprint; changes queued for next sprint | Changes allowed anytime if capacity available |
+| **Delivery** | Potentially shippable increment at sprint end | Continuous delivery when items complete |
+| **Metrics** | Velocity, burndown charts, sprint goals | Lead time, cycle time, throughput |
+| **Meetings** | Prescribed ceremonies: daily standup, sprint planning, review, retrospective | Optional meetings; daily standup common |
+| **Best For** | Feature-driven projects with clear increments and team learning focus | Support/maintenance, continuous delivery, unpredictable priorities |
 
 **Justification for Selection:**
-
-Agile/Scrum is selected as the development methodology for three compelling reasons grounded in the project's characteristics and contemporary software engineering research. First, requirements evolution: Wrencos integrates emerging technologies (WebSocket live streaming, Google Gemini AI, RAG-based dermatology consultation) where optimal implementation patterns emerge iteratively through experimentation. Boehm and Turner (2004) demonstrate that Agile methodologies significantly outperform Waterfall in projects with evolving requirements, reducing rework costs by up to 40% through early feedback cycles. The beauty e-commerce domain itself presents uncertain user experience requirements—optimal interfaces for live streaming product demonstrations, AI chat interactions, and skin image analysis can only be validated through iterative user testing, not upfront specification.
-
-Second, risk mitigation through incremental delivery: Dingsøyr et al. (2019) establish that Agile's iterative approach enables early identification of integration challenges, performance bottlenecks, and architectural mismatches. In Wrencos, integrating six distinct modules (e-commerce, livestream, AI chat, skin study, email marketing, business management) presents substantial integration risk. Two-week sprint cycles enable continuous integration testing, identifying interface conflicts and data flow issues early when correction costs remain minimal, rather than during late-stage integration testing characteristic of Waterfall approaches. Schwaber and Sutherland (2020) document that sprint-based development reduces defect rates by 30-50% compared to sequential methodologies through continuous testing and incremental validation.
-
-Third, stakeholder value optimization: The project serves two distinct user groups (SME retailers and consumers) with potentially conflicting priorities. Agile's continuous stakeholder engagement through sprint reviews enables prioritization adjustments based on empirical feedback rather than upfront assumptions. Moe et al. (2019) demonstrate that self-organizing Agile teams achieve 25% higher productivity than hierarchical Waterfall teams through reduced communication overhead and collective code ownership, critical for a full-stack project spanning backend, web frontend, and mobile applications. Sprint retrospectives enable continuous process improvement, addressing blockers and optimizing team velocity—capabilities absent in Waterfall's sequential structure.
-
-The Waterfall methodology, while appropriate for projects with stable, well-understood requirements in regulated domains (Royce, 1970), proves unsuitable for Wrencos's innovation-driven context where technological feasibility, user experience patterns, and integration approaches require iterative discovery. Agile's tolerance for requirement changes, frequent delivery of working increments, and continuous risk mitigation align precisely with the project's need for experimental exploration whilst maintaining steady progress toward a unified, functional platform.
+Agile is selected over Waterfall due to evolving requirements inherent in integrating emerging technologies (WebSocket streaming, Gemini AI, RAG-based dermatology consultation) where optimal implementation emerges iteratively (Boehm & Turner, 2004). Two-week sprints enable systematic progress across modules with early risk identification and continuous stakeholder feedback—critical for validating complex integrations and user experience patterns that cannot be fully specified upfront (Dingsøyr et al., 2019). Scrum is chosen over Kanban for its fixed sprint structure providing rhythm and predictability suited to feature-driven development with discrete milestones, while prescribed ceremonies (planning, review, retrospective) ensure structured feedback essential for multi-module coordination (Schwaber & Sutherland, 2020; Ahmad et al., 2018).
 
 ### 2.5 Summary and Identification of the Research Gap
 
@@ -312,6 +311,10 @@ Haidar, M. (2024) Challenges and Opportunities of Live Stream Selling. [online] 
 Abadi, D., & Stonebraker, M. (2009). The virtues of column stores for databases. *IEEE Data Engineering Bulletin*, 32(2), 1–8.
 
 Abrahamsson, P., Salo, O., Ronkainen, J., & Warsta, J. (2009). Agile software development methods: Review and analysis. *VTT Publications*, 478, 1–112.
+
+Ahmad, M. O., Markkula, J., & Oivo, M. (2018). Kanban in software development: A systematic literature review. *Software Quality Journal*, 26(2), 397–424. doi:10.1007/s11219-016-9344-y
+
+Anderson, D. J. (2010). *Kanban: Successful evolutionary change for your technology business*. Sequim, WA: Blue Hole Press.
 
 Beck, K., Beedle, M., Van Bennekum, A., Cockburn, A., Cunningham, W., Fowler, M., Grenning, J., Highsmith, J., Hunt, A., Jeffries, R., Kern, J., Marick, B., Martin, R. C., Mellor, S., Schwaber, K., Sutherland, J., & Thomas, D. (2001). Manifesto for agile software development. Available at: http://agilemanifesto.org
 
