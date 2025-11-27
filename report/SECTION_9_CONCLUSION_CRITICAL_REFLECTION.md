@@ -18,8 +18,6 @@ The following table explicitly addresses each of the specific objectives defined
 | 4. Implement WebSocket infrastructure supporting real-time live video streaming with concurrent viewer support, product pinning, real-time chat, and viewer analytics. | Yes | WebSocket infrastructure was fully implemented using the ws library. Real-time livestream functionality supports concurrent viewers with view count tracking. Real-time chat during streams with message history was deployed. Product pinning during streams with display ordering was implemented. Viewer analytics tracking engagement metrics was completed. Stream scheduling and management capabilities were added. |
 | 5. Integrate Skin Study feature with AI dermatology expert consultation, image analysis, voice interaction, and RAG-based knowledge base. | Partially | The Skin Study feature was implemented with text-based AI dermatology expert consultation using Google Gemini. Voice chat with automatic speech-to-text transcription was integrated using Google Cloud Speech-to-Text and Text-to-Speech APIs. Skin image analysis with AI-powered assessment was implemented. Qdrant vector database was deployed for RAG implementation. However, the curated dermatology knowledge base population and comprehensive evidence-based recommendations with source citations require further development for production deployment. |
 
----
-
 ## 9.2 Critical Project Evaluation
 
 ### Successes and Strengths (What Went Well)
@@ -35,8 +33,6 @@ The following table explicitly addresses each of the specific objectives defined
 **API Documentation:** Swagger/OpenAPI integration with JSDoc comments ensured that API documentation remained synchronized with implementation. The interactive Swagger UI at /api-docs enabled developers and testers to explore endpoints, understand request/response formats, and validate functionality without external documentation tools.
 
 **Testing Coverage:** Comprehensive testing across authentication, CRUD operations, file uploads, real-time features, and role-based access control validated system reliability. The 30+ test cases in the testing matrix covered happy paths, error conditions, and edge cases, providing confidence in core functionality.
-
----
 
 ### Challenges and Weaknesses (What Didn't Go Well)
 
@@ -56,8 +52,6 @@ The following table explicitly addresses each of the specific objectives defined
 
 *Mitigation:* The architecture includes performance monitoring through Morgan logging and custom performance tracking utilities. Database indexing was applied to frequently queried fields. Redis caching could be added in future iterations for frequently accessed data (product catalogs, user sessions) without architectural changes.
 
----
-
 ## 9.3 Personal Reflection and Key Learnings
 
 ### What You Learned
@@ -70,8 +64,6 @@ The following table explicitly addresses each of the specific objectives defined
 
 **Database Design for Multiple Domains:** I gained experience designing database schemas that support diverse business domains (e-commerce, marketing, finance, HR) within a single system. This included understanding normalization principles, designing relationships between entities, implementing efficient indexing strategies, and balancing schema flexibility with data integrity constraints.
 
----
-
 ### Skills Developed
 
 **Technical Skills Development:** Throughout this project, I developed advanced proficiency in Node.js and Express.js backend development, gaining deep expertise in middleware patterns, error handling, and security implementation. I mastered RESTful API design principles, ensuring proper HTTP semantics, status codes, and response formatting across 35+ endpoints. My MongoDB and Mongoose experience extended beyond basic CRUD operations to include sophisticated schema validation, relationship management, and query optimization across multiple business domains. I developed comprehensive Vue.js frontend capabilities, implementing complex component composition patterns, state management strategies, and client-side routing. Additionally, I gained hands-on experience with React Native mobile development, navigating cross-platform considerations and native module integration to deliver iOS and Android applications. My technical skill set expanded to include WebSocket programming for real-time bidirectional communication, Docker containerization for consistent deployment across development, staging, and production environments, JWT authentication mechanisms, and role-based access control implementation. I successfully integrated multiple external APIs including Google Gemini for AI features, Google Cloud Speech-to-Text for voice processing, and VNPay for payment processing, demonstrating proficiency in third-party service integration and API orchestration.
@@ -79,8 +71,6 @@ The following table explicitly addresses each of the specific objectives defined
 **Project Management and Process Skills:** Beyond technical implementation, I developed significant project management capabilities through hands-on application of Agile Scrum methodology. I implemented two-week sprint cycles with daily standups and sprint retrospectives, learning how iterative development and continuous feedback improve team velocity and product quality. I gained practical experience with task prioritization using the MoSCoW method, making deliberate decisions about which features were essential, important, or deferrable to maintain project momentum. Managing work across multiple teams and modules using GitHub Projects and Trello significantly improved my ability to track dependencies, identify bottlenecks, and maintain visibility into project status. I developed strong version control practices, including feature branching strategies, pull request workflows, and code review processes that maintain code quality while enabling parallel development. Risk management and mitigation planning became integral to my approach, as I learned to identify technical risks early and develop contingency strategies to prevent schedule slippage.
 
 **Problem-Solving and Decision-Making Skills:** The complexity of this full-stack project required sophisticated problem-solving across multiple layers. I developed expertise in debugging complex issues that spanned frontend, backend, database, and real-time infrastructure components, learning to systematically isolate problems and trace root causes through multiple system layers. I became proficient at trade-off analysis, making deliberate decisions between feature completeness, code quality, and timeline constraints based on business priorities and technical feasibility. Architectural decision-making became a core competency, as I learned to evaluate technology choices considering scalability, maintainability, and team capabilities rather than simply selecting the most popular or technically sophisticated option. I implemented graceful degradation design patterns throughout the system, ensuring that core functionality remained available even when optional features (such as AI dermatology consultation) encountered failures or limitations, demonstrating mature engineering judgment about system resilience and user experience.
-
----
 
 ### What You Would Do Differently
 
@@ -92,8 +82,6 @@ The following table explicitly addresses each of the specific objectives defined
 
 **Documentation-Driven Development:** I would maintain comprehensive documentation (architecture decisions, API contracts, database schema rationale) throughout development rather than documenting after implementation. This would have reduced knowledge loss, accelerated onboarding for new team members, and enabled better architectural decisions by forcing explicit articulation of design rationale.
 
----
-
 ## 9.4 Recommendations for Future Development
 
 ### Feature Enhancements
@@ -103,8 +91,6 @@ The following table explicitly addresses each of the specific objectives defined
 **Social Commerce Integration:** Integrate with social media platforms (Instagram, TikTok, Facebook) to enable product discovery and purchasing directly from social feeds. This would include social login, shoppable posts, and influencer collaboration features, addressing the growing trend of social commerce in the beauty industry.
 
 **Subscription and Loyalty Programs:** Implement subscription-based product delivery and loyalty point systems. Customers could subscribe to regular product deliveries with automatic billing, while loyalty points accumulated from purchases could be redeemed for discounts or exclusive products. This would increase customer lifetime value and enable predictable recurring revenue.
-
----
 
 ### Technical Improvements
 
@@ -116,8 +102,6 @@ The following table explicitly addresses each of the specific objectives defined
 
 **Observability and Monitoring:** Implement comprehensive logging (ELK stack or CloudWatch), distributed tracing (Jaeger or Datadog), and metrics collection (Prometheus). This would enable rapid issue diagnosis in production, performance bottleneck identification, and capacity planning based on actual usage patterns.
 
----
-
 ### Scalability
 
 **Microservices Architecture:** Migrate from the current monolithic backend to a microservices architecture with independent services for ecommerce, livestreaming, AI features, and analytics. This would enable independent scaling of services based on demand (e.g., scaling livestream service during peak broadcast times while keeping ecommerce service at baseline capacity) and independent deployment of features without system-wide testing.
@@ -127,8 +111,6 @@ The following table explicitly addresses each of the specific objectives defined
 **Content Delivery Network (CDN):** Deploy product images, frontend assets, and video content through a CDN (CloudFlare, AWS CloudFront, Akamai) to reduce latency for geographically distributed users. This would improve page load times and video streaming quality for users far from the origin server.
 
 **Auto-Scaling Infrastructure:** Deploy the application on cloud platforms with auto-scaling capabilities (AWS ECS, Google Cloud Run, Kubernetes). The infrastructure would automatically scale up during peak demand periods (e.g., during livestream events) and scale down during off-peak times, optimizing cost while maintaining performance.
-
----
 
 ## 9.5 Final Conclusion
 

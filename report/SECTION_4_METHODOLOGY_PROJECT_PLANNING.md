@@ -6,8 +6,6 @@
 
 **Practical Application:** Two-week sprint cycles structure development: Week 1 (Sprint Planning) defines objectives from backlog prioritized via MoSCoW (Must/Should/Could); Week 2 (Implementation & Daily Standups) delivers features with daily 15-minute synchronization meetings identifying blockers; Week 2 Conclusion (Sprint Review & Retrospective) demonstrates working increments to stakeholders and identifies process improvements. Over the 10-month project duration, approximately 20 two-week sprints enable comprehensive feature development with iterative refinement and quality assurance. Continuous Integration via daily commits to Git prevents integration bottlenecks. Automated testing (Jest for backend, Vitest for frontend) validates functionality continuously, targeting ≥70% code coverage for critical business logic. Product backlog prioritized by business value and dependency relationships. Definition of Done: code reviewed (peer review), unit/integration tests passing (≥70% coverage), documented (inline comments and Swagger specs), deployed to staging environment, approved by product owner before production release. This iterative approach enables course correction—if live streaming proves technically challenging, sprints can reallocate resources; if AI recommendations underperform, iterations can refine integration logic; if Skin Study feature encounters complexity, iterations can refine implementation strategy.
 
----
-
 ## 4.2 Project Plan & Timeline
 
 **Project Phases & Milestones:**
@@ -63,8 +61,6 @@ Phase 1 |==========|
 - Phase 5 advanced features completion prerequisite for Phase 6 comprehensive testing (Weeks 33-40).
 - Buffer weeks: Phase 5 includes 2-week buffer for advanced feature refinement; Phase 6 includes 3-week buffer for UAT revisions and security remediation; Phase 6 final 2 weeks reserved for critical bug fixes and final deployment preparation.
 
----
-
 ## 4.3 Feasibility Analysis
 
 **Technical Feasibility: Strong.** Node.js, Express, MongoDB, Vue.js, React Native are production-grade technologies with extensive community support, documented API integration patterns, and mature SDKs. WebSocket real-time communication is proven architecture (Netflix, Discord, Slack). Gemini AI provides REST API with clear documentation. Solo developer learning curve manageable: WebSocket programming (2-3 days), Expo mobile development (3-5 days), Gemini integration (2-3 days)—learnable within project timeline given quality documentation.
@@ -74,8 +70,6 @@ Phase 1 |==========|
 **Economic Feasibility: Strong.** Development tools are open-source (Node.js, Vue.js, MongoDB) or free-tier: GitHub (free private repos), Vite (free build tool), Jest (free testing), Sentry (free tier error monitoring). Cloud hosting: MongoDB Atlas free tier supports development; AWS/Google Cloud free tiers accommodate staging deployment. Domain registration (USD 15/year). Zero licensing costs. Production deployment at USD 50–200/month achievable via containerized hosting (AWS Lightsail, Google Cloud Run).
 
 **Operational Feasibility: Strong.** User interface designed for accessibility—no training required for users with basic computer literacy. WCAG 2.1 AA compliance enables screen reader support, keyboard navigation. Modular codebase (separation of concerns) enables future maintenance by other developers. API documentation (Swagger) and technical architecture documentation enable independent troubleshooting. Infrastructure-as-code (Docker, Kubernetes manifests) enables reproducible deployments. Automated CI/CD pipeline (GitHub Actions) enables low-friction deployments.
-
----
 
 ## 4.4 Evaluation Plan & Success Metrics
 
@@ -116,5 +110,3 @@ Phase 1 |==========|
 | **Performance Under Load Satisfaction** | ≥80% test users perceive platform responsiveness as "fast" or "very fast" during normal load; ≥75% perceive live streaming as "smooth" | Subjective performance perception; important for user retention |
 | **Business Module Consolidation Value** | ≥80% admin users report reduced time managing multiple platforms; ≥70% report improved operational efficiency | Validates core SME business value proposition; consolidation of 5-8 platforms into one |
 | **AI Dermatology Consultation Trust** | ≥85% Skin Study users perceive recommendations as "trustworthy"; ≥80% cite "evidence-based" and "professional" as key satisfaction factors | Validates Skin Study credibility; critical for health-related feature adoption |
-
----

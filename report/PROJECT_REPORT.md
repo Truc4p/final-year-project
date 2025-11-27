@@ -50,8 +50,6 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 
 This report proceeds as follows: Section 2 elaborates upon the problem statement and market context; Section 3 presents the proposed development methodology and technological architecture; Sections 4–6 detail the implementation plan, feasibility analysis, and evaluation criteria; and Section 7 concludes with discussion of project outcomes and contributions to both academic and practitioner communities.
 
----
-
 ## 2. Background and Literature Review
 
 ### 2.1 Introduction
@@ -166,8 +164,6 @@ Qdrant provides specialized vector database functionality for the AI dermatology
 **Explicit Statement of the Research Gap:** In summary, the literature review identifies a clear gap: there is no single, SME-accessible platform that unifies comprehensive e-commerce functionality with native live streaming commerce across web and mobile, AI-powered dermatology consultation featuring text and voice interaction with skin image analysis grounded in cited literature via retrieval-augmented generation, and integrated business management (analytics, accounting, HR, email marketing) within one technologically modern architecture. Existing solutions fragment across three categories: general-purpose platforms requiring expensive third-party aggregation (Shopify); enterprise systems overspecified for SME budgets (Adobe Commerce); or proprietary consumer ecosystems inaccessible to independent retailers (Sephora). This fragmentation imposes cumulative switching costs, data silos preventing personalization, and denies SME beauty retailers access to AI-driven engagement mechanisms that large incumbents leverage for competitive advantage.
 
 **Project Positioning:** Therefore, Wrencos addresses this gap by delivering an integrated, SME-oriented, cross-platform ecosystem through three value propositions. First, operational consolidation: unified Node.js/Express backend supporting e-commerce, live streaming, AI chat, email marketing, analytics, accounting, and HR within single deployment, eliminating fragmentation and enabling cross-module personalization (Lei et al., 2020). Second, engagement innovation: native WebSocket live streaming integrated across Vue.js web and React Native mobile applications with real-time chat and product pinning, complemented by Google Gemini AI providing context-aware recommendations based on skin types (Kieras, 2020; You, 2019). Third, dermatology expertise: Skin Study module implementing RAG with Qdrant vector database, supporting text and voice chat with multilingual speech synthesis via gTTS, skin image analysis, and citation-backed guidance under 200ms latency (Malkov & Yashunin, 2020). The architecture leverages MongoDB's document flexibility and horizontal sharding for scalability (Han et al., 2011; Stonebraker & Hellerstein, 2019). This integrated approach addresses consumer trust barriers through interactive engagement whilst providing SMEs enterprise-grade capabilities at accessible pricing, bridging the gap between fragmented affordable solutions and prohibitively expensive alternatives.
-
----
 
 ## References
 
@@ -323,6 +319,29 @@ Verhoef, P. C., Kannan, P. K., & Inman, J. J. (2015). "From Multi-Channel Retail
 
 Cao, L., & Li, L. (2015). "The Impact of Cross-Channel Integration on Retailers' Sales Growth." Journal of Retailing, 91(2), 198-216.
 
----
+Adobe (2023) Adobe Sensei GenAI, Adobe Experience Cloud. Available at: https://business.adobe.com/products/sensei/adobe-sensei.html (Accessed: 27 November 2025).
 
-**Word Count:  words**
+Adobe (2024) Adobe Commerce Features and Capabilities, Adobe. Available at: https://business.adobe.com/products/magento/magento-commerce.html (Accessed: 27 November 2025).
+
+Adobe Exchange (2025) Adobe Commerce Extensions Marketplace. Available at: https://commercemarketplace.adobe.com/ (Accessed: 27 November 2025).
+
+Forbes (2024) 'Adobe Commerce vs Shopify: Which is best for your business?', Forbes Advisor, 15 January. Available at: https://www.forbes.com/advisor/business/software/shopify-vs-adobe-commerce/ (Accessed: 27 November 2025).
+
+Gartner (2023) Magic Quadrant for Digital Commerce. Stamford: Gartner Inc.
+
+LVMH (2023) 2023 Annual Report: Digital Innovation at Sephora. Paris: LVMH Group. Available at: https://www.lvmh.com/investors (Accessed: 27 November 2025).
+
+Marr, B. (2023) 'How Sephora Uses Artificial Intelligence And Augmented Reality To Drive Sales', Forbes, 5 May. Available at: https://www.forbes.com (Accessed: 27 November 2025).
+
+Sephora (2024) About Sephora: Digital Innovation. Available at: https://www.sephorastands.com (Accessed: 27 November 2025).
+
+Shopify (2024) Shopify Architecture: Under the Hood, Shopify Engineering Blog. Available at: https://shopify.engineering (Accessed: 27 November 2025).
+
+Shopify (2025a) Shopify Pricing and Plans. Available at: https://www.shopify.com/pricing (Accessed: 27 November 2025).
+
+Shopify (2025b) Connecting to YouTube Shopping. Shopify Help Center. Available at: https://help.shopify.com/en/manual/online-sales-channels/google/youtube (Accessed: 27 November 2025).
+
+Shopify (2025c) Shopify Magic: AI for Commerce. Available at: https://www.shopify.com/magic (Accessed: 27 November 2025).
+
+Shopify App Store (2025) Skincare Quiz and Analysis Apps. Available at: https://apps.shopify.com (Accessed: 27 November 2025).
+

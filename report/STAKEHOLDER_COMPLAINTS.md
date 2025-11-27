@@ -1,7 +1,5 @@
 # WRENCOS: STAKEHOLDER COMPLAINTS & REQUIREMENTS
 
----
-
 ## BUSINESS OWNER / STORE MANAGER
 
 **"We're bleeding money on fragmented platforms!"**
@@ -12,8 +10,6 @@
 - Must increase profitability and reduce operational overhead
 - Want complete financial visibility across all business functions
 - Need to compete with larger enterprises using modern technology
-
----
 
 ## OPERATIONS DIRECTOR
 
@@ -27,8 +23,6 @@
 - Need disaster recovery and backup systems in place
 - Cannot afford system failures during peak shopping periods
 
----
-
 ## SALES MANAGER
 
 **"We must hit sales targets every month!"**
@@ -40,8 +34,6 @@
 - Require customer segmentation for targeted promotions
 - Must track sales metrics and identify top-performing products
 - Need to reduce 40% product return rates through better product information
-
----
 
 ## QUALITY MANAGER
 
@@ -55,8 +47,6 @@
 - Need to reduce customer dissatisfaction and return rates
 - Customers deserve personalized skincare guidance, not generic suggestions
 
----
-
 ## MARKETING MANAGER
 
 **"We need better data for targeting!"**
@@ -68,8 +58,6 @@
 - Must track which products resonate with different customer segments
 - Need to personalize customer communications at scale
 - Want to understand customer preferences for product recommendations
-
----
 
 ## FINANCE MANAGER
 
@@ -84,8 +72,6 @@
 - Want revenue forecasting and profitability analysis by product/category
 - Cannot reconcile data across platforms—need single source of truth
 
----
-
 ## HR MANAGER
 
 **"We are too busy with manual HR tasks!"**
@@ -97,8 +83,6 @@
 - Need department and role management capabilities
 - Want to reduce manual data entry and paperwork
 - Need to focus on strategic HR initiatives instead of administrative tasks
-
----
 
 ## SYSTEMS ADMINISTRATOR
 
@@ -113,8 +97,6 @@
 - Need monitoring and logging for system health and troubleshooting
 - Must implement CORS and cross-origin security properly
 - Need automated backup and disaster recovery procedures
-
----
 
 ## CUSTOMER (BEAUTY SHOPPER)
 
@@ -131,8 +113,6 @@
 - Need order tracking and history management
 - Want mobile app access for shopping and skin consultations
 
----
-
 ## CUSTOMER - ACNE-PRONE SKIN
 
 **"I can't find suitable products for my acne skin!"**
@@ -147,8 +127,6 @@
 - Want expert guidance on acne-fighting ingredients (salicylic acid, benzoyl peroxide, niacinamide, etc.)
 - Need personalized routine recommendations, not generic "acne kits"
 - Want to know if products are suitable for sensitive acne-prone skin
-
----
 
 ## CUSTOMER - BUDGET CONSCIOUS
 
@@ -165,8 +143,6 @@
 - Need product recommendations within my budget range
 - Want to know the cost-benefit ratio of products before purchasing
 
----
-
 ## CUSTOMER - DERMATOLOGY ACCESS
 
 **"I want to consult a dermatologist but it's too expensive!"**
@@ -181,8 +157,6 @@
 - Want to know when I should see a real dermatologist vs. self-treat
 - Need affordable access to dermatological expertise
 - Want video consultation with skin experts at fraction of dermatologist cost
-
----
 
 ## CUSTOMER - SKINCARE EDUCATION
 
@@ -199,8 +173,6 @@
 - Need visual explanations (diagrams, images) of skin conditions
 - Want to learn at my own pace without feeling overwhelmed
 
----
-
 ## CUSTOMER - SKIN CONDITION CONFUSION
 
 **"I don't know what skin condition I actually have!"**
@@ -215,8 +187,6 @@
 - Need guidance on whether to see a dermatologist or try home remedies
 - Want to understand what's causing my skin issues
 - Need personalized skincare routine based on my actual condition
-
----
 
 ## CUSTOMER - PRODUCT INGREDIENT CONFUSION
 
@@ -233,8 +203,6 @@
 - Want to know which ingredients to look for vs. avoid
 - Need simple explanations of complex skincare chemistry
 
----
-
 ## CUSTOMER - TIME CONSTRAINTS
 
 **"I don't have time to research products thoroughly!"**
@@ -249,8 +217,6 @@
 - Need on-demand expert advice when I have questions
 - Want mobile app for quick consultations during lunch break
 - Need fast checkout and delivery for urgent skincare needs
-
----
 
 ## CUSTOMER - PRODUCT EFFECTIVENESS DOUBT
 
@@ -267,8 +233,6 @@
 - Need to know if results are permanent or temporary
 - Want transparency about product effectiveness
 
----
-
 ## CUSTOMER - SENSITIVE SKIN CONCERNS
 
 **"I have sensitive skin and most products irritate me!"**
@@ -283,8 +247,6 @@
 - Want products that are hypoallergenic and dermatologist-tested
 - Need to understand what's causing my skin sensitivity
 - Want gradual introduction to new products with expert guidance
-
----
 
 ## CUSTOMER - COMBINATION SKIN CHALLENGES
 
@@ -301,8 +263,6 @@
 - Want to avoid products that make oiliness or dryness worse
 - Need to know if combination skin is permanent or can change
 
----
-
 ## CUSTOMER - SEASONAL SKIN CHANGES
 
 **"My skin changes with the seasons!"**
@@ -317,8 +277,6 @@
 - Want to prevent seasonal skin problems before they happen
 - Need recommendations for each season
 - Want to understand why skin changes seasonally
-
----
 
 ## CUSTOMER - PRODUCT INTERACTION CONCERNS
 
@@ -335,8 +293,6 @@
 - Need to understand product interactions before purchasing
 - Want safe, effective skincare routine recommendations
 
----
-
 ## CUSTOMER - BUDGET PRODUCT QUALITY
 
 **"Are cheap products as good as expensive ones?"**
@@ -351,8 +307,6 @@
 - Want expert guidance on product value
 - Need to maximize skincare results on limited budget
 - Want to avoid wasting money on overpriced products
-
----
 
 ## CUSTOMER - SKIN GOAL TRACKING
 
@@ -369,8 +323,6 @@
 - Need to know when to switch products
 - Want data-driven skincare decisions
 
----
-
 ## LIVESTREAM COORDINATOR
 
 **"We need professional live streaming capabilities!"**
@@ -385,8 +337,6 @@
 - Require low latency (<5 seconds) for real-time interaction
 - Need stream quality options for different connection speeds
 
----
-
 ## DERMATOLOGY CONSULTANT / SKINCARE EXPERT
 
 **"We need evidence-based AI recommendations!"**
@@ -399,8 +349,6 @@
 - Must maintain conversation history for continuity
 - Need to integrate with product catalog for personalized recommendations
 - Want to escalate complex cases to human experts when needed
-
----
 
 ## PRODUCT MANAGER
 
@@ -415,8 +363,6 @@
 - Want to identify best-selling and underperforming products
 - Need to manage product variants and options
 
----
-
 ## ANALYTICS MANAGER
 
 **"We need actionable business insights!"**
@@ -430,8 +376,6 @@
 - Require email campaign performance metrics
 - Want conversion rate analysis by product/category
 - Need dashboards that visualize key business metrics
-
----
 
 ## COMPLIANCE & DATA PROTECTION OFFICER
 
@@ -448,8 +392,6 @@
 - Must validate all user inputs to prevent attacks
 - Need rate limiting to prevent abuse
 
----
-
 ## TECHNICAL ARCHITECT
 
 **"We need a scalable, maintainable system!"**
@@ -465,8 +407,6 @@
 - Need proper logging and monitoring capabilities
 - Require clear code comments and technical documentation
 
----
-
 ## MOBILE USER
 
 **"I want a seamless mobile experience!"**
@@ -481,8 +421,6 @@
 - Want push notifications for orders and promotions
 - Need easy navigation and intuitive interface
 - Want quick checkout process (minimal steps)
-
----
 
 ## SUMMARY OF KEY REQUIREMENTS
 
@@ -518,8 +456,6 @@
 | Compliance Officer | Data protection | GDPR compliance, secure storage |
 | Technical Architect | System quality | Modular design, >70% test coverage |
 | Mobile User | Seamless experience | iOS 14+, Android 10+, responsive design |
-
----
 
 **Document Generated:** November 23, 2025
 **Project:** Wrencos - Integrated E-Commerce Platform with Live Streaming and AI Assistance

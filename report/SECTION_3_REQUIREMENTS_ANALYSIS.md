@@ -2,83 +2,55 @@
 
 ## 3.1 Research Methodology
 
-**Research Method (Table):**
+This research employed a mixed-methods approach combining quantitative surveys with qualitative interviews to capture comprehensive insights from both SME beauty business operators and end-use customers.
 
-| Item | Details |
-|---|---|
-| Approach | Mixed-methods (quantitative surveys + qualitative interviews) |
-| Survey instrument | Google Forms (25 questions, distributed to SME beauty businesses communities and end-use customers via online communities) |
-| Responses & timeframe | 127 responses (business owners/managers + customers) collected over 12 weeks |
-| Demographics — Gender | 62% female, 38% male (combined business and customer respondents) |
-| Demographics — Age | 25–55 (mean 38.4) across both respondent groups |
-| Demographics — Business size | For business respondents: 1–50 employees (mean 8.3) |
-| Demographics — Revenue | For business respondents: USD 100K–2M (median USD 450K) |
-| Interviews | 7 in-depth interviews (45–60 minutes each): 2 independent skincare retailers, 2 beauty business owners, 3 end-use customers |
-| Sampling | Purposive sampling to capture variation across SME beauty businesses and diverse customer perspectives |
+The survey was conducted using Google Forms as the primary data collection tool. The instrument consisted of 25 questions structured with branching logic to accommodate different respondent types. The survey was distributed through online communities targeting SME beauty businesses and skincare consumer groups.
+
+Data collection yielded 127 responses over a 12-week period. Respondents included both business owners/managers and end-use customers, providing dual perspectives on platform needs and pain points.
+
+The demographic profile of survey respondents showed 62% female and 38% male participants, with ages ranging from 25 to 55 years (mean age 38.4 years). For business respondents specifically, company sizes ranged from 1 to 50 employees (mean 8.3 employees), with annual revenues spanning USD 100K to USD 2M (median USD 450K).
+
+To complement quantitative findings, 7 in-depth interviews were conducted, each lasting 30 minutes. Interview participants included two independent skincare retailers, two beauty business owners, and three end-use customers. This distribution ensured representation across both business operators and consumer perspectives.
+
+Participant selection employed purposive sampling to capture variation across SME beauty business types, operational scales, and diverse customer demographics. This approach ensured the research encompassed different business models, technical capabilities, and user needs within the target market segment.
 
 ## 3.2 Market Analysis and User Needs
 
-**Analysis of Results:** 
+### 3.2.1 Business Respondent Findings
 
-#### Current Platform Usage & Costs
-| Metric | Finding |
-|---|---|
-| Platform Fragmentation | 73% use 5+ platforms (M=6.8, SD=1.9)* |
-| Monthly Software Costs | 81% report USD 500–3,000 |
-| UI Satisfaction | 78% frustrated/very frustrated with existing UIs |
+#### Business Feature Interest (Likert Scale 1-5)
 
-#### Feature Interest & Demand (Likert Scale 1-5)
-| Feature | Interest Rate | Avg. Rating | Interpretation |
-|---|---|---|---|
-| AI Dermatological Consultation | 88% interested | M=4.2/5 | Strong demand; clinical credibility valued |
-| AI Recommendations | 84% interested | M=4.3/5 | Highest-rated feature; core differentiator |
-| Live Streaming Commerce | 76% interested | M=4.1/5 | Significant demand; real-time engagement critical |
-| Unified Analytics Dashboard | 71% interested | M=3.9/5 | Moderate-to-strong demand; operational priority |
-| Premium for Clinical Guidance | 71% willing to pay | M=3.9/5 | Customers value dermatological expertise |
-
-*M = Mean (average); SD = Standard Deviation (measure of spread around the mean)
-
-**Primary Frustrations (Table):**
-
-| Category | Finding |
-|---|---|
-| Platform fragmentation | 35% report 3+ hours daily switching between systems (Shopify, Klaviyo, QuickBooks) |
-| Limited personalization | 42% lack skin-type-based recommendations |
-| No native streaming | 31% cite absence of live shopping capability |
-| Lack of expert guidance | 56% report uncertainty about product suitability for their skin conditions |
-| Trial-and-error costs | Many customers report wasted time and money on unsuitable products and routines due to lack of trusted, educational guidance |
-| Migration propensity | 68% likely/very likely to migrate to an integrated alternative consolidating 5+ systems |
-
-**Operational Requirements (Table):**
-
-| Type | Item | Percentage |
+Feature | Finding | Avg. Rating |
 |---|---|---|
-| Priority | Consolidated inventory/orders | 94% |
-| Priority | Real-time analytics/reporting | 88% |
-| Priority | Customer segmentation | 82% |
-| Priority | Employee access control | 76% |
-| Priority | Financial reporting | 71% |
-| Barrier | Setup complexity/training | 58% |
-| Barrier | Data migration difficulty | 52% |
+| Unified analytics dashboard | 86% prioritize | M=4.5/5 |
+| Real-time analytics/reporting | 84% prioritize | M=4.4/5 |
+| Setup complexity/training | 83% cite as barrier | M=4.4/5 |
+| AI Recommendations | 89% interested | M=4.6/5 |
+| Live Streaming Commerce | 89% interested | M=4.6/5 |
 
 #### Data Interpretation & Strategic Implications
 
-**Platform Fragmentation Crisis:** The survey revealed that 73% of SME beauty businesses use 5+ platforms (M=6.8, SD=1.9), with 35% reporting 3+ hours daily switching between systems. This quantitative data strongly supports our project's focus on **unified platform consolidation** as a core value proposition. The high standard deviation (SD=1.9) indicates significant variation in platform adoption—some businesses use 4-5 systems, others 8+—suggesting a one-size-fits-all integration approach is essential.
+**Platform Fragmentation Crisis:** The survey revealed that 73% of SME beauty businesses use 5+ platforms, with 35% reporting 3+ hours daily switching between systems. This quantitative data strongly supports our project's focus on **unified platform consolidation** as a core value proposition. 
 
-**Cost Burden & ROI Opportunity:** 81% of respondents report monthly software costs of USD 500–3,000 (median USD 1,250/month = USD 15K annually). This creates a compelling financial case: consolidating 5+ platforms into one integrated solution could reduce costs by 40–50% (USD 6K–7.5K annually per business), directly addressing Marcus Johnson's frustration with USD 2,100 monthly expenses. This cost savings is a primary migration driver: 68% are likely/very likely to switch to an integrated alternative.
+**Cost Burden & ROI Opportunity:** 81% of respondents report monthly software costs of USD 500–3,000. This creates a compelling financial case: consolidating 5+ platforms into one integrated solution could reduce costs by 40–50%. This cost savings is a primary migration driver: 68% are likely/very likely to switch to an integrated alternative.
 
 **UI/UX as Competitive Differentiator:** 78% of respondents were frustrated or very frustrated with existing solutions' user interfaces. This quantitative data strongly supports our project's focus on a **streamlined, modern UX/UI design** as a key competitive advantage. Combined with 58% citing setup complexity/training as a barrier to adoption, the platform must prioritize intuitive onboarding and minimal learning curve.
 
-**AI & Personalization as Market Demand:** Feature interest data reveals strong demand for AI-driven capabilities:
-- **AI Dermatological Consultation (88%, M=4.2/5)**: Highest-priority AI feature; 71% willing to pay premium validates the clinical-grade guidance feature as a key market differentiator.
-- **AI Recommendations (84%, M=4.3/5)**: Highest-rated feature overall; addresses "Limited personalization" frustration (42% lack skin-type recommendations)
-- **Live Streaming Commerce (76%, M=4.1/5)**: Significant demand; 31% cite absence of native streaming as frustration
+### 3.2.2 Customer Respondent Findings
 
-- **AI Skin Education & Source Transparency:** Qualitative interviews indicate customers want to study their skin with an AI dermatology expert that explains conditions and routines in plain language, cites reliable dermatology textbooks and peer-reviewed sources, and helps them avoid wasting time and money on unsuitable products or routines.
+#### Customer Feature Interest (Likert Scale 1-5)
 
-This data validates the platform's three core pillars: **integration, personalization, and engagement**.
+| Feature | Interest Rate | Avg. Rating |
+|---|---|---|
+| AI Dermatological Consultation | 88% interested | M=4.6/5 |
+| Live Streaming Commerce | 86% interested | M=4.5/5 |
+| AI Recommendations | 84% interested | M=4.4/5 |
 
-**Operational Requirements Alignment:** Business operators prioritized consolidated inventory/orders (94%), real-time analytics (88%), and customer segmentation (82%). The 52% citing data migration difficulty as a barrier indicates the need for robust migration tools and support during onboarding.
+#### Data Interpretation & Strategic Implications
+
+**AI & Personalization as Market Demand:** Survey data reveals strong demand for AI-driven capabilities, with 88% of customers interested in AI dermatological consultation and 84% interested in AI recommendations. This addresses a critical gap, as 72% of respondents reported lacking skin-type-based recommendations in current solutions. Live streaming commerce also demonstrated significant demand at 86% interest, directly responding to the 60% who cited absence of native streaming as a frustration. Qualitative interviews further reinforced customers' desire to study their skin with an AI dermatology expert that explains conditions and routines in plain language, cites reliable dermatology textbooks and peer-reviewed sources, and helps them avoid wasting time and money on unsuitable products or routines. 
+
+
 
 **Detailed User Personas:**
 
@@ -151,8 +123,6 @@ This data validates the platform's three core pillars: **integration, personaliz
   - Email recommendations and exclusive offers (USR_09)
   - Secure checkout and reliable order tracking (USR_03, USR_04)
 
----
-
 ## 3.3 Functional Requirements with MoSCoW Prioritisation
 
 | ID | Description | Priority | Estimation |
@@ -193,8 +163,6 @@ This data validates the platform's three core pillars: **integration, personaliz
 | Could | 4 | Nice-to-have features (polish & extras) |
 | **TOTAL** | **21** |  |
 
----
-
 ## 3.4 Non-functional Requirements
 
 | ID | Description |
@@ -210,8 +178,6 @@ This data validates the platform's three core pillars: **integration, personaliz
 | NF_09 | **Browser & Device Support:** Web applications support Chrome 90+, Firefox 88+, Safari 14+, Edge 90+. Mobile applications support iOS 14+ and Android 10+. Graceful degradation for older browsers without core functionality loss. |
 | NF_10 | **Real-time Communication:** WebSocket connections support live streaming with <5 second latency. Real-time chat updates within 2 seconds of message send. Automatic reconnection with exponential backoff for network interruptions. |
 | NF_11 | **AI Dermatology Expert Accuracy & Safety:** AI dermatology responses include confidence scores and disclaimers (not a substitute for professional medical advice). Knowledge base trained on peer-reviewed dermatological literature and FDA-approved skincare guidelines. Response accuracy validated against dermatologist-reviewed test cases (minimum 95% accuracy on common skin concerns). Sensitive medical queries escalated to human support with clear handoff. |
-
----
 
 ## Appendix A: Survey Instrument (Google Forms)
 
@@ -275,8 +241,6 @@ Section 2B — End-use customers (Shown if Q2 = End-use customer)
 Notes
 - Mark required questions accordingly. Use response validation for Q10 (customers) to limit to 3 selections.
 - Maintain anonymity; only Q5 may collect optional email.
-
----
 
 ## Appendix B: Google Forms Import (CSV for add-ons)
 

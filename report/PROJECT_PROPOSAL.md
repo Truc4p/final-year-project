@@ -1,8 +1,6 @@
 # Wrencos: Integrated E-Commerce Platform with Live Streaming and AI Assistance
 ## Final Year Project Proposal
 
----
-
 ## 1. Introduction
 
 **Project Topic:** The beauty e-commerce market has grown to $120 billion (2024) and is projected to exceed $200 billion by 2027, driven by digital-native consumers demanding personalized experiences (Statista, 2024). However, existing platforms fail to address beauty-specific needs. Wrencos addresses this gap by integrating e-commerce with live streaming commerce, AI-powered recommendations, dermatology consultation, and business management tools specifically designed for beauty retailers.
@@ -263,7 +261,5 @@ Guo, J., Li, Y., Xu, Y. & Zeng, K. (2021) ‘How Live Streaming Features Impact 
 Hwang, J. & Youn, S. (2023) ‘From brick-and-mortar to livestream shopping: product information acquisition from the uncertainty reduction perspective’, Fashion and Textiles, 10(1), 7.
 
 Yun, X. & Chun, M. H. (2024) ‘The impact of personalized recommendation on purchase intention under the background of big data’, Big Data and Information Analytics, 8, pp. 80–108.
-
----
 
 **Word Count:  words**

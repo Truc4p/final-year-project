@@ -4,8 +4,6 @@
 
 ### Rich Picture Narrative
 
----
-
 ## 5.2 System Architecture
 
 ### High-Level Architecture Overview
@@ -113,8 +111,6 @@ The System Context Diagram provides the highest-level view of the Wrencos platfo
 └──────────────────────────────────────────┘
 ```
 
----
-
 ## 5.3 Technology Stack
 
 | Category | Technology | Version | Justification | References |
@@ -162,13 +158,9 @@ The System Context Diagram provides the highest-level view of the Wrencos platfo
 | **API Testing** | Postman | Latest | Interactive API endpoint testing and contract validation; essential for development and UAT. | Postman Docs (2024) |
 | **AI Integration** | Google Gemini API | 0.24.1 | State-of-the-art conversational AI; REST API integration; supports context awareness and conversation history. | Google Generative AI Docs (2024) |
 
----
-
 ## 5.4 Detailed Design Diagrams
 
 ### Entity Relationship Diagram (ERD) - Organized by Service
-
----
 
 ####  AUTH SERVICE
 
@@ -256,8 +248,6 @@ erDiagram
 
 The Auth service manages the User entity, which is the single source of truth for identities and roles (admin, customer). All other services reference User via foreign keys to enforce ownership, auditing, and permissions: customers place Orders; admins create Email assets and LiveStreams; chats can belong to a user or be assigned to a staff member; finance entries record who created them. Passwords are stored hashed, and role-based access is enforced at the API gateway.
 
----
-
 ####  E-COMMERCE SERVICE
 
 ```mermaid
@@ -319,8 +309,6 @@ erDiagram
 ```
 
 The E‑Commerce service manages the product catalog, category taxonomy, and customer orders. Products belong to a Category, and each Order belongs to a User. Order items are stored as embedded subdocuments in Order.products[]; in the ERD they are represented as a conceptual OrderItem entity to make the Product↔Order many‑to‑many explicit. The model also captures pricing and fulfillment details as well as inventory and rich product attributes used by search and AI recommendations.
-
----
 
 ####  LIVESTREAM SERVICE
 
@@ -387,8 +375,6 @@ erDiagram
 
 The Livestream service manages live video sessions created by admin users. Each LiveStream is owned by a User (createdBy). Real‑time chat and product promotions are stored as embedded arrays in the LiveStream document; in the ERD they appear as conceptual entities (ChatMessage, PinnedProduct) so the relationships are explicit. PinnedProduct forms an associative link between LiveStream and Product (many‑to‑many), while ChatMessage captures the stream’s chat timeline. Operational and discovery fields (isActive, isRecorded, quality, tags, categories, views/likes/maxViewers) support analytics, playback, and search.
 
----
-
 ####  COMMUNICATION SERVICE
 
 ```mermaid
@@ -450,8 +436,6 @@ erDiagram
 ```
 
 The Communication service orchestrates customer conversations, FAQs, and AI-assisted replies. A ChatConversation can be anonymous or linked to a User; staff can be assigned for escalation. Each conversation embeds a timeline of Message items. Message metadata optionally links to one FAQ (for predefined answers) and may reference multiple Products retrieved for recommendations. Operational flags (isActive, isStaffChat, waitingForStaff, unread, lastStaffRead, lastActivity) support routing, triage, and analytics.
-
----
 
 ####  MARKETING SERVICE
 
@@ -569,8 +553,6 @@ erDiagram
 
 The Marketing service manages email campaign orchestration, template design, and subscriber segmentation. Admins create EmailCampaigns using reusable EmailTemplates and define targeting criteria through EmailSegments. Each campaign tracks delivery and engagement metrics through EmailAnalytics, which records opens, clicks, bounces, and unsubscribes for every NewsletterSubscription recipient. Campaigns reference templates via foreign keys and apply segment criteria to target relevant subscribers; analytics link campaigns to subscriber interactions, enabling performance measurement and audience insights. All marketing assets are created and owned by admin users (createdBy), ensuring audit trails and role-based permissions.
 
----
-
 ####  HR SERVICE
 
 ```mermaid
@@ -632,8 +614,6 @@ erDiagram
 
 The HR service manages employee records, organizational hierarchy, performance evaluations, and document storage. Each Employee is linked to a User account (1:1 via userId) for authentication and system access; employees form a hierarchical structure through self-referential manager relationships, enabling multi-level reporting chains. Performance reviews track evaluation history with ratings, comments, and reviewer attribution (reviewedBy), while Documents store employment-related files (contracts, certifications, policies) with metadata. Employee records capture comprehensive HR data including compensation, benefits, leave balances, skills, and emergency contacts, providing a complete personnel management system with audit trails through createdAt/updatedAt timestamps.
 
----
-
 #### FINANCE SERVICE
 
 ```mermaid
@@ -694,8 +674,6 @@ erDiagram
 ```
 
 The Finance service models operational spending and cash movements via BusinessExpense and CashFlowTransaction. Expenses capture non-order outflows (e.g., rent, marketing) with optional recurrence metadata, while cash‑flow entries record both inflows and outflows; inflows often reference an Order (orderId), and manual/adjustment entries are attributed to a User (createdBy) for auditability. This schema supports automated syncing of completed orders into the ledger, handling of refunds and ad‑hoc adjustments, and reliable dashboarding and forecasting through consistent timestamps, categories, and linkage to users and orders.
-
----
 
 #### SKIN STUDY SERVICE
 
@@ -899,8 +877,6 @@ classDiagram
 ```
 
 **Explanation:** This Class Diagram represents the core domain entities and their relationships. The User class is central, acting as the primary actor across all services. Products are managed in the E-Commerce service and referenced in Orders and LiveStreams. Orders generate financial transactions, while LiveStreams facilitate real-time customer engagement. EmailCampaigns manage marketing communications, and Employees represent the organizational structure. The diagram shows how entities interact through one-to-many relationships, establishing clear ownership and data flow patterns.
-
----
 
 #### 2. Use Case Diagram
 #### 2.1 Use Case Diagram - Customer
@@ -1122,8 +1098,6 @@ This Use Case Diagram illustrates all customer-facing features in the Wrencos ec
 - **Order tracking** reduces support inquiries and builds trust
 
 #### 2.2 Use Case Diagram - Admin
----
-
 #### 3. Activity Diagram – Customer Purchase Flow
 
 ```mermaid
@@ -1188,8 +1162,6 @@ flowchart TD
 
 **Explanation:** This Activity Diagram models the complete customer purchase flow from product discovery to order fulfillment. The flow begins with product browsing and detail viewing, followed by conditional logic for cart addition and checkout initiation. The customer then provides shipping and payment information, reviews the order, and confirms. The system processes payment through VNPay; if successful, an order record is created, confirmation email is sent, and order tracking is displayed. If payment fails, the customer can retry. The diagram captures decision points (Interested?, Continue Shopping?, Confirm Order?, Payment Successful?) and alternative paths (cancellation, payment retry), representing the complete customer journey.
 
----
-
 #### 4. Sequence Diagram – AI Chat with Product Recommendation
 
 ```mermaid
@@ -1226,8 +1198,6 @@ sequenceDiagram
 ```
 
 **Explanation:** This Sequence Diagram illustrates the AI-powered chat interaction flow. When a customer sends a message, the Web/Mobile app transmits it to the REST API Gateway with JWT authentication. The gateway verifies the token and routes the request to the Communication Service. The service simultaneously queries the FAQ database and searches the product catalog for relevant context. This context, along with the customer message and conversation history, is sent to Google Gemini API, which generates an intelligent response with product recommendations. The entire conversation is persisted to MongoDB for audit trails and future reference. The response flows back through the API Gateway to the frontend, where AI-generated recommendations and answers are displayed to the customer.
-
----
 
 #### 5. Sequence Diagram – Livestream with Product Pinning and Purchase
 
@@ -1282,8 +1252,6 @@ sequenceDiagram
 ```
 
 **Explanation:** This Sequence Diagram demonstrates the complete livestream experience with product pinning and purchase integration. An admin creates a livestream, starts broadcasting via WebSocket connection, and pins products during the stream. Customers join the livestream, receive the video feed and pinned product notifications in real-time via WebSocket. When a customer clicks on a pinned product, it's added to their cart and they can proceed to checkout. The E-Commerce Service processes the order, and the admin can view comprehensive analytics including viewer count, engagement metrics, and conversion data. This diagram shows the seamless integration between livestream broadcasting, real-time notifications, and e-commerce transactions.
-
----
 
 #### 6. Sequence Diagram – Email Campaign Creation and Delivery
 
@@ -1344,8 +1312,6 @@ sequenceDiagram
 ```
 
 **Explanation:** This Sequence Diagram illustrates the complete email marketing campaign lifecycle. An admin creates a campaign, selects a template, and defines a target audience segment based on subscriber criteria. The Marketing Service queries the database to identify matching subscribers. When the campaign is sent, the Email Service retrieves the subscriber list and uses SMTP to deliver emails to each recipient. The system tracks engagement metrics: opens, clicks, and unsubscribes are recorded in the EmailAnalytics collection. The admin can then view comprehensive campaign performance metrics including open rates, click-through rates, and conversion data. This diagram demonstrates the integration between marketing, email delivery, and analytics services.
-
----
 
 #### 7. Component Diagram – Service Architecture
 
@@ -1421,8 +1387,6 @@ graph TB
 
 **Explanation:** This Component Diagram illustrates the layered architecture of the Wrencos platform. The Client Layer contains three frontend applications (Web Portal, Mobile App, Admin Dashboard) that communicate exclusively through the REST API Gateway. The API Gateway layer handles cross-cutting concerns including routing, authentication middleware, CORS, and rate limiting. The Backend Services Layer contains eight independent services, each responsible for a specific business domain. All services interact with MongoDB Atlas as the single source of truth for data persistence. External services (Google Gemini, VNPay, SMTP, WebSocket) are integrated at the service level for specialized functionality. This architecture ensures separation of concerns, scalability, and maintainability.
 
----
-
 #### 8. State Diagram – Order Lifecycle
 
 ```mermaid
@@ -1460,8 +1424,6 @@ stateDiagram-v2
 ```
 
 **Explanation:** This State Diagram models the complete lifecycle of an order from creation to completion or cancellation. An order begins in the Pending state after customer creation. Upon successful payment verification, it transitions to Processing. From Processing, it moves to Packed once confirmed. The Packed state transitions to Shipped when the warehouse processes it. During transit, the order can be Delayed due to logistics issues, which can be resolved or result in a return. Once Delivered, the order reaches Completed state or transitions to Returned if the customer initiates a return. Returns follow a separate flow through ReturnProcessing to Refunded. Cancelled orders can occur at multiple points (payment failure, customer cancellation, system errors, stock issues) and terminate the flow. This diagram captures all possible order states and transitions, enabling robust order management and customer communication.
-
----
 
 #### 9. Deployment Diagram – Infrastructure Architecture
 
@@ -1523,8 +1485,6 @@ graph TB
 
 **Explanation:** This Deployment Diagram illustrates the cloud infrastructure architecture for the Wrencos platform. Frontend applications (Web and Mobile) are hosted on cloud platforms with CDN distribution. The backend consists of containerized Node.js services (API Server and WebSocket Server) running on cloud infrastructure. MongoDB Atlas provides managed database services with replication and automated backups. Object storage (S3) and CDN services handle media distribution for product images, user avatars, and livestream videos. External services (Google Gemini, VNPay, SMTP, Agora) are integrated via APIs. Monitoring and logging services track performance metrics and errors. This architecture ensures scalability, reliability, and high availability for the platform.
 
----
-
 #### 10. Data Flow Diagram – Customer Purchase to Analytics
 
 ```mermaid
@@ -1572,8 +1532,6 @@ graph LR
 
 **Explanation:** This Data Flow Diagram traces the complete flow of data from a customer purchase through to analytics reporting. A customer browses products and initiates checkout via the Web/Mobile app. The API Gateway routes the request to the E-Commerce Service, which processes payment through the Payment Service and VNPay gateway. Upon successful payment, an order is created and stored in the Order Collection. The E-Commerce Service triggers the Email Service to send a confirmation email, which is logged in the Email Collection. The Analytics Service aggregates order data and stores metrics in the Analytics Collection. Admins query the Analytics Collection through the Admin Dashboard to view business intelligence and performance metrics. This diagram illustrates the complete data pipeline from transaction to insight.
 
-
----
 
 ## 5.5 API Design
 
@@ -1704,5 +1662,3 @@ wss://api.wrencos.com/ws/livestream/:streamId
   "isModerator": false
 }
 ```
-
----
