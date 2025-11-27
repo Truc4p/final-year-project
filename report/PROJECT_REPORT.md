@@ -80,18 +80,18 @@ This analysis examines three primary competitors representing distinct market se
 
 The comparison matrix evaluates platforms across seven critical success factors derived from contemporary e-commerce literature. E-commerce functionality represents foundational capability requirements established by DeLone and McLean (2016) as essential for platform viability. Live streaming commerce emerges as a transformative engagement mechanism, with Wongkitrungrueng and Assarut (2020) demonstrating its significant impact on consumer trust and purchase intentions in social commerce contexts. AI personalization constitutes a critical differentiator, with Davenport et al. (2020) evidencing substantial conversion rate improvements through intelligent recommendation systems. Skincare AI consultation addresses beauty retail's credibility challenge, with Lewis et al. (2020) demonstrating that retrieval-augmented generation enables citation-backed expert guidance that builds consumer confidence in skincare advice. Business management tools integration addresses SME operational fragmentation, with Verhoef et al. (2021) demonstrating that unified management capabilities reduce platform switching costs and enable data-driven decision-making. Implementation cost determines accessibility for SME retailers, a factor emphasized by Cao and Li (2015) as crucial for technology adoption decisions. Collectively, these seven dimensions provide a comprehensive framework for evaluating platform suitability for SME beauty retailers, balancing functional capability, competitive differentiation, and economic feasibility.
 
-| Feature / Aspect | Shopify | Adobe Commerce | Sephora Platform | Wrencos System (Proposed) |
+| Feature / Aspect | Shopify (Plus/Advanced) | Adobe Commerce | Sephora | Wrencos System (Proposed) |
 |---|---|---|---|---|
-| **Target Audience** | SMEs to mid-market retailers | Enterprise retailers | Beauty consumers | SME beauty retailers and consumers |
-| **Core Technology** | Ruby on Rails SaaS cloud platform | PHP/MySQL enterprise system | Proprietary web + mobile platform | Node.js/Vue.js/React Native full-stack |
-| **E-Commerce Functionality** | Comprehensive product catalog, cart, checkout | Advanced inventory, multi-channel | Luxury product focus | Complete e-commerce with specific attributes |
-| **Live Streaming Commerce** | Third-party integrations (Shop App livestream) | Third-party extensions available | Integrated livestream shopping | Native WebSocket-based livestream |
-| **AI Personalization** | Shopify Magic + 3rd Party Apps | Adobe Sensei (Enterprise AI) | Proprietary recommendation engine | Native Google Gemini integration |
-| **Skincare AI Consultation** | None | None | Sephora Virtual Artist (makeup only) | AI dermatology expert with text, voice, image analysis, and live chat; RAG over curated dermatology books with citations |
-| **Business Management Tools** | Accounting, analytics, basic HR | Integrated ERP capabilities |  | Integrated accounting, HR, analytics, email marketing |
-| **Implementation Cost** | USD 39–2,000+/month SaaS | USD 100,000–500,000+ |  | Affordable cloud deployment |
-| **Strengths** | Ease of use, extensive app ecosystem, global payment support | Scalability, advanced features, multi-channel orchestration | Luxury brand positioning, integrated beauty expertise, mobile-first UX | Integrated beauty-specific features, native livestream, dermatology consultation, unified business management |
-| **Weaknesses** | Fragmented ecosystem, limited livestream, no AI dermatology, high cumulative costs for SMEs | Prohibitive cost excludes SMEs, steep learning curve, overkill for small retailers | Not accessible to independent retailers, proprietary ecosystem | Early-stage platform, smaller ecosystem than incumbents, requires validation in market |
+| **Target Audience** | SMBs to Enterprise retailers (Shopify, 2025a) | Mid-market to Large Enterprise B2B/B2C (Adobe, 2024) | Beauty Consumers (B2C End Users) (Sephora, 2024) | SME beauty retailers and beauty consumers |
+| **Core Technology** | Proprietary SaaS Cloud (Ruby on Rails) (Shopify, 2024) | PHP/MySQL Open Source or PaaS (Adobe, 2024) | Proprietary Native (iOS/Android) & Web Platform (LVMH, 2023) | Node.js/Vue.js/React Native full-stack |
+| **E-Commerce Functionality** | Storefront, Checkout, POS, integrated payments (Shopify, 2025a) | Complex catalog management, multi-inventory, B2B logic (Adobe, 2024) | Marketplace, 'Beauty Insider' Loyalty, Community (Sephora, 2024) | Storefront, Checkout, integrated payment, profile, order management |
+| **Live Streaming** | Via Integrations (YouTube, TikTok, 3rd party apps) (Shopify, 2025b) | Via Extensions or Adobe Experience Cloud (Adobe, 2023) | Native / Integrated (Live Shopping Events) (Marr, 2023) | Native WebSocket-based livestream |
+| **AI Personalization** | Shopify Magic (GenAI for text/descriptions) (Shopify, 2025c) | Adobe Sensei (Native AI for search & upsell) (Adobe, 2023) | Proprietary Recommendation Engine & Hybrid Algorithms (Marr, 2023) | Native Google Gemini integration |
+| **Skincare AI Consultation** | None Native (Requires apps like Haut.AI or Revieve) (Shopify App Store, 2025) | None Native (Requires custom development) (Adobe Exchange, 2025) | Virtual Artist (Makeup) + Skincare IQ (Quiz/Algorithm) (Sephora, 2024) | AI dermatology expert with text, voice, image analysis, and live chat; RAG over curated dermatology textbooks with citations |
+| **Business Mgmt Tools** | Sales Analytics, Staff Permissions, Inventory (Shopify, 2025a) | Integrated ERP support, BI, Order Management (Adobe, 2024) | N/A (Consumer facing platform) | Integrated ecommerce, accounting, HR, analytics, email marketing management |
+| **Implementation Cost** | $39 – $2,300+ / month (SaaS licensing fees) (Shopify, 2025a) | $50,000 – $500,000+ (Licensing + Dev Agency costs) (Forbes, 2024) | N/A (Consumer facing platform) | Affordable cloud deployment |
+| **Strengths** | Fast time-to-market, extensive app ecosystem, lower TCO (Gartner, 2023) | Total customization, data sovereignty, handles complex catalogs (Gartner, 2023) | High user trust, integrated community, massive loyalty data (LVMH, 2023) | Integrated beauty-specific features, native livestream, dermatology consultation, unified business management |
+| **Weaknesses** | Fragmented ecosystem, need many paid apps, limited livestream. Transaction fees, URL rigidity, generic checkout (Forbes, 2024) | High maintenance cost, steep learning curve, requires dev team (Forbes, 2024) | Closed ecosystem, high commission for brands | Early-stage platform, smaller ecosystem than incumbents, requires validation in market |
 
 **Written Analysis**
 
@@ -156,6 +156,10 @@ React Native is chosen for mobile development, reflecting its proven cross-platf
 MongoDB serves as the primary operational database for three reasons: schema flexibility accommodating varying product attributes across categories without complex entity-attribute-value patterns (Han et al., 2011); JSON-native BSON format eliminating object-relational impedance mismatch with Node.js (Stonebraker & Hellerstein, 2019); and native horizontal sharding enabling cost-effective future scalability. 
 
 Qdrant provides specialized vector database functionality for the AI dermatology module's RAG requirements, implementing semantic search across curated literature with high-dimensional embeddings. Its HNSW index achieves sub-millisecond approximate nearest neighbour search with >95% recall, essential for maintaining conversational AI response latency under 200ms (Malkov & Yashunin, 2020). 
+
+**Development Methodologies**
+
+**Justification for Selection:**
 
 ### 2.5 Summary and Identification of the Research Gap
 

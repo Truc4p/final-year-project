@@ -110,39 +110,37 @@ Data sharing willingness supports personalization implementation: **58% confirme
 
 ## 3.3 Functional Requirements with MoSCoW Prioritisation
 
-| ID | Description | Priority | Estimation |
-|---|---|---|---|
-| USR_02 | As a customer, I want to browse and search products with detailed ingredient lists and compatibility filters, so that I can make informed purchasing decisions aligned to my skin profile. | Must | 10 days |
-| USR_03 | As a customer, I want to add products to cart, and complete checkout securely, so that I can purchase products with confidence. | Must | 12 days |
-| USR_04 | As a customer, I want to track order status and receive notifications, so that I have visibility into delivery timelines. | Must | 8 days |
-| USR_05 | As a customer, I want to watch live streaming commerce events with real-time product display and chat, so that I can interact with experts before purchasing. | Must | 8 days |
-| USR_05A | As a customer, I want to view livestreams on both web and mobile app platforms, so that I can watch conveniently on any device with optimal screen viewing experience. | Must | 6 days |
-| USR_06 | As a customer, I want to chat with an real staff, so that I ... | Should | 8 days |
-| USR_01 | As a customer, I want to chat with an AI assistant, receive personalized product recommendations, so that I find products matching my specific needs without trial-and-error. | Must | 12 days |
-| USR_06A | As a customer, I want to consult with an AI dermatology expert about my skin concerns, so that I receive clinical-grade guidance. | Should | 14 days |
-| USR_07 | As a customer, I want to view my purchase history and reorder previous products, so that I can repurchase skincare routines efficiently. | Should | 6 days |
-| USR_09 | As a customer, I want to receive email recommendations and exclusive offers matched to my profile, so that I discover relevant products. | Could | 6 days |
-| USR_08 | As a customer, I want to write product reviews and view reviews from other customers, so that I can assess product quality through peer feedback. | Should | 8 days |
-| ADM_01 | As a business admin, I want to manage product catalog (create, edit, delete products with attributes), so that I maintain accurate inventory and product information. | Must | 10 days |
-| ADM_02 | As a business admin, I want to view real-time sales analytics (revenue, orders, top products, conversion metrics), so that I monitor business performance and identify trends. | Must | 12 days |
-| ADM_04 | As a business admin, I want to livestream on both web and mobile app platforms, so that I can reach customers across all devices and maximize engagement. | Should | 10 days |
-| ADM_06 | As a business admin, I want to view financial reports (revenue, expenses, cash flow, profitability by product), so that I monitor financial health and make data-driven decisions. | Should | 10 days |
-| ADM_07 | As a business admin, I want to manage orders (view, update status, process refunds, export), so that I handle order fulfillment efficiently. | Should | 8 days |
-| ADM_08 | As a business admin, I want to manage live streaming with real-time viewer engagement metrics and product pinning, so that I optimize live commerce performance. | Could | 10 days |
-| ADM_09 | As a business admin, I want to configure AI chatbot responses and FAQ management, so that I customize customer support interactions. | Could | 8 days |
-| ADM_09A | As a business admin, I want to configure the AI dermatology expert (knowledge base, product-to-concern mappings), so that I ensure recommendations align with my brand and product catalog. | Should | 10 days |
-| ADM_10 | As a business admin, I want to access employee HR records and document management, so that I centralize HR operations. | Could | 8 days |
-| ADM_03 | As a business admin, I want to manage customer segmentation and email campaigns with audience filtering, so that I execute targeted marketing campaigns. | Should | 12 days |
-
+| ID | Description | Priority |
+|---|---|---|
+| CUSTOMER_01 | As a customer, I want to browse and search products with detailed ingredient lists and compatibility filters, so that I can make informed purchasing decisions aligned to my skin profile. | Must |
+| CUSTOMER_02 | As a customer, I want to add products to cart, and complete checkout securely, so that I can purchase products with confidence. | Must |
+| CUSTOMER_03 | As a customer, I want to track order status and receive notifications, so that I have visibility into delivery timelines. | Must |
+| CUSTOMER_04 | As a customer, I want to chat with an AI assistant, receive personalized product recommendations, so that I find products matching my specific needs without trial-and-error. | Must |
+| ADMIN_01 | As a business admin, I want to manage product catalog (create, edit, delete products with attributes), so that I maintain accurate inventory and product information. | Must |
+| ADMIN_02 | As a business admin, I want to manage orders (view, update status, process refunds, export), so that I handle order fulfillment efficiently. | Must |
+| CUSTOMER_05 | As a customer, I want to watch live streaming commerce events with real-time product display and chat, so that I can interact with experts before purchasing. | Should |
+| CUSTOMER_06 | As a customer, I want to view livestreams on both web and mobile app platforms, so that I can watch conveniently on any device with optimal screen viewing experience. | Should |
+| CUSTOMER_07 | As a customer, I want to chat with a real staff, so that I can resolve complex issues or specific inquiries that the AI assistant cannot handle. | Should |
+| CUSTOMER_08 | As a customer, I want to consult with an AI dermatology expert about my skin concerns, so that I receive clinical-grade guidance. | Should |
+| CUSTOMER_09 | As a customer, I want to view my purchase history and reorder previous products, so that I can repurchase skincare routines efficiently. | Should |
+| ADMIN_03 | As a business admin, I want to view real-time sales analytics (revenue, orders, top products, conversion metrics), so that I monitor business performance and identify trends. | Should |
+| ADMIN_04 | As a business admin, I want to manage customer segmentation and email campaigns with audience filtering, so that I execute targeted marketing campaigns. | Should |
+| ADMIN_05 | As a business admin, I want to livestream on both web and mobile app platforms, so that I can reach customers across all devices and maximize engagement. | Should |
+| ADMIN_06 | As a business admin, I want to view financial reports (revenue, expenses, cash flow, profitability by product), so that I monitor financial health and make data-driven decisions. | Should |
+| ADMIN_07 | As a business admin, I want to configure the AI dermatology expert (knowledge base, product-to-concern mappings), so that I ensure recommendations align with my brand and product catalog. | Should |
+| CUSTOMER_10 | As a customer, I want to receive email recommendations and exclusive offers matched to my profile, so that I discover relevant products. | Could |
+| ADMIN_08 | As a business admin, I want to manage live streaming with real-time viewer engagement metrics and product pinning, so that I optimize live commerce performance. | Could |
+| ADMIN_09 | As a business admin, I want to configure AI chatbot responses and FAQ management, so that I customize customer support interactions. | Could |
+| ADMIN_10 | As a business admin, I want to access employee HR records and document management, so that I centralize HR operations. | Could |
 
 ### MoSCoW Summary
 
 | Priority | Number of Features | Allocation |
 |---|---|---|
-| Must | 6 | Core features (essential for MVP) |
-| Should | 11 | High-priority features (enhance value) |
-| Could | 4 | Nice-to-have features (polish & extras) |
-| **TOTAL** | **21** |  |
+| Must | 6 | Core features |
+| Should | 10 | High-priority features |
+| Could | 4 | Nice-to-have features |
+| **TOTAL** | **20** |  |
 
 ## 3.4 Non-functional Requirements
 
