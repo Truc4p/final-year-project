@@ -8,108 +8,66 @@
 
 ### High-Level Architecture Overview
 
-**Architecture Pattern:** Client-Server with microservices-oriented backend modules. Frontend (web/mobile) communicates with centralized RESTful API; backend orchestrates business logic, database operations, external service integration. Real-time communication via WebSocket for live streaming and notifications. Asynchronous job processing for email marketing, analytics aggregation.
 
 ### C4 Model Diagrams
 
 #### System Context Diagram (Level 1)
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                         External Systems                                 │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐           │
-│  │  Google Gemini  │  │     VNPay       │  │   SMTP Server   │           │
-│  │  (AI Engine)    │  │   (Payments)    │  │    (Email)      │           │
-│  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘           │
-│           │                    │                    │                    │
-│           └────────────────────┼────────────────────┘                    │
-│                                │                                         │
-│                        ┌───────▼────────┐                                │
-│                        │   Wrencos      │                                │
-│                        │   Platform     │                                │
-│                        │  (E-Commerce)  │                                │
-│                        └───────▲────────┘                                │
-│                                │                                         │
-│                  ┌─────────────┼─────────────┐                           │
-│                  │             │             │                           │
-│              ┌───▼───┐     ┌───▼───┐     ┌───▼────┐                      │
-│              │  Web  │     │Mobile │     │ Admin  │                      │
-│              │Portal │     │ App   │     │  Web   │                      │
-│              │(Cust) │     │(Cust) │     │(Admin) │                      │
-│              └───────┘     └───────┘     └────────┘                      │
-└──────────────────────────────────────────────────────────────────────────┘
-```
 
-The System Context Diagram provides the highest-level view of the Wrencos platform and its interactions with external systems and users. It establishes the system boundary and shows how different actors interact with the core platform.
+
+Primary Actors (Users):
+Customer - Browses products, makes purchases, watches livestreams, browses FAQ, chats with AI, chats with staff, chats with AI dermatology expert 
+Admin - Manages products, orders, users, livestreams, analytics, finances, HR, email marketing
+Guest User - View product catalog, subscribe email
+
+External Systems:
+Google Gemini AI API
+
+Provides AI-powered dermatology consultation
+Product recommendations
+Intelligent chat responses
+Image analysis for skin conditions
+Text-to-speech and audio transcription
+Qdrant Vector Database
+
+Stores embeddings for RAG (Retrieval-Augmented Generation)
+Enables semantic search for FAQ and knowledge base
+Powers contextual AI responses
+MongoDB Atlas
+
+Cloud database storing all application data
+User accounts, products, orders, conversations, etc.
+VNPay Payment Gateway
+
+Processes customer payments
+Handles transactions for orders
+SMTP Email Server
+
+Sends transactional emails (order confirmations, password resets)
+Delivers marketing campaigns
+Newsletter distribution
+Agora SDK
+
+Powers live video streaming for product demonstrations
+Real-time video delivery to mobile apps
+WebSocket Server
+
+Real-time bidirectional communication
+Live chat during streams
+Instant messaging support
+Key Interactions:
+Customers → Browse products, place orders, watch livestreams, chat with AI, receive emails
+Admins → Manage content, create campaigns, monitor analytics, conduct livestreams
+Wrencos Platform ↔ Gemini AI → AI consultations and recommendations
+Wrencos Platform ↔ MongoDB → Data persistence and retrieval
+Wrencos Platform ↔ VNPay → Payment processing
+Wrencos Platform ↔ Email Server → Email communications
+Wrencos Platform ↔ Qdrant → Semantic search and RAG
+Wrencos Platform ↔ Agora → Live streaming infrastructure
+This is a Level 1 C4 diagram showing the big picture - the system boundary and how it fits into the broader ecosystem with external actors and systems. Would you like me to create the actual Mermaid diagram code for this System Context Diagram?
 
 
 #### Container Diagram (Level 2)
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        Wrencos Platform                             │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ┌──────────────────────┐              ┌─────────────────────┐      │
-│  │   Web Frontend       │              │   Mobile App        │      │
-│  │   (Vue.js)           │              │   (React Native)    │      │
-│  │ - Customer Portal    │              │ - Customer Interface│      │
-│  │ - Admin Dashboard    │              │ - Shopping & Orders │      │
-│  └──────────┬───────────┘              └────────────┬────────┘      │
-│             │                                       │               │
-│             └──────────────────┬────────────────────┘               │
-│                                │                                    │
-│                ┌───────────────▼────────────────┐                   │
-│                │  REST API Gateway              │                   │
-│                │  (Express.js + Node.js)        │                   │
-│                │  • Authentication (JWT)        │                   │
-│                │  • Authorization (Role-based)  │                   │
-│                │  • Request Routing & Validation│                   │
-│                │  • Error Handling              │                   │
-│                └───────────────┬────────────────┘                   │
-│                                │                                    │
-│    ┌───────────────────────────▼────────────────────────┐           │
-│    │      Backend Services Layer                        │           │
-│    ├────────────────────────────────────────────────────┤           │
-│    │    ┌─────────┐ ┌─────────┐ ┌─────────┐             │           │
-│    │    │E-Comm.  │ │Live     │ │Analytics│             │           │
-│    │    │Service  │ │Stream   │ │Service  │             │           │
-│    │    │         │ │Service  │ │         │             │           │
-│    │    └─────────┘ └─────────┘ └─────────┘             │           │
-│    │    ┌─────────┐ ┌─────────┐ ┌─────────┐             │           │
-│    │    │  Email  │ │Marketing│ │   HR    │             │           │
-│    │    │Service  │ │Service  │ │Service  │             │           │
-│    │    │         │ │         │ │         │             │           │
-│    │    └─────────┘ └─────────┘ └─────────┘             │           │
-│    │    ┌─────────┐ ┌─────────┐ ┌───────────────┐       │           │
-│    │    │ Finance │ │  Auth   │ │ Communication │       │           │
-│    │    │Service  │ │Service  │ │   Service     │       │           │ 
-│    │    │         │ │         │ └───────────────┘       │                       
-│    │    └─────────┘ └─────────┘                         │           │    
-│    │                                                    │           │   
-│    └────────────────────┬───────────────────────────────┘           │
-│                         │                                           │
-│                ┌────────▼─────────────┐                             │
-│                │  MongoDB Atlas       │                             │
-│                │  Database            │                             │
-│                │  • Users & Auth      │                             │
-│                │  • Products & Orders │                             │
-│                │  • Live Streams      │                             │
-│                │  • Email Campaigns   │                             │
-│                │  • HR & Finance Data │                             │
-│                │  • Chat & Analytics  │                             │
-│                └──────────────────────┘                             │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
 
-┌──────────────────────────────────────────┐
-│     External Service Integrations        │
-├──────────────────────────────────────────┤
-│ • Google Gemini API (AI Engine)          │
-│ • VNPay API (Payment Gateway)            │
-│ • SMTP Server (Email Delivery)           │
-└──────────────────────────────────────────┘
-```
 
 ## 5.3 Technology Stack
 

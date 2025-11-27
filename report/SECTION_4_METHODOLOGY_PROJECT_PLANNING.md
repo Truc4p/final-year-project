@@ -55,46 +55,6 @@ This section presents the project timeline spanning 10 months (40 weeks) from Ma
 
 ### Gantt Chart (Visual Timeline)
 
-```
-Phase/Sprint          Month 1-2    Month 3-4    Month 5-6    Month 7-8    Month 9-10
-                      Mar-Apr      May-Jun      Jul-Aug      Sep-Oct      Nov-Dec
-=====================================================================================
-PHASE 1: DISCOVERY & PLANNING
-Sprint 1              ██
-                      M1
-
-PHASE 2: FOUNDATION DEVELOPMENT
-Sprint 2              ██
-Sprint 3                  ██
-Sprint 4                      ██
-Sprint 5                          ██
-                                  M2
-
-PHASE 3: FEATURE DEVELOPMENT (CORE)
-Sprint 6                              ██
-Sprint 7                                  ██
-Sprint 8                                      ██
-Sprint 9                                          ██
-Sprint 10                                             ██
-Sprint 11                                                 ██
-Sprint 12                                                     ██
-Sprint 13                                                         ██
-                                                                  M3
-
-PHASE 4: FEATURE DEVELOPMENT (ADVANCED)
-Sprint 14                                                             ██
-Sprint 15                                                                 ██
-Sprint 16                                                                     ██
-Sprint 17                                                                         ██
-Sprint 18                                                                             ██
-                                                                                      M4
-
-PHASE 5: INTEGRATION & FINALIZATION
-Sprint 19                                                                                 ██
-Sprint 20                                                                                     ██
-                                                                                              M5
-```
-
 ### Key Milestones
 
 | Milestone | Week | Description | Success Criteria |
