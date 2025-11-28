@@ -14,57 +14,6 @@
 #### System Context Diagram (Level 1)
 
 
-Primary Actors (Users):
-Customer - Browses products, makes purchases, watches livestreams, browses FAQ, chats with AI, chats with staff, chats with AI dermatology expert 
-Admin - Manages products, orders, users, livestreams, analytics, finances, HR, email marketing
-Guest User - View product catalog, subscribe email
-
-External Systems:
-Google Gemini AI API
-
-Provides AI-powered dermatology consultation
-Product recommendations
-Intelligent chat responses
-Image analysis for skin conditions
-Text-to-speech and audio transcription
-Qdrant Vector Database
-
-Stores embeddings for RAG (Retrieval-Augmented Generation)
-Enables semantic search for FAQ and knowledge base
-Powers contextual AI responses
-MongoDB Atlas
-
-Cloud database storing all application data
-User accounts, products, orders, conversations, etc.
-VNPay Payment Gateway
-
-Processes customer payments
-Handles transactions for orders
-SMTP Email Server
-
-Sends transactional emails (order confirmations, password resets)
-Delivers marketing campaigns
-Newsletter distribution
-Agora SDK
-
-Powers live video streaming for product demonstrations
-Real-time video delivery to mobile apps
-WebSocket Server
-
-Real-time bidirectional communication
-Live chat during streams
-Instant messaging support
-Key Interactions:
-Customers → Browse products, place orders, watch livestreams, chat with AI, receive emails
-Admins → Manage content, create campaigns, monitor analytics, conduct livestreams
-Wrencos Platform ↔ Gemini AI → AI consultations and recommendations
-Wrencos Platform ↔ MongoDB → Data persistence and retrieval
-Wrencos Platform ↔ VNPay → Payment processing
-Wrencos Platform ↔ Email Server → Email communications
-Wrencos Platform ↔ Qdrant → Semantic search and RAG
-Wrencos Platform ↔ Agora → Live streaming infrastructure
-This is a Level 1 C4 diagram showing the big picture - the system boundary and how it fits into the broader ecosystem with external actors and systems. Would you like me to create the actual Mermaid diagram code for this System Context Diagram?
-
 
 #### Container Diagram (Level 2)
 
