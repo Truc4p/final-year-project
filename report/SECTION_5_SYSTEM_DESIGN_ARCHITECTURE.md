@@ -980,35 +980,29 @@ graph LR
 | 2 | `/api/auth/login` | POST | User login with credentials | email, password | {token, refreshToken, user} |
 | 3 | `/api/auth/refresh` | POST | Refresh expired JWT token | refreshToken | {token, refreshToken} |
 | 4 | `/api/products` | GET | List all products with optional filters | page, limit, category, skinType, concern, search | {products: [], totalCount, page, totalPages} |
-| 5 | `/api/products/:id` | GET | Get product details including ingredients, reviews | productId | {product: {name, description, price, ingredients[], reviews[]}} |
 | 6 | `/api/products` | POST | Create new product (admin only) | name, price, description, ingredients[], skinTypes[], concern[] | {productId, message} |
-| 7 | `/api/products/:id` | PUT | Update product details (admin only) | productId, name, price, description, inventory | {message, updatedProduct} |
-| 8 | `/api/cart` | GET | Get current user's cart | userId (from JWT) | {items: [{productId, name, price, quantity}], total} |
 | 9 | `/api/cart/items` | POST | Add product to cart | productId, quantity | {cartId, message} |
-| 10 | `/api/cart/items/:itemId` | PUT | Update cart item quantity | itemId, quantity | {message, updatedCart} |
-| 11 | `/api/cart/items/:itemId` | DELETE | Remove item from cart | itemId | {message, updatedCart} |
 | 12 | `/api/cart/checkout` | POST | Process checkout and create order | paymentMethodId, shippingAddress | {orderId, totalPrice, estimatedDelivery} |
 | 13 | `/api/orders` | GET | Get user's order history | userId (from JWT), page, limit | {orders: [{orderId, date, totalPrice, status, items[]}], totalCount} |
-| 14 | `/api/orders/:id` | GET | Get order details | orderId | {order: {orderId, items[], totalPrice, status, shippingAddress, trackingNumber}} |
-| 15 | `/api/orders/:id/status` | PUT | Update order status (admin/staff only) | orderId, newStatus | {message, updatedOrder} |
 | 16 | `/api/recommendations` | GET | Get AI-powered product recommendations | userId (from JWT), skinType, concerns[] | {recommendations: [{productId, name, relevanceScore, reason}]} |
 | 17 | `/api/chat` | POST | Send message to AI chatbot | userId (from JWT), message, conversationId | {response, conversationId, messageId} |
 | 18 | `/api/chat/history` | GET | Get conversation history with AI | userId (from JWT), conversationId | {messages: [{role, content, timestamp}]} |
-| 19 | `/api/livestreams` | GET | List upcoming/ongoing live streams | status, page, limit | {streams: [{streamId, title, scheduledStart, viewerCount, status}], totalCount} |
 | 20 | `/api/livestreams` | POST | Create new live stream (admin/staff) | title, description, scheduledStart, productIds[] | {streamId, message} |
-| 21 | `/api/livestreams/:id` | GET | Get live stream details | streamId | {stream: {title, description, status, viewers, chat[], pinnedProducts[]}} |
-| 22 | `/api/livestreams/:id/messages` | POST | Send message in live stream chat (via WebSocket) | streamId, userId, message | {messageId, timestamp} |
-| 23 | `/api/livestreams/:id/analytics` | GET | Get stream analytics (admin only) | streamId | {analytics: {totalViewers, avgWatchTime, conversions, topProducts[]}} |
 | 24 | `/api/analytics/sales` | GET | Get sales analytics dashboard | startDate, endDate, groupBy | {totalRevenue, totalOrders, conversionRate, topProducts[], dailyRevenue[]} |
 | 25 | `/api/analytics/customers` | GET | Get customer analytics (admin only) | startDate, endDate | {newCustomers, repeatCustomers, avgOrderValue, churnRate} |
-| 26 | `/api/campaigns` | GET | Get email campaigns (admin only) | page, limit | {campaigns: [{campaignId, name, audience, sentCount, openRate}], totalCount} |
+| 26 | `/api/ai-dermatology-expert/chat` | POST | Send message to AI Dermatology Expert | message, conversationHistory[] | {response, sources: [{title, content}], images: [], timestamp} |
+| 27 | `/api/ai-dermatology-expert/analyze-skin` | POST | Analyze skin image with AI Dermatology Expert | image (multipart), message, conversationHistory[] | {response, sources: [{title, content}], timestamp} |
+| 28 | `/api/ai-dermatology-expert/transcribe` | POST | Transcribe audio to text | audio (multipart) | {transcription, timestamp, processingTime} |
+| 29 | `/api/ai-dermatology-expert/text-to-speech` | POST | Convert text to speech using Google Cloud TTS | text | {audio (base64), format: 'mp3', timestamp, processingTime} |
+| 30 | `/internal/ai-dermatology-expert/rag-query` | POST | Retrieve relevant dermatology knowledge from vector DB | query, conversationHistory[] | {context: string, sources: [{title, content, relevance}]} |
+| 31 | `/internal/ai-dermatology-expert/generate-response` | POST | Generate AI response using Gemini with RAG context | message, context, conversationHistory[] | {response: string, images: [], detectedLanguage, translatedQuery} |
+| 32 | `/internal/ai-dermatology-expert/detect-language` | POST | Detect language and translate to English for RAG | text | {language, languageName, translation, isEnglish} |
+| 33 | `/internal/ai-dermatology-expert/analyze-image-vision` | POST | Analyze image using Gemini Vision API | imagePath, query, context, conversationHistory[] | {response: string, analysisDetails: {conditions, recommendations}} |
+| 34 | `/internal/ai-dermatology-expert/transcribe-gemini` | POST | Transcribe audio using Gemini API | audioPath | {transcription: string, confidence} |
 | 27 | `/api/campaigns` | POST | Create email campaign (admin only) | name, subject, template, audienceFilter, scheduledTime | {campaignId, message} |
-| 28 | `/api/campaigns/:id/send` | POST | Send email campaign (admin only) | campaignId | {message, sentCount} |
 | 29 | `/api/users` | GET | List all users (admin only) | page, limit, role | {users: [{userId, email, role, createdAt}], totalCount} |
-| 30 | `/api/users/:id/roles` | PUT | Update user role (admin only) | userId, newRole | {message, updatedUser} |
 | 31 | `/api/financial/reports` | GET | Get financial reports (admin only) | month, year | {revenue, expenses, profit, productBreakdown[], categoryBreakdown[]} |
 | 32 | `/api/reviews` | POST | Submit product review (customer only) | productId, rating, comment | {reviewId, message} |
-| 33 | `/api/reviews/product/:id` | GET | Get all reviews for product | productId, page, limit | {reviews: [{userId, rating, comment, createdAt}], avgRating, totalCount} |
 
 ### Sample Request/Response
 
