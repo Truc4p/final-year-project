@@ -1,283 +1,149 @@
 # Container Diagram (Level 2) - Wrencos Platform
 
-## Mermaid Diagram Code
+## Mermaid Diagram
 
 ```mermaid
 graph TB
-    subgraph Users["Users Layer"]
-        Customer["Customer<br/>(Person)"]
-        Admin["Admin/Seller<br/>(Person)"]
-        Guest["Guest<br/>(Person)"]
+    subgraph "User Interfaces"
+        WEB["🌐 Web Application<br/>Vue.js 3 + Vite<br/>Tailwind CSS"]
+        MOBILE_CUST["📱 Mobile App - Customer<br/>React Native + Expo"]
+        MOBILE_ADMIN["📱 Mobile App - Admin<br/>React Native + Expo"]
     end
 
-    subgraph WebTier["Web Tier"]
-        WebApp["Web Application<br/>(Vue.js 3 SPA)<br/>Product Browsing<br/>Shopping Cart<br/>Order Management<br/>Analytics Dashboard<br/>Admin Panel"]
+    subgraph "Backend Services"
+        API["🔧 Backend API Server<br/>Node.js + Express.js<br/>Port: 3000"]
+        WS["🔌 WebSocket Manager<br/>Real-time Communication<br/>Chat, Streams, Likes"]
     end
 
-    subgraph MobileTier["Mobile Tier"]
-        CustomerApp["Customer Mobile App<br/>(React Native + Expo)<br/>Product Browsing<br/>Livestream Viewing<br/>AI Consultation<br/>Order Tracking<br/>Live Chat"]
-        AdminApp["Admin Mobile App<br/>(React Native + Expo)<br/>Livestream Hosting<br/>Product Management<br/>Order Management<br/>Analytics"]
+    subgraph "Data & Storage"
+        MONGO["🗄️ MongoDB Atlas<br/>Cloud Database<br/>Users, Products, Orders,<br/>Chats, Livestreams"]
+        VECTOR["🔍 Qdrant Vector DB<br/>Semantic Search<br/>Knowledge Base<br/>Embeddings"]
     end
 
-    subgraph APITier["Backend API Server - Node.js + Express - Port 3000"]
-        AppCore["Express.js Core<br/>CORS Enabled<br/>Rate Limiting<br/>Swagger Docs<br/>Static File Serving"]
-        
-        subgraph AuthModule["Auth Module"]
-            AuthRoutes["Auth Routes /auth<br/>Login, Register<br/>Token Refresh"]
-            UserRoutes["User Routes /users<br/>Profile Management"]
-        end
-        
-        subgraph EcommerceModule["E-Commerce Module"]
-            ProductRoutes["Product Routes /products<br/>Browse, Search, Filter"]
-            CategoryRoutes["Category Routes /categories<br/>List Categories"]
-            OrderRoutes["Order Routes /orders<br/>Create, History, Status"]
-            PaymentRoutes["Payment Routes /payments<br/>Process, Status"]
-        end
-        
-        subgraph CommunicationModule["Communication Module"]
-            ChatRoutes["Chat Routes /chat<br/>Customer Support<br/>Chat History"]
-        end
-        
-        subgraph LivestreamModule["Livestream Module"]
-            LivestreamRoutes["Livestream Routes /livestreams<br/>Create Stream<br/>Stream Status<br/>Viewer Count"]
-        end
-        
-        subgraph MarketingModule["Marketing Module"]
-            NewsletterRoutes["Newsletter Routes /newsletter<br/>Subscribe, Unsubscribe"]
-            EmailCampaignRoutes["Email Campaign Routes<br/>/email-campaigns"]
-            EmailTemplateRoutes["Email Template Routes<br/>/email-templates"]
-            EmailSegmentRoutes["Email Segment Routes<br/>/email-segments"]
-        end
-        
-        subgraph FinanceModule["Finance Module"]
-            CashFlowRoutes["Cash Flow Routes /cashflow<br/>Track Transactions"]
-        end
-        
-        subgraph HRModule["HR Module"]
-            HRRoutes["HR Routes /hr<br/>Employee Management"]
-        end
-        
-        subgraph AnalyticsModule["Analytics Module"]
-            AnalyticsRoutes["Analytics Routes /analytics<br/>Business Metrics<br/>User Behavior"]
-        end
-        
-        subgraph AIModule["AI Module"]
-            AIRoutes["AI Dermatology Routes<br/>/api/ai-dermatology-expert<br/>Skin Consultation<br/>Recommendations"]
-        end
-        
-        subgraph UploadModule["Upload Module"]
-            UploadRoutes["Upload Routes /uploads<br/>File Upload, Management"]
-        end
-        
-        subgraph Services["Services Layer"]
-            EmailService["Email Service<br/>Send Emails<br/>Email Campaigns"]
-            GeminiService["Gemini AI Service<br/>AI Consultation<br/>Recommendations"]
-            VectorService["Vector Service<br/>Semantic Search<br/>RAG Support"]
-            TTSService["TTS Service<br/>Text-to-Speech<br/>Audio Generation"]
-        end
-        
-        subgraph Middleware["Middleware Layer"]
-            AuthMiddleware["Auth Middleware<br/>JWT Verification"]
-            RoleMiddleware["Role Middleware<br/>RBAC Permission Check"]
-            RateLimiter["Rate Limiter<br/>Request Throttling"]
-        end
-        
-        subgraph WebSocketServer["WebSocket Manager - ws Library"]
-            WSCore["WebSocket Core<br/>Connection Management<br/>Message Routing"]
-            CustomerWS["Customer Connections<br/>Session Tracking"]
-            AdminWS["Admin Connections<br/>User ID Tracking"]
-            WSFeatures["WebSocket Features<br/>Live Chat<br/>Stream Status<br/>Likes, Engagement<br/>Viewer Count<br/>WebRTC Signaling"]
-        end
+    subgraph "External Services"
+        GEMINI["🤖 Google Gemini AI<br/>Dermatology Consultation<br/>Product Recommendations<br/>AI Chat"]
+        VNPAY["💳 VNPay Gateway<br/>Payment Processing<br/>Transaction Handling"]
+        SMTP["📧 SMTP Email Server<br/>Transactional Emails<br/>Marketing Campaigns<br/>Newsletters"]
+        AGORA["🎥 Agora SDK<br/>Live Video Streaming<br/>Real-time Video<br/>Communication"]
     end
 
-    subgraph DataTier["Data Tier"]
-        MongoDB["MongoDB Atlas<br/>(Cloud Database)<br/>Users, Products<br/>Orders, Payments<br/>Chat Conversations<br/>Livestreams<br/>Email Data<br/>Employee Records<br/>Financial Data<br/>Dermatology KB"]
-        
-        Qdrant["Qdrant<br/>(Vector Database)<br/>Product Embeddings<br/>Knowledge Base<br/>Semantic Search<br/>RAG Support"]
-    end
+    %% Web Application Connections
+    WEB -->|REST API| API
+    WEB -->|WebSocket| WS
 
-    subgraph ExternalServices["External Services"]
-        GeminiAPI["Google Gemini API<br/>(External AI)<br/>Dermatology Consultation<br/>Product Recommendations"]
-        
-        VNPay["VNPay Gateway<br/>(Payment Processor)<br/>Payment Processing<br/>Transaction Handling"]
-        
-        SMTP["SMTP Email Server<br/>(Email Service)<br/>Transactional Emails<br/>Marketing Campaigns"]
-        
-        Agora["Agora SDK<br/>(Video Streaming)<br/>Live Video<br/>Real-time Communication"]
-    end
+    %% Mobile Customer Connections
+    MOBILE_CUST -->|REST API| API
+    MOBILE_CUST -->|WebSocket| WS
+    MOBILE_CUST -->|Video Stream| AGORA
 
-    %% User Connections
-    Customer -->|Uses| WebApp
-    Customer -->|Uses| CustomerApp
-    Admin -->|Uses| AdminApp
-    Admin -->|Uses| WebApp
-    Guest -->|Uses| WebApp
-    Guest -->|Uses| CustomerApp
+    %% Mobile Admin Connections
+    MOBILE_ADMIN -->|REST API| API
+    MOBILE_ADMIN -->|WebSocket| WS
+    MOBILE_ADMIN -->|Video Broadcast| AGORA
 
-    %% Web App to Backend
-    WebApp -->|REST API| AppCore
-    WebApp -->|WebSocket| WSCore
+    %% Backend to Data Storage
+    API -->|Read/Write| MONGO
+    API -->|Query| VECTOR
+    WS -->|Read/Write| MONGO
 
-    %% Mobile Apps to Backend
-    CustomerApp -->|REST API| AppCore
-    CustomerApp -->|WebSocket| WSCore
-    CustomerApp -->|Video| Agora
-    
-    AdminApp -->|REST API| AppCore
-    AdminApp -->|WebSocket| WSCore
-    AdminApp -->|Video| Agora
-
-    %% Backend Routes to Services
-    AuthRoutes -->|Uses| AuthMiddleware
-    AuthRoutes -->|Uses| RateLimiter
-    
-    EcommerceModule -->|Uses| RoleMiddleware
-    EcommerceModule -->|Uses| RateLimiter
-    
-    CommunicationModule -->|Uses| AuthMiddleware
-    
-    LivestreamModule -->|Uses| AuthMiddleware
-    
-    MarketingModule -->|Uses| EmailService
-    
-    AIModule -->|Uses| GeminiService
-    AIModule -->|Uses| VectorService
-    
-    UploadModule -->|Uses| RateLimiter
-
-    %% Services to External APIs
-    EmailService -->|SMTP| SMTP
-    GeminiService -->|HTTP API| GeminiAPI
-    VectorService -->|HTTP API| Qdrant
-    TTSService -->|Uses| GeminiAPI
-
-    %% Payment Processing
-    PaymentRoutes -->|Payment Request| VNPay
-    VNPay -->|Payment Status| PaymentRoutes
-
-    %% WebSocket Features
-    WSCore -->|Manages| CustomerWS
-    WSCore -->|Manages| AdminWS
-    CustomerWS -->|Broadcasts| WSFeatures
-    AdminWS -->|Controls| WSFeatures
-
-    %% Backend to Databases
-    AppCore -->|Query/Update| MongoDB
-    AuthRoutes -->|User Data| MongoDB
-    EcommerceModule -->|Product Data| MongoDB
-    CommunicationModule -->|Chat Data| MongoDB
-    LivestreamModule -->|Stream Data| MongoDB
-    MarketingModule -->|Campaign Data| MongoDB
-    FinanceModule -->|Transaction Data| MongoDB
-    HRModule -->|Employee Data| MongoDB
-    AnalyticsModule -->|Analytics Data| MongoDB
-    AIModule -->|KB Data| MongoDB
-    
-    VectorService -->|Vector Data| Qdrant
-    GeminiService -->|Retrieve Context| Qdrant
-
-    %% WebSocket to Database
-    WSCore -->|Update State| MongoDB
-    WSCore -->|Store Messages| MongoDB
+    %% Backend to External Services
+    API -->|AI Queries| GEMINI
+    API -->|Process Payments| VNPAY
+    API -->|Send Emails| SMTP
+    API -->|Video Config| AGORA
 
     %% Styling
-    classDef userClass fill:#08427b,stroke:#05294a,color:#fff
-    classDef webClass fill:#1168bd,stroke:#0d3f7f,color:#fff
-    classDef mobileClass fill:#1168bd,stroke:#0d3f7f,color:#fff
-    classDef apiClass fill:#438dd5,stroke:#2d5a8f,color:#fff
-    classDef moduleClass fill:#85b3d1,stroke:#5a7a99,color:#000
-    classDef serviceClass fill:#b3d9e8,stroke:#7a9fb5,color:#000
-    classDef middlewareClass fill:#d4e6f1,stroke:#9ab5c7,color:#000
-    classDef wsClass fill:#f39c12,stroke:#c87f0a,color:#000
-    classDef dataClass fill:#27ae60,stroke:#1e8449,color:#fff
-    classDef externalClass fill:#e74c3c,stroke:#c0392b,color:#fff
+    classDef ui fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    classDef backend fill:#7B68EE,stroke:#5A4BA8,stroke-width:2px,color:#fff
+    classDef storage fill:#50C878,stroke:#2D7A4A,stroke-width:2px,color:#fff
+    classDef external fill:#FF6B6B,stroke:#CC5555,stroke-width:2px,color:#fff
 
-    class Customer,Admin,Guest userClass
-    class WebApp webClass
-    class CustomerApp,AdminApp mobileClass
-    class AppCore apiClass
-    class AuthModule,EcommerceModule,CommunicationModule,LivestreamModule,MarketingModule,FinanceModule,HRModule,AnalyticsModule,AIModule,UploadModule moduleClass
-    class EmailService,GeminiService,VectorService,TTSService serviceClass
-    class AuthMiddleware,RoleMiddleware,RateLimiter middlewareClass
-    class WebSocketServer,WSCore,CustomerWS,AdminWS,WSFeatures wsClass
-    class MongoDB,Qdrant dataClass
-    class GeminiAPI,VNPay,SMTP,Agora externalClass
+    class WEB,MOBILE_CUST,MOBILE_ADMIN ui
+    class API,WS backend
+    class MONGO,VECTOR storage
+    class GEMINI,VNPAY,SMTP,AGORA external
 ```
 
----
+## Container Descriptions
 
-## Diagram Description
+### **User Interfaces**
+| Container | Technology | Purpose |
+|-----------|-----------|---------|
+| **Web Application** | Vue.js 3, Vite, Tailwind CSS | Web-based shopping, admin dashboard, analytics |
+| **Mobile App - Customer** | React Native, Expo | Mobile shopping, livestream participation, AI consultation |
+| **Mobile App - Admin** | React Native, Expo | Livestream hosting, product management, customer support |
 
-### **Layers:**
+### **Backend Services**
+| Container | Technology | Purpose |
+|-----------|-----------|---------|
+| **Backend API Server** | Node.js, Express.js | RESTful API endpoints, business logic, route handlers |
+| **WebSocket Manager** | ws library | Real-time chat, stream status, viewer counts, likes |
 
-1. **Users Layer**
-   - Customer, Admin/Seller, Guest users
+### **Data & Storage**
+| Container | Technology | Purpose |
+|-----------|-----------|---------|
+| **MongoDB Atlas** | MongoDB Cloud | Persistent data storage (users, products, orders, chats) |
+| **Qdrant Vector DB** | Vector Database | Semantic search, knowledge base embeddings, RAG |
 
-2. **Web Tier**
-   - Vue.js 3 Single Page Application
-   - Communicates via REST API and WebSocket
+### **External Services**
+| Container | Service | Purpose |
+|-----------|---------|---------|
+| **Google Gemini AI** | Google API | AI dermatology consultation, recommendations, chat |
+| **VNPay Gateway** | Payment Service | Payment processing, transaction handling |
+| **SMTP Email Server** | Email Service | Transactional emails, marketing campaigns, newsletters |
+| **Agora SDK** | Video Service | Live video streaming, real-time communication |
 
-3. **Mobile Tier**
-   - Customer Mobile App (React Native + Expo)
-   - Admin Mobile App (React Native + Expo)
-   - Both support livestreaming and real-time features
+## Data Flow Summary
 
-4. **Backend API Server (Node.js + Express)**
-   - **Core:** Express.js with CORS, rate limiting, Swagger docs
-   - **10 Modular Route Modules:** Auth, E-Commerce, Communication, Livestream, Marketing, Finance, HR, Analytics, AI, Uploads
-   - **Services:** Email, Gemini AI, Vector Search, Text-to-Speech
-   - **Middleware:** Authentication, RBAC, Rate Limiting
-   - **WebSocket Manager:** Real-time communication, chat, stream status, engagement tracking
+### **REST API Communication**
+```
+Frontend/Mobile → HTTP/HTTPS → Backend API → Controllers → MongoDB
+```
 
-5. **Data Tier**
-   - MongoDB Atlas (primary database)
-   - Qdrant (vector database for semantic search)
+### **Real-Time Communication**
+```
+Frontend/Mobile ← WebSocket → WebSocket Manager → MongoDB
+```
 
-6. **External Services**
-   - Google Gemini API (AI consultation)
-   - VNPay (payment processing)
-   - SMTP (email service)
-   - Agora SDK (video streaming)
+### **AI Processing**
+```
+User Query → Backend API → Gemini AI → Response
+```
 
-### **Key Features:**
+### **Payment Processing**
+```
+Frontend → Backend API → VNPay → Payment Status → MongoDB
+```
 
-- **REST API Communication:** All frontend/mobile apps communicate with backend via HTTP/HTTPS
-- **Real-time WebSocket:** Live chat, stream status, viewer count, likes
-- **Modular Architecture:** Separated concerns with dedicated route modules
-- **Service-Oriented:** Reusable services for common functionality
-- **Security:** JWT authentication, RBAC, rate limiting
-- **Scalability:** Cloud database, vector search, microservices pattern
-- **AI Integration:** Gemini AI for intelligent features
-- **Payment Processing:** VNPay integration for transactions
-- **Video Streaming:** Agora SDK for live shopping events
-- **Email Marketing:** Comprehensive email campaign management
+### **Email Distribution**
+```
+Backend Service → SMTP Server → User Email
+```
 
----
+### **Video Streaming**
+```
+Mobile Admin → Agora SDK → Mobile Customer
+```
 
-## Color Coding:
+## Key Interactions
 
-- **Dark Blue:** Users and Web/Mobile Applications
-- **Light Blue:** Backend API and Modules
-- **Yellow/Orange:** WebSocket Real-time Communication
-- **Green:** Databases
-- **Red:** External Services
+1. **Web & Mobile Apps** communicate with Backend API via REST and WebSocket
+2. **Backend API** manages all business logic and routes requests
+3. **WebSocket Manager** handles real-time updates (chat, streams, engagement)
+4. **MongoDB** stores all persistent data
+5. **Qdrant** provides semantic search capabilities
+6. **External Services** handle specialized functions (AI, payments, email, video)
 
----
+## Technology Stack
 
-## How to Use This Diagram:
-
-1. **Copy the Mermaid code** above
-2. **Paste it into:**
-   - GitHub README (renders automatically)
-   - GitLab (renders automatically)
-   - Notion (use Mermaid block)
-   - Mermaid Live Editor: https://mermaid.live
-   - Any Markdown editor with Mermaid support
-
-3. **The diagram shows:**
-   - All system containers and their relationships
-   - Data flow between components
-   - External system integrations
-   - Technology stack for each container
-   - Communication protocols (REST API, WebSocket)
+- **Frontend:** Vue.js 3, Vite, Tailwind CSS
+- **Mobile:** React Native, Expo
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB Atlas
+- **Vector DB:** Qdrant
+- **Real-time:** WebSocket
+- **AI:** Google Gemini API
+- **Payment:** VNPay
+- **Email:** SMTP/Nodemailer
+- **Video:** Agora SDK
 
