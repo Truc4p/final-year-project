@@ -1,4 +1,4 @@
-<mxGraphModel dx="3833" dy="1193" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="850" math="0" shadow="0">
+<mxGraphModel dx="2951" dy="895" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="850" math="0" shadow="0">
   <root>
     <mxCell id="0" />
     <mxCell id="1" parent="0" />
@@ -16,7 +16,7 @@
     <mxCell id="vnpay_gateway" parent="1" style="html=1;dashed=0;whitespace=wrap;fillColor=#999999;strokeColor=none;fontColor=#ffffff;shape=mxgraph.c4.softwareSystem;align=center;" value="&lt;b&gt;VNPay Payment Gateway&lt;/b&gt;&lt;br&gt;[External System]&lt;br&gt;&lt;br&gt;Processes customer payments&lt;br&gt;and handles transactions&lt;br&gt;for orders." vertex="1">
       <mxGeometry height="150" width="240" x="-990" y="590" as="geometry" />
     </mxCell>
-    <mxCell id="smtp_server" parent="1" style="html=1;dashed=0;whitespace=wrap;fillColor=#999999;strokeColor=none;fontColor=#ffffff;shape=mxgraph.c4.softwareSystem;align=center;" value="&lt;b&gt;SMTP Email System&lt;/b&gt;&lt;br&gt;[External System]&lt;br&gt;&lt;br&gt;Sends transactional emails,&lt;br&gt;marketing campaigns, and&lt;br&gt;newsletters." vertex="1">
+    <mxCell id="smtp_server" parent="1" style="html=1;dashed=0;whitespace=wrap;fillColor=#999999;strokeColor=none;fontColor=#ffffff;shape=mxgraph.c4.softwareSystem;align=center;" value="&lt;b&gt;SMTP Email Server&lt;/b&gt;&lt;br&gt;[External System]&lt;br&gt;&lt;br&gt;Sends transactional emails,&lt;br&gt;marketing campaigns, and&lt;br&gt;newsletters." vertex="1">
       <mxGeometry height="150" width="240" x="-430" y="100" as="geometry" />
     </mxCell>
     <mxCell id="agora_sdk" parent="1" style="html=1;dashed=0;whitespace=wrap;fillColor=#999999;strokeColor=none;fontColor=#ffffff;shape=mxgraph.c4.softwareSystem;align=center;" value="&lt;b&gt;Agora SDK&lt;/b&gt;&lt;br&gt;[External System]&lt;br&gt;&lt;br&gt;Powers live video streaming&lt;br&gt;for product demonstrations&lt;br&gt;on mobile apps." vertex="1">
