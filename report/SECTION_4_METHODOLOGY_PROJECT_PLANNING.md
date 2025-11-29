@@ -33,8 +33,6 @@ This project adopted the Agile Scrum methodology for its suitability to full-sta
 | **Sprint 19** | Weeks 37–38 | Email Marketing & HR Features | ADMIN_04, CUSTOMER_10, CUSTOMER_07, CUSTOMER_09, ADMIN_10 (Could) | Email campaign management, customer segmentation, newsletter templates, staff chat, purchase history, HR module (optional) |
 | **Sprint 20** | Weeks 39–40 | Testing, Documentation & Deployment | All requirements validation | UAT execution, bug fixes, Swagger API documentation, performance optimization, deployment pipeline, final demo preparation |
 
-**Rationale for Sprint Allocation:** Sprints 1–5 established foundational infrastructure required for all subsequent features. Sprints 6–7 delivered web interfaces enabling early user validation. Sprints 8–9 implemented business management modules for supervisor review. Sprints 10–11 added AI chat personalization. Sprints 12–13 introduced live streaming commerce. Sprints 14–15 implemented the complex Skin Study module with RAG knowledge base and voice/image analysis. Sprints 16–18 extended platform reach via mobile applications for both customer and admin users. Sprint 19 completed secondary features and optional modules. Sprint 20 ensured production readiness through comprehensive testing and deployment preparation.
-
 **Risk Mitigation Through Agile:** Agile Scrum enabled early identification and resolution of technical risks. For example, Sprint 5 livestreaming implementation revealed WebSocket scalability challenges, addressed through architecture refinement before Sprint 7 mobile integration. Sprint 6 Skin Study RAG implementation required knowledge base curation, identified during sprint planning and mitigated through parallel documentation effort.
 
 **Tools and Collaboration:** Version control via Git/GitHub enabled collaborative development and supervisor code review. API documentation via Swagger ensured contract-driven development between frontend and backend. Issue tracking and sprint planning via GitHub Projects maintained visibility into progress and blockers.
@@ -53,32 +51,9 @@ This project adopted the Agile Scrum methodology for its suitability to full-sta
 
 ### Gantt Chart (Visual Timeline)
 
-### Key Milestones
-
-| Milestone | Week | Description | Success Criteria |
-|---|---|---|---|
-| **M1: Development Environment Ready** | Week 2 | Infrastructure and tooling setup complete | Git repository configured, MongoDB Atlas connected, API framework running, development environment documented |
-| **M2: Core Backend APIs Functional** | Week 10 | E-commerce backend operational | Authentication working, product CRUD operational, shopping cart and checkout endpoints tested, order management functional |
-| **M3: Web Platform MVP Complete** | Week 26 | Full-featured web application deployed | Customer frontend enables product browsing and purchasing, admin dashboard manages products/orders/analytics, AI chat provides recommendations, live streaming functional on web |
-| **M4: Mobile Apps Deployed** | Week 36 | Cross-platform mobile applications launched | Customer app (iOS/Android) with Skin Study module published, admin app with livestream management deployed, mobile-web feature parity achieved |
-| **M5: Production Deployment** | Week 40 | Platform production-ready with documentation | UAT completed with stakeholder sign-off, Swagger API documentation finalized, deployment pipeline operational, performance metrics met, final demonstration delivered |
-
-### Phase Descriptions
-
-**Phase 1: Discovery & Planning (Weeks 1–2)** — Established project foundation through requirements finalization, technology stack selection (Node.js, MongoDB, Vue.js, React Native), development environment configuration, and database schema design. This phase ensured alignment between project objectives and technical architecture.
-
-**Phase 2: Foundation Development (Weeks 3–10)** — Implemented core backend infrastructure including JWT authentication with RBAC, product catalog management, e-commerce transaction logic, and order processing systems. This phase delivered the foundational APIs required for all customer-facing and administrative features.
-
-**Phase 3: Feature Development Core (Weeks 11–26)** — Developed customer and admin web interfaces, business management modules (analytics, financial reporting), AI-powered chat with product recommendations, and live streaming commerce infrastructure. This phase delivered the web platform MVP enabling stakeholder validation.
-
-**Phase 4: Feature Development Advanced (Weeks 27–36)** — Implemented advanced AI capabilities (Skin Study module with RAG knowledge base, voice chat, image analysis) and cross-platform mobile applications. This phase extended platform reach and differentiation through specialized dermatology consultation and mobile accessibility.
-
-**Phase 5: Integration & Finalization (Weeks 37–40)** — Completed secondary features (email marketing, staff chat, HR module), conducted comprehensive User Acceptance Testing (UAT), finalized technical documentation, optimized performance, and deployed production infrastructure. This phase ensured production readiness and stakeholder satisfaction.
-
 ### Risk Buffer and Contingency Planning
 
 The timeline incorporates buffer time through strategic phase overlap and Sprint 20's dedicated testing period. Should technical risks materialize (e.g., WebSocket scalability issues, RAG knowledge base curation delays), the project plan prioritizes Must-have requirements (Section 3.3) with Should-have and Could-have features deferrable to post-deployment iterations. Weekly supervisor reviews enable early risk identification and adaptive re-planning within 2-week sprint boundaries.
-
 
 ## 4.3 Feasibility Analysis
 

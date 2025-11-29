@@ -7,59 +7,7 @@ Your MongoDB schema contains several entities that appear to have **no connectio
 
 ## Entities with No Connections
 
-### 1. **DermatologyKnowledge** ❌
-**Location:** `backend/models/skin-study/DermatologyKnowledge.js`
-
-**Current Structure:**
-```javascript
-{
-  category: String,
-  subcategory: String,
-  title: String,
-  content: String,
-  keywords: [String],
-  sourceReference: String,
-  chapterNumber: String,
-  chapterTitle: String,
-  pageReference: String,
-  verified: Boolean,
-  lastUpdated: Date
-}
-```
-
-**Why No Connections:**
-- ✗ No `userId` or `ref: 'User'` field
-- ✗ No `createdBy` or `updatedBy` reference
-- ✗ No connection to `ChatConversation` (despite being used in AI Dermatology Expert)
-- ✗ No reference to any other entity
-
-**Potential Issues:**
-- Cannot track who created/verified the knowledge
-- Cannot link to chat conversations that use this knowledge
-- No audit trail for modifications
-
-**Recommendations:**
-```javascript
-// Add these fields to DermatologyKnowledge schema:
-createdBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'User',
-  required: true  // Track who created this knowledge
-},
-verifiedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'User',
-  default: null  // Track who verified it
-},
-usedInConversations: [{
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'ChatConversation'  // Link to conversations that reference this
-}]
-```
-
----
-
-### 2. **VNPayTransaction** ❌
+### 1. **VNPayTransaction** ❌
 **Location:** No dedicated model found (handled in `paymentController.js`)
 
 **Current Implementation:**
@@ -125,7 +73,7 @@ const vnpayTransactionSchema = new mongoose.Schema({
 
 ---
 
-### 3. **NewsletterSubscription** ⚠️ (Partially Connected)
+### 2. **NewsletterSubscription** ⚠️ (Partially Connected)
 **Location:** `backend/models/marketing/newsletterSubscription.js`
 
 **Current Structure:**
@@ -182,7 +130,7 @@ segmentIds: [{
 
 ---
 
-### 4. **Employee** ❌
+### 3. **Employee** ❌
 **Location:** `backend/models/hr/employee.js`
 
 **Current Structure:**
@@ -269,7 +217,7 @@ EmailCampaign
 
 ChatConversation
 ├── User (via userId)
-└── [MISSING: DermatologyKnowledge reference]
+└── Uses vector database for dermatology knowledge (RAG)
 
 LiveStream
 ├── User (via hostId)
@@ -281,9 +229,6 @@ Employee
 
 ### Missing Connections:
 ```
-❌ DermatologyKnowledge - ISOLATED
-   Should connect to: User, ChatConversation
-
 ❌ VNPayTransaction - DOESN'T EXIST AS SEPARATE ENTITY
    Should connect to: User, Order
 
@@ -293,6 +238,8 @@ Employee
 ❌ Employee - ISOLATED FROM BUSINESS OPERATIONS
    Should connect to: User, Order, ChatConversation, 
                      EmailCampaign, LiveStream, CashFlowTransaction
+
+✅ DermatologyKnowledge - REMOVED (Replaced by vector database RAG approach)
 ```
 
 ---
@@ -301,8 +248,8 @@ Employee
 
 | Entity | Connected To | Missing Connections | Severity |
 |--------|-------------|-------------------|----------|
-| **DermatologyKnowledge** | None | User, ChatConversation | 🔴 HIGH |
-| **VNPayTransaction** | Doesn't exist | Order, User | [object Object]letterSubscription** | User (optional) | EmailCampaign, EmailSegment | 🟡 MEDIUM |
+| **VNPayTransaction** | Doesn't exist | Order, User | 🔴 HIGH |
+| **NewsletterSubscription** | User (optional) | EmailCampaign, EmailSegment | 🟡 MEDIUM |
 | **Employee** | Employee (self) | User, Order, ChatConversation, EmailCampaign, LiveStream | 🔴 HIGH |
 
 ---
@@ -311,9 +258,7 @@ Employee
 
 ### Priority 1 (Critical):
 1. Create dedicated `VNPayTransaction` model
-2. Add `userId` and `createdBy` to `DermatologyKnowledge`
-3. Link `DermatologyKnowledge` to `ChatConversation`
-4. Link `Employee` to `User` account
+2. Link `Employee` to `User` account
 
 ### Priority 2 (Important):
 1. Add campaign history tracking to `NewsletterSubscription`

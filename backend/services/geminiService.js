@@ -1,6 +1,5 @@
 require('dotenv').config();
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const DermatologyKnowledge = require('../models/skin-study/DermatologyKnowledge');
 const fs = require('fs').promises;
 const performanceMonitor = require('../utils/performanceMonitor');
 
