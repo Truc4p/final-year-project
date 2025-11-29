@@ -986,7 +986,7 @@ graph LR
 | 8 | `/chat/conversation/:sessionId` | GET | Get conversation history | limit? | {success, data: {messages[], conversationState}} |
 | 9 | `/livestreams` | POST | Create live stream (admin only) | title, description, startTime? | {...LiveStream} |
 | 10 | `/analytics/sales` | GET | Sales analytics (admin only) | period? (days) | {period, salesData: [{date, revenue, orders}], totalRevenue, totalOrders, averageDailyRevenue} |
-| 11 | `/analytics/users` | GET | User analytics (admin only) | period? (days) | {period, registrationData: [{date, registrations}], topCustomers: [{userId, username, totalSpent, orderCount}], totalNewUsers} |
+| 11 | `/analytics/products` | GET | Product analytics (admin only) | - | {topProducts: [{productId, name, totalSold, totalRevenue}], categoryDistribution: [{categoryId, name, count}], lowStockProducts: [{name, stockQuantity, price}]} |
 | 12 | `/api/ai-dermatology-expert/chat` | POST | AI Dermatology Expert chat | message, conversationHistory[] | {response, sources: [{title, content}], images: [], timestamp} |
 | 13 | `/api/ai-dermatology-expert/analyze-skin` | POST | Analyze skin image | image (multipart), message?, conversationHistory[]? | {response, sources: [{title, content}], timestamp} |
 | 14 | `/api/ai-dermatology-expert/transcribe` | POST | Transcribe audio to text | audio (multipart) | {transcription, timestamp, processingTime} |
