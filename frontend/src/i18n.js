@@ -3,6 +3,9 @@ import { createI18n } from 'vue-i18n';
 
 const messages = {
   en: {
+    memberSince: 'Member Since',
+    accountStats: 'Account Stats',
+    accountStatus: 'Account Status',
     skinStudy: 'Skin Study',
     trackNutrition: 'Track Nutrition',
     marketing: 'Marketing',
@@ -164,6 +167,7 @@ const messages = {
     description: 'Description',
     productsAvailable: 'Products Available',
     shippingAndTaxCalculatedAtCheckout: 'Shipping and tax calculated at checkout',
+    orderHistoryDesc: 'View your order history and track your purchases.',
     
     // Live Stream translations
     watchOurLatestLiveStreams: 'Watch our latest live streams and discover new products',
@@ -233,6 +237,11 @@ const messages = {
     moveDown: 'Move Down'
   },
   vi: {
+    memberSince: 'Thành viên từ',
+    accountStats: 'Thống kê tài khoản',
+    accountStatus: 'Trạng thái tài khoản',
+    orderHistory: 'Lịch sử đặt hàng',
+    orderHistoryDesc: 'Xem lịch sử đặt hàng và theo dõi các đơn hàng của bạn.',
     skinStudy: 'Nghiên cứu da',
     trackNutrition: 'Theo dõi dinh dưỡng',
     marketing: 'Tiếp thị',
