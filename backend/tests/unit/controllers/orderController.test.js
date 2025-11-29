@@ -38,8 +38,9 @@ describe('Order Controller', () => {
       ];
 
       Order.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        populate: jest.fn().mockResolvedValue(mockOrders)
+        populate: jest.fn().mockReturnValue({
+          populate: jest.fn().mockResolvedValue(mockOrders)
+        })
       });
 
       await orderController.getAllOrders(req, res);
@@ -55,8 +56,9 @@ describe('Order Controller', () => {
       ];
 
       Order.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        populate: jest.fn().mockResolvedValue(mockOrders)
+        populate: jest.fn().mockReturnValue({
+          populate: jest.fn().mockResolvedValue(mockOrders)
+        })
       });
 
       await orderController.getAllOrders(req, res);
@@ -67,9 +69,9 @@ describe('Order Controller', () => {
 
     test('should handle errors when fetching orders', async () => {
       req.user.role = 'admin';
-      Order.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        populate: jest.fn().mockRejectedValue(new Error('Database error'))
+      
+      Order.find.mockImplementation(() => {
+        throw new Error('Database error');
       });
 
       await orderController.getAllOrders(req, res);
@@ -82,12 +84,20 @@ describe('Order Controller', () => {
   describe('createOrder', () => {
     test('should create order successfully', async () => {
       const mockProducts = [
-        { productId: 'prod1', quantity: 2 }
+        { productId: 'prod1', quantity: 2, price: 100 }
       ];
       const mockProductData = {
         _id: 'prod1',
+        name: 'Test Product',
         price: 100,
         stockQuantity: 10,
+        save: jest.fn().mockResolvedValue(true)
+      };
+      const mockSavedOrder = {
+        _id: 'order123',
+        user: 'user123',
+        products: mockProducts,
+        totalPrice: 200,
         save: jest.fn().mockResolvedValue(true)
       };
 
@@ -100,14 +110,7 @@ describe('Order Controller', () => {
       req.user = { id: 'user123' };
 
       Product.findById.mockResolvedValue(mockProductData);
-      Order.mockImplementation(() => ({
-        save: jest.fn().mockResolvedValue({
-          _id: 'order123',
-          user: 'user123',
-          products: mockProducts,
-          totalPrice: 200
-        })
-      }));
+      Order.mockImplementation(() => mockSavedOrder);
 
       await orderController.createOrder(req, res);
 

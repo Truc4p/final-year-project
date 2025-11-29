@@ -106,11 +106,12 @@ describe('Product Controller', () => {
 
   describe('createProduct', () => {
     test('should create product with all fields', async () => {
-      const mockSavedProduct = {
+      const mockProduct = {
         _id: '123',
         name: 'New Product',
         price: 150,
-        stockQuantity: 10
+        stockQuantity: 10,
+        save: jest.fn().mockResolvedValue(true)
       };
 
       req.body = {
@@ -128,22 +129,22 @@ describe('Product Controller', () => {
       };
       req.file = { path: '/uploads/test.jpg' };
 
-      Product.mockImplementation(() => ({
-        save: jest.fn().mockResolvedValue(mockSavedProduct)
-      }));
+      Product.mockImplementation(() => mockProduct);
 
       await productController.createProduct(req, res);
 
       expect(Product).toHaveBeenCalled();
+      expect(mockProduct.save).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(mockSavedProduct);
+      expect(res.json).toHaveBeenCalledWith(mockProduct);
     });
 
     test('should create product without optional image', async () => {
-      const mockSavedProduct = {
+      const mockProduct = {
         _id: '123',
         name: 'New Product',
-        price: 150
+        price: 150,
+        save: jest.fn().mockResolvedValue(true)
       };
 
       req.body = {
@@ -160,14 +161,12 @@ describe('Product Controller', () => {
       };
       req.file = null;
 
-      Product.mockImplementation(() => ({
-        save: jest.fn().mockResolvedValue(mockSavedProduct)
-      }));
+      Product.mockImplementation(() => mockProduct);
 
       await productController.createProduct(req, res);
 
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(mockSavedProduct);
+      expect(res.json).toHaveBeenCalledWith(mockProduct);
     });
 
     test('should handle errors during product creation', async () => {
