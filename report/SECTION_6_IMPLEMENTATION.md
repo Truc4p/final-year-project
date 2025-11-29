@@ -6,7 +6,7 @@
 |---|---|
 | IDE | Visual Studio Code with extensions for debugging and linting, supporting JavaScript, Vue.js, and Python |
 | Version Control | Git and GitHub with Issues and Projects for collaborative development tracking |
-| Project Management | Trello and GitHub Projects for organizing tasks across multiple teams and modules |
+| Project Management | Trello and GitHub Projects for organizing tasks across multiple modules |
 | Runtime | Node.js 16.20.1 with npm for package management |
 | Containerization | Docker for consistent development, testing, and production deployments |
 | API Documentation and Testing | Swagger UI integrated at /api-docs; Postman for comprehensive endpoint validation and integration testing |
@@ -15,139 +15,208 @@
 | Frontend Technology Stack | Vue 3, Vue Router, Vue i18n, Tailwind CSS, Axios, Chart.js, Vue Chart.js |
 | Mobile Applications | React Native with Expo for admin and customer platforms targeting iOS and Android |
 
-### Backend Technology Stack
-
-| Library | Purpose |
-|---|---|
-| Express.js | Backend web framework used to define routes, middleware, and REST APIs. |
-| Mongoose | ODM for MongoDB used to define schemas, validate data, and interact with collections. |
-| JSON Web Tokens (jsonwebtoken) | Generates and verifies authentication tokens to secure protected routes. |
-| Multer | Handles multipart/form-data for file uploads, such as product images stored under /uploads. |
-| WebSocket (ws) | Enables real-time features for livestream state, likes, and interactive events. |
-| Swagger JSDoc | Generates OpenAPI specifications from JSDoc comments in routes and controllers. |
-| Swagger UI Express | Serves interactive API documentation at /api-docs for exploration and testing. |
-| express-rate-limit | Throttles requests to mitigate abuse and help protect against DDoS attacks. |
-| Nodemailer | Sends transactional and marketing emails for notifications and campaigns. |
-| @google/generative-ai | Integrates Google Gemini models to power AI features such as chat and content generation. |
-| LangChain | Orchestrates LLM prompts, tools, and RAG flows to implement advanced AI logic. |
-| @qdrant/js-client-rest | Connects to the Qdrant vector database to perform semantic search and retrieval. |
-
-### Frontend Technology Stack
-
-| Library | Purpose |
-|---|---|
-| Vue 3 | Frontend framework for building the single-page application with the Composition API. |
-| Vue Router | Client-side routing and navigation between application views. |
-| Vue i18n | Internationalization for runtime language switching and localized content. |
-| Tailwind CSS | Utility-first CSS framework for rapid and consistent UI development. |
-| Axios | HTTP client used for calling backend APIs and handling responses. |
-| Chart.js | Charting library to visualize analytics and performance metrics. |
-| Vue Chart.js | Vue wrapper around Chart.js to render charts as Vue components. |
-
-
-
 ## 6.2 Backend & Frontend Implementation
 
-### Folder Structure and Organizational Logic
+### Folder Structure
+#### Backend
 
-The project follows a modular, layered architecture that separates concerns across distinct functional domains. The backend directory is organized hierarchically with dedicated folders for controllers, middleware, models, routes, services, and utilities. This structure enables independent scaling of features and facilitates team collaboration by allowing developers to work on isolated modules without conflicts.
+| Layer | Folder/File | Purpose | Key Responsibilities |
+|-------|-------------|---------|----------------------|
+| **Core Layers** | | | |
+| | `controllers/` | Entry point for HTTP requests | Handles routing logic, request validation, and response formatting |
+| | `routes/` | API endpoint definitions | Maps HTTP routes to controller methods and applies middleware |
+| | `services/` | Business logic layer | Core application functionality, data processing, and business rules |
+| | `models/` | Data models/schemas | Defines database structure, validation rules, and data relationships |
+| | `middleware/` | Cross-cutting concerns | Authentication, logging, error handling, and request preprocessing |
+| **Supporting Modules** | | | |
+| | `knowledge-sources/, tools/, utils/, seed-data/, scripts/, uploads/` | Domain utilities & initialization | AI knowledge sources, common helpers, DB seeding, batch scripts, media storage |
+| **Infrastructure** | | | |
+| | `app.js`, `server.js`, `db.js`, `swagger.js`, `websocket.js`, `Dockerfile`, `docker-compose.qdrant.yml`, `.env` | Configuration & Setup Files | Server initialization, database connection, API docs, WebSocket, containerization |
 
-The controllers directory contains eight domain-specific subdirectories: analytics, auth, communication, ecommerce, finance, hr, livestream, marketing, and skin-study. Each controller module handles the business logic for its respective domain, processing incoming requests and coordinating with models and services. The middleware directory houses three critical files: auth.js for JWT verification, optionalAuth.js for conditional authentication, and role.js for role-based access control (RBAC). These middleware components are applied to routes to enforce security policies consistently across the API.
+**Architecture Pattern:** This is a classic **MVC-inspired Node.js backend** with clear separation between request handling (controllers/routes), business logic (services), and data management (models), plus specialized modules for domain-specific features and infrastructure concerns.
 
-The models directory mirrors the controller structure with corresponding subdirectories, each containing Mongoose schemas that define the data structure and validation rules for MongoDB collections. The core models directory includes foundational schemas used across multiple domains. The routes directory similarly maintains domain-specific organization, with each route file defining endpoints and applying appropriate middleware before delegating to controllers.
+### Meaningful Code Sample:
 
-The services directory contains reusable business logic components including geminiService.js for Google Generative AI integration, vectorService.js for Qdrant vector database operations supporting retrieval-augmented generation (RAG), emailService.js for SMTP-based email delivery, and ttsService.js for text-to-speech conversion. The utils directory provides utility functions such as performanceMonitor.js for tracking API response times and scoreAnalyzer.js for calculating complex scoring algorithms used in analytics and product recommendations.
-
-The frontend source directory is organized into logical sections: pages containing full-page Vue components, components containing reusable UI components, layout containing wrapper components for consistent page structure, router containing Vue Router configuration and route definitions, services containing API client functions, and utils containing helper functions. The assets directory houses Tailwind CSS configuration, custom stylesheets, and global design tokens. The i18n.js file configures Vue i18n for multi-language support, enabling the application to serve users in different locales.
-
-### Meaningful Code Sample: Backend Product Creation with Media Handling
-
-The following code sample demonstrates a core backend function that exemplifies the layered architecture and data handling patterns used throughout the project:
+1) Model — chat, views, and retrieval helpers
 
 ```javascript
-// backend/controllers/ecommerce/productController.js
-const Product = require("../../models/ecommerce/product");
-const fs = require("fs");
-const path = require("path");
+// backend/models/livestream/liveStream.js
+// Methods and statics used throughout the livestream workflow
 
-// Utility function to delete old image file during updates
-const deleteImageFile = (imagePath) => {
-  if (imagePath) {
-    const fullPath = path.join(__dirname, '../', imagePath);
-    fs.unlink(fullPath, (err) => {
-      if (err) {
-        console.error('Error deleting old image file:', err);
+// Method to increment view count
+liveStreamSchema.methods.incrementViewCount = function() {
+  this.viewCount += 1;
+  return this.save();
+};
+
+// Method to add chat message
+liveStreamSchema.methods.addChatMessage = function(username, message, isAdmin = false) {
+  this.chatMessages.push({
+    username,
+    message,
+    timestamp: new Date(),
+    isAdmin
+  });
+  return this.save();
+};
+
+// Static method to get active stream
+liveStreamSchema.statics.getActiveStream = function() {
+  return this.findOne({ isActive: true });
+};
+
+// Static method to get past streams (excludes chat for performance)
+liveStreamSchema.statics.getPastStreams = function(limit = 10, skip = 0) {
+  return this.find({ 
+    isActive: false,
+    endTime: { $exists: true }
+  })
+  .sort({ endTime: -1 })
+  .limit(limit)
+  .skip(skip)
+  .select('-chatMessages');
+};
+```
+
+2) Controller — safe start/stop with final stats
+
+```javascript
+// backend/controllers/livestream/liveStreamController.js
+// Create a new livestream. Prevent duplicate active streams; auto-clean if a stream is stuck > 24h
+exports.createLiveStream = async (req, res) => {
+  try {
+    const { title, description, quality, categories, tags, streamUrl } = req.body;
+
+    // Ensure only one active stream at a time; auto-clean if stuck > 24h
+    let activeStream = await LiveStream.getActiveStream();
+    if (activeStream) {
+      const hoursSinceStart = (Date.now() - activeStream.startTime.getTime()) / (1000 * 60 * 60);
+      if (hoursSinceStart > 24) {
+        activeStream.isActive = false;
+        activeStream.endTime = new Date();
+        activeStream.duration = Math.floor((Date.now() - activeStream.startTime.getTime()) / 1000);
+        await activeStream.save();
       } else {
-        console.log('Old image file deleted successfully:', imagePath);
+        return res.status(400).json({ 
+          message: 'Another livestream is currently active. Please stop it before starting a new one.' 
+        });
       }
+    }
+
+    const liveStream = new LiveStream({
+      title,
+      description,
+      quality,
+      streamUrl: streamUrl || '',
+      categories: categories ? categories.split(',').map(c => c.trim()) : [],
+      tags: tags ? tags.split(',').map(t => t.trim()) : [],
+      isActive: true,
+      startTime: new Date(),
+      createdBy: req.user ? req.user.id : null
     });
+
+    await liveStream.save();
+    res.status(201).json({ message: 'Livestream created successfully', livestream: liveStream });
+  } catch (error) {
+    console.error('Error creating livestream:', error);
+    res.status(500).json({ message: 'Failed to create livestream', error: error.message });
   }
 };
 
-exports.createProduct = async (req, res) => {
+// Stop livestream. Computes duration and persists final metrics and media references.
+exports.stopLiveStream = async (req, res) => {
   try {
-    // Extract scalar and array fields from multipart/form-data request
-    const { 
-      name, 
-      categoryId, 
-      price, 
-      description, 
-      stockQuantity,
-      ingredients,
-      skinType,
-      benefits,
-      tags,
-      usage,
-      skinConcerns
-    } = req.body;
+    const { id } = req.params;
+    const { videoUrl, thumbnailUrl, maxViewers, viewCount, likes } = req.body;
 
-    // Multer middleware provides uploaded file path
-    const image = req.file ? req.file.path : null;
+    const livestream = await LiveStream.findById(id);
+    if (!livestream) return res.status(404).json({ message: 'Livestream not found' });
+    if (!livestream.isActive) return res.status(400).json({ message: 'Livestream is not active' });
 
-    // Normalize array fields that arrive as JSON strings from form data
-    const parsedIngredients  = ingredients   ? JSON.parse(ingredients)   : [];
-    const parsedSkinType     = skinType      ? JSON.parse(skinType)      : [];
-    const parsedBenefits     = benefits      ? JSON.parse(benefits)      : [];
-    const parsedTags         = tags          ? JSON.parse(tags)          : [];
-    const parsedSkinConcerns = skinConcerns  ? JSON.parse(skinConcerns)  : [];
+    // Finalize stream
+    const endTime = new Date();
+    const duration = Math.floor((endTime - livestream.startTime) / 1000);
 
-    // Create new Product document with normalized data
-    const product = new Product({
-      name,
-      category: categoryId,
-      price,
-      description,
-      stockQuantity,
-      image,  // Stored path; served via Express static middleware
-      ingredients:  parsedIngredients,
-      skinType:     parsedSkinType,
-      benefits:     parsedBenefits,
-      tags:         parsedTags,
-      usage,
-      skinConcerns: parsedSkinConcerns
-    });
+    livestream.isActive = false;
+    livestream.endTime = endTime;
+    livestream.duration = duration;
+    livestream.isRecorded = !!videoUrl;
+    livestream.videoUrl = videoUrl || '';
+    livestream.thumbnailUrl = thumbnailUrl || '';
+    livestream.maxViewers = maxViewers || livestream.maxViewers;
+    livestream.viewCount = viewCount || livestream.viewCount;
+    livestream.likes = likes || livestream.likes;
 
-    // Persist to MongoDB and populate category reference
-    const saved = await product.save();
-    await saved.populate('category');
-    
-    res.status(201).json(saved);
-  } catch (err) {
-    console.error('Create product error:', err);
-    res.status(500).json({ error: 'Server Error' });
+    await livestream.save();
+    res.json({ message: 'Livestream stopped successfully', livestream });
+  } catch (error) {
+    console.error('Error stopping livestream:', error);
+    res.status(500).json({ message: 'Failed to stop livestream', error: error.message });
   }
 };
 ```
 
-This function demonstrates several architectural patterns: separation of concerns through dedicated utility functions, proper error handling with try-catch blocks, normalization of form data into structured arrays, and integration with Mongoose for data persistence. The Multer middleware handles file uploads transparently, and Express static middleware serves uploaded files from the /uploads directory, creating a seamless media handling pipeline.
+3) WebSocket — reactions and viewer count with single-like enforcement
 
-### Frontend Component Architecture
+```javascript
+// backend/websocket.js
+// Each user (auth userId) or guest (sessionId) can only like once; state is broadcast to all clients.
+async handleToggleLike(ws, data) {
+  const { userId, sessionId } = data;
+  const identifier = userId || sessionId; // prefer userId
+  if (!identifier) return;
+  if (!this.currentStreamState.isActive) {
+    return ws.send(JSON.stringify({ type: 'error', message: 'No active stream' }));
+  }
 
-The frontend follows Vue 3 Composition API patterns with component-based organization. Each page component manages its own state, lifecycle, and API interactions through services. The router configuration in src/router/index.js defines lazy-loaded routes to optimize bundle size and initial load time. The i18n configuration enables dynamic language switching without page reloads, supporting multiple locales through JSON translation files.
+  // Toggle like in memory and persist to DB
+  const hasLiked = this.currentStreamState.likedBy.has(identifier);
+  if (hasLiked) {
+    this.currentStreamState.likedBy.delete(identifier);
+    this.currentStreamState.likes = Math.max(0, this.currentStreamState.likes - 1);
+  } else {
+    this.currentStreamState.likedBy.add(identifier);
+    this.currentStreamState.likes++;
+  }
 
-### API Organization and Integration
+  // Persist aggregate like count and who liked
+  if (this.currentStreamState.streamId) {
+    const LiveStream = require('./models/livestream/liveStream');
+    await LiveStream.findByIdAndUpdate(this.currentStreamState.streamId, {
+      likes: this.currentStreamState.likes,
+      likedBy: Array.from(this.currentStreamState.likedBy)
+    });
+  }
 
-The backend API is organized into logical modules accessible through distinct route prefixes: /products and /categories for e-commerce, /auth and /users for authentication, /orders and /payments for order management, /livestreams for real-time streaming, /chat for communication, /analytics for business intelligence, /newsletter and /email-campaigns for marketing, /hr for human resources, /cashflow for financial management, and /api/ai-dermatology-expert for specialized AI features. Each module implements consistent error handling, validation, and response formatting. The server.js initialization file sets up the Express application, connects to MongoDB, initializes the WebSocket manager for real-time features, and performs cleanup operations on startup to ensure data consistency.
+  // Broadcast to all viewers/admins
+  const updateData = {
+    type: 'stream_update',
+    likes: this.currentStreamState.likes,
+    likedBy: Array.from(this.currentStreamState.likedBy)
+  };
+  for (const c of this.customerConnections.values()) if (c.ws.readyState === WebSocket.OPEN) c.ws.send(JSON.stringify(updateData));
+  for (const a of this.adminConnections.values()) if (a.ws.readyState === WebSocket.OPEN) a.ws.send(JSON.stringify(updateData));
+}
+
+// Viewer count is derived from active WebSocket sessions and broadcast to all clients.
+async updateViewerCount() {
+  const viewerCount = this.customerConnections.size;
+  this.currentStreamState.viewerCount = viewerCount;
+
+  const updateData = { type: 'stream_update', viewerCount };
+  for (const c of this.customerConnections.values()) if (c.ws.readyState === WebSocket.OPEN) c.ws.send(JSON.stringify(updateData));
+  for (const a of this.adminConnections.values()) if (a.ws.readyState === WebSocket.OPEN) a.ws.send(JSON.stringify(updateData));
+}
+```
+
+How this fits the architecture
+- Layered flow: Controller orchestrates lifecycle; WebSocket provides real-time state; Model persists durable data.
+- Safety: Only one active stream; duration and final stats are computed on stop.
+- Real-time UX: Likes and viewer counts update instantly; server enforces one-like-per-user/session.
+- Performance: Past streams query excludes chat messages to keep responses light. 
+
+### Frontend 
+
 
 ## 6.3 Database Implementation
 

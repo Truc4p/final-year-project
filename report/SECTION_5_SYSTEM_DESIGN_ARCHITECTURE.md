@@ -61,8 +61,11 @@ C4Container
         Container(mobile_customer, "Customer Mobile App", "React Native, Expo", "Provides mobile shopping experience with livestream support")
         Container(mobile_admin, "Admin Mobile App", "React Native, Expo", "Provides mobile admin interface for operations management")
         
-        Container(api, "Backend API Server", "Node.js, Express.js", "Handles REST API requests, business logic, authentication")
-        Container(websocket, "WebSocket Server", "ws (Node.js)", "Manages real-time communication for livestreams and customer support chat")
+        Container_Boundary(backend_process, "Backend Node.js Process (Port 3000)") {
+            Container(api, "REST API Layer", "Express.js routes & controllers", "Handles HTTP requests, authentication, business logic")
+            Container(websocket, "WebSocket Manager", "ws library", "Manages real-time bidirectional communication")
+            Container(services, "Service Layer", "Internal modules: GeminiService, VectorService, EmailService, TTSService", "Encapsulates business logic and external integrations")
+        }
         
         ContainerDb(mongodb, "MongoDB Atlas", "MongoDB", "Stores users, products, orders, chats, livestreams, campaigns, analytics")
     }
@@ -73,19 +76,20 @@ C4Container
     Rel(admin, mobile_admin, "Manages operations", "HTTPS")
 
     Rel(web, api, "Makes API calls", "JSON/HTTPS")
-    Rel(web, websocket, "Real-time communication", "WSS")
+    Rel(web, websocket, "Connects for real-time updates", "WebSocket/WSS")
     Rel(mobile_customer, api, "Makes API calls", "JSON/HTTPS")
-    Rel(mobile_customer, websocket, "Real-time livestream & chat", "WSS")
+    Rel(mobile_customer, websocket, "Connects for livestream & chat", "WebSocket/WSS")
     Rel(mobile_admin, api, "Makes API calls", "JSON/HTTPS")
-    Rel(mobile_admin, websocket, "Real-time notifications", "WSS")
+    Rel(mobile_admin, websocket, "Connects for broadcasting & monitoring", "WebSocket/WSS")
 
-    Rel(api, mongodb, "Reads/writes data", "MongoDB Protocol")
-    Rel(websocket, mongodb, "Stores chat messages", "MongoDB Protocol")
+    Rel(api, services, "Calls service methods", "In-process function calls")
+    Rel(websocket, services, "Uses service methods", "In-process function calls")
+    Rel(services, mongodb, "Reads/writes data", "MongoDB Protocol")
     
-    Rel(api, gemini, "AI queries", "REST/HTTPS")
-    Rel(api, qdrant, "Semantic search", "REST/HTTPS")
-    Rel(api, vnpay, "Process payments", "REST/HTTPS")
-    Rel(api, smtp, "Send emails", "SMTP")
+    Rel(services, gemini, "AI queries & embeddings", "REST/HTTPS")
+    BiRel(services, qdrant, "Reads: semantic search<br/>Writes: index knowledge", "REST/HTTPS")
+    Rel(services, vnpay, "Process payments", "REST/HTTPS")
+    Rel(services, smtp, "Send emails", "SMTP")
 
     UpdateRelStyle(customer, web, $offsetY="-50")
     UpdateRelStyle(customer, mobile_customer, $offsetY="-50")
