@@ -13,9 +13,89 @@
 
 #### System Context Diagram (Level 1)
 
+```mermaid
+C4Context
+    title System Context Diagram for WrenCOS - Skincare E-Commerce Platform
 
+    Person(customer, "Customer", "End users purchasing skincare products, joining livestreams, and consulting AI dermatologist")
+    Person(admin, "Administrator", "Staff managing products, orders, livestreams, marketing campaigns, and analytics")
+
+    System(wrencos, "WrenCOS Platform", "Comprehensive skincare e-commerce platform with AI dermatology consultation, live shopping, and multi-channel customer support")
+
+    System_Ext(gemini, "Google Gemini AI", "Provides AI-powered dermatology consultation, product recommendations, and conversational AI")
+    System_Ext(vnpay, "VNPay Payment Gateway", "Processes online payments for customer orders")
+    System_Ext(smtp, "SMTP Email Server", "Sends transactional emails, marketing campaigns, and newsletters")
+    System_Ext(qdrant, "Qdrant Vector DB", "Stores and retrieves dermatology knowledge embeddings for RAG-based AI consultation")
+
+    Rel(customer, wrencos, "Browses products, makes purchases, joins livestreams, consults AI dermatologist", "HTTPS/WSS")
+    Rel(admin, wrencos, "Manages inventory, processes orders, creates campaigns, monitors analytics", "HTTPS/WSS")
+    
+    Rel(wrencos, gemini, "Sends queries for AI consultation and product recommendations", "REST API/HTTPS")
+    Rel(wrencos, vnpay, "Processes payment transactions", "REST API/HTTPS")
+    Rel(wrencos, smtp, "Sends emails", "SMTP")
+    Rel(wrencos, qdrant, "Queries dermatology knowledge base", "REST API/HTTPS")
+
+    UpdateRelStyle(customer, wrencos, $offsetY="-40")
+    UpdateRelStyle(admin, wrencos, $offsetY="-40")
+    UpdateRelStyle(wrencos, gemini, $offsetX="-50", $offsetY="20")
+    UpdateRelStyle(wrencos, vnpay, $offsetY="-30")
+    UpdateRelStyle(wrencos, smtp, $offsetX="50", $offsetY="20")
+```
 
 #### Container Diagram (Level 2)
+
+```mermaid
+C4Container
+    title Container Diagram for WrenCOS Platform
+
+    Person(customer, "Customer", "Purchases products, joins livestreams, consults AI dermatologist")
+    Person(admin, "Administrator", "Manages platform operations")
+
+    System_Ext(gemini, "Google Gemini AI", "AI consultation & recommendations")
+    System_Ext(vnpay, "VNPay Gateway", "Payment processing")
+    System_Ext(smtp, "SMTP Server", "Email delivery")
+    System_Ext(qdrant, "Qdrant Vector DB", "Knowledge base embeddings")
+
+    Container_Boundary(wrencos, "WrenCOS Platform") {
+        Container(web, "Web Application", "Vue.js 3, Vite, Tailwind CSS", "Provides skincare e-commerce interface via web browser")
+        Container(mobile_customer, "Customer Mobile App", "React Native, Expo", "Provides mobile shopping experience with livestream support")
+        Container(mobile_admin, "Admin Mobile App", "React Native, Expo", "Provides mobile admin interface for operations management")
+        
+        Container(api, "Backend API Server", "Node.js, Express.js", "Handles REST API requests, business logic, authentication")
+        Container(websocket, "WebSocket Server", "ws (Node.js)", "Manages real-time communication for livestreams and customer support chat")
+        
+        ContainerDb(mongodb, "MongoDB Atlas", "MongoDB", "Stores users, products, orders, chats, livestreams, campaigns, analytics")
+    }
+
+    Rel(customer, web, "Browses and purchases", "HTTPS")
+    Rel(customer, mobile_customer, "Shops and watches livestreams", "HTTPS")
+    Rel(admin, web, "Manages platform", "HTTPS")
+    Rel(admin, mobile_admin, "Manages operations", "HTTPS")
+
+    Rel(web, api, "Makes API calls", "JSON/HTTPS")
+    Rel(web, websocket, "Real-time communication", "WSS")
+    Rel(mobile_customer, api, "Makes API calls", "JSON/HTTPS")
+    Rel(mobile_customer, websocket, "Real-time livestream & chat", "WSS")
+    Rel(mobile_admin, api, "Makes API calls", "JSON/HTTPS")
+    Rel(mobile_admin, websocket, "Real-time notifications", "WSS")
+
+    Rel(api, mongodb, "Reads/writes data", "MongoDB Protocol")
+    Rel(websocket, mongodb, "Stores chat messages", "MongoDB Protocol")
+    
+    Rel(api, gemini, "AI queries", "REST/HTTPS")
+    Rel(api, qdrant, "Semantic search", "REST/HTTPS")
+    Rel(api, vnpay, "Process payments", "REST/HTTPS")
+    Rel(api, smtp, "Send emails", "SMTP")
+
+    UpdateRelStyle(customer, web, $offsetY="-50")
+    UpdateRelStyle(customer, mobile_customer, $offsetY="-50")
+    UpdateRelStyle(admin, web, $offsetY="-50")
+    UpdateRelStyle(admin, mobile_admin, $offsetY="-50")
+    UpdateRelStyle(web, api, $offsetX="20")
+    UpdateRelStyle(mobile_customer, api, $offsetX="-20")
+    UpdateRelStyle(api, mongodb, $offsetY="-30")
+    UpdateRelStyle(websocket, mongodb, $offsetY="-30")
+```
 
 
 ## 5.3 Technology Stack
