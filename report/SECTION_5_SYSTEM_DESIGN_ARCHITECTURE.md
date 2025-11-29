@@ -1087,33 +1087,419 @@ graph LR
 
 ### Sample Request/Response
 
-**Example 1: **
+#### 1. Create Livestream - POST `/livestreams`
 
-**Example 2: **
-
-**Example 3: Send Live Stream Chat Message**
-
-```javascript
-// WebSocket Connection
-wss://api.wrencos.com/ws/livestream/:streamId
-
-// Emit Event
+**Request:**
+```json
 {
-  "type": "message",
-  "userId": "user_abc123",
-  "message": "Does this serum work for sensitive skin?",
-  "timestamp": "2025-11-17T14:30:45Z"
-}
-
-// Receive Event
-{
-  "type": "message",
-  "id": "msg_12345",
-  "userId": "user_abc123",
-  "username": "Sarah Chen",
-  "message": "Does this serum work for sensitive skin?",
-  "avatar": "https://...",
-  "timestamp": "2025-11-17T14:30:45Z",
-  "isModerator": false
+  "title": "Summer Skincare Collection Launch",
+  "description": "Discover our new hydrating summer collection with exclusive livestream discounts",
+  "quality": "1080p",
+  "categories": "sunscreen,moisturizer,serum",
+  "tags": "summer,hydration,new-launch",
+  "streamUrl": "rtmp://streaming-server.com/live/stream-key-12345"
 }
 ```
+
+**Response (201 Created):**
+```json
+{
+  "message": "Livestream created successfully",
+  "livestream": {
+    "_id": "674b8e9c1a2b3c4d5e6f7890",
+    "title": "Summer Skincare Collection Launch",
+    "description": "Discover our new hydrating summer collection with exclusive livestream discounts",
+    "videoUrl": "",
+    "streamUrl": "rtmp://streaming-server.com/live/stream-key-12345",
+    "thumbnailUrl": "",
+    "duration": 0,
+    "viewCount": 0,
+    "likes": 0,
+    "likedBy": [],
+    "maxViewers": 0,
+    "startTime": "2024-11-30T10:30:00.000Z",
+    "endTime": null,
+    "quality": "1080p",
+    "isActive": true,
+    "isRecorded": false,
+    "categories": ["sunscreen", "moisturizer", "serum"],
+    "tags": ["summer", "hydration", "new-launch"],
+    "createdBy": "674a1b2c3d4e5f6789012345",
+    "pinnedProducts": [],
+    "chatMessages": [],
+    "createdAt": "2024-11-30T10:30:00.000Z",
+    "updatedAt": "2024-11-30T10:30:00.000Z"
+  }
+}
+```
+
+#### 2. Pin Product to Livestream - POST `/livestreams/:id/pin-product`
+
+**Request:**
+```json
+{
+  "productId": "674c9f8a2b3c4d5e6f789012",
+  "displayOrder": 1
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Product pinned successfully",
+  "pinnedProducts": [
+    {
+      "_id": "674d1a2b3c4d5e6f78901234",
+      "productId": {
+        "_id": "674c9f8a2b3c4d5e6f789012",
+        "name": "Hydrating Sunscreen SPF 50+",
+        "price": 29.99,
+        "image": "/uploads/products/sunscreen-spf50.jpg",
+        "category": "674a5b6c7d8e9f0123456789",
+        "stockQuantity": 150
+      },
+      "pinnedAt": "2024-11-30T10:45:00.000Z",
+      "displayOrder": 1,
+      "isActive": true
+    }
+  ]
+}
+```
+
+#### 3. Generate Agora RTC Token - POST `/livestreams/agora/token`
+
+**Request:**
+```json
+{
+  "channelName": "livestream-674b8e9c1a2b3c4d5e6f7890",
+  "uid": 12345,
+  "role": "publisher"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "token": "006a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+  "appId": "a1b2c3d4e5f6789012345678",
+  "channelName": "livestream-674b8e9c1a2b3c4d5e6f7890",
+  "uid": 12345,
+  "expiresAt": "2024-11-30T22:30:00.000Z"
+}
+```
+
+#### 4. AI Dermatology Expert Chat - POST `/api/ai-dermatology-expert/chat`
+
+**Request:**
+```json
+{
+  "message": "What ingredients should I look for in a moisturizer for dry sensitive skin?",
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "I have dry and sensitive skin"
+    },
+    {
+      "role": "assistant",
+      "content": "I understand you have dry and sensitive skin. This skin type requires gentle, hydrating ingredients..."
+    }
+  ]
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "response": "For dry sensitive skin, look for these key ingredients:\n\n1. **Hyaluronic Acid** - Attracts and retains moisture, holding up to 1000x its weight in water\n2. **Ceramides** - Restore skin barrier function and prevent moisture loss\n3. **Glycerin** - Humectant that draws moisture into the skin\n4. **Niacinamide** - Reduces inflammation and strengthens skin barrier\n5. **Squalane** - Lightweight oil that mimics skin's natural oils\n\nAvoid: Fragrance, alcohol, harsh exfoliants (AHAs/BHAs in high concentrations), and sulfates.\n\nWould you like product recommendations with these ingredients?",
+  "sources": [
+    {
+      "title": "Moisturizers and Emollients for Dry Skin",
+      "content": "Hyaluronic acid is a humectant capable of binding up to 1000 times its weight in water, making it exceptionally effective for hydrating dry skin...",
+      "category": "Dermatology Fundamentals",
+      "chapterNumber": "3",
+      "pageReference": "45-48"
+    },
+    {
+      "title": "Skin Barrier Function and Ceramides",
+      "content": "Ceramides comprise approximately 50% of the skin's lipid barrier. Topical application of ceramides has been shown to significantly improve barrier function...",
+      "category": "Skin Physiology",
+      "chapterNumber": "2",
+      "pageReference": "23-26"
+    }
+  ],
+  "images": [],
+  "timestamp": "2024-11-30T10:50:15.234Z",
+  "_performance": {
+    "totalTime": 2847,
+    "contextSize": 3421,
+    "chunks": 5,
+    "detectedLanguage": "English",
+    "translatedQuery": null
+  }
+}
+```
+
+#### 5. Analyze Skin Image - POST `/api/ai-dermatology-expert/analyze-skin`
+
+**Request (multipart/form-data):**
+```
+image: [binary file data - skin-condition.jpg]
+message: "I've been experiencing these red patches on my cheeks. Should I be concerned?"
+conversationHistory: "[]"
+```
+
+**Response (200 OK):**
+```json
+{
+  "response": "Based on the image analysis, I can observe red patches on both cheeks with some visible inflammation. While I cannot provide a definitive diagnosis, these characteristics could be consistent with several conditions:\n\n**Possible Conditions:**\n1. **Rosacea** - Common inflammatory skin condition causing facial redness\n2. **Contact Dermatitis** - Allergic reaction to skincare products or environmental triggers\n3. **Seborrheic Dermatitis** - Inflammatory condition affecting oil-producing areas\n\n**Immediate Care Recommendations:**\n- Use gentle, fragrance-free cleansers\n- Apply a barrier repair moisturizer with ceramides\n- Avoid hot water and harsh scrubs\n- Use mineral-based SPF 30+ daily\n- Eliminate potential irritants from your routine\n\n**When to See a Dermatologist:**\n- If redness persists beyond 2 weeks\n- If accompanied by pain, burning, or significant discomfort\n- If condition worsens or spreads\n- For professional diagnosis and treatment plan\n\nWould you like product recommendations for sensitive, inflamed skin?",
+  "sources": [
+    {
+      "title": "Rosacea: Clinical Features and Management",
+      "content": "Rosacea is a chronic inflammatory skin condition characterized by facial erythema, telangiectasia, papules, and pustules...",
+      "category": "Inflammatory Skin Conditions",
+      "chapterNumber": "8",
+      "pageReference": "127-135"
+    },
+    {
+      "title": "Contact Dermatitis: Diagnosis and Treatment",
+      "content": "Contact dermatitis presents as localized erythema, pruritus, and inflammation following exposure to allergens or irritants...",
+      "category": "Allergic Skin Conditions",
+      "chapterNumber": "9",
+      "pageReference": "142-149"
+    }
+  ],
+  "timestamp": "2024-11-30T11:05:42.567Z",
+  "_performance": {
+    "totalTime": 4523,
+    "contextSize": 4187,
+    "chunks": 6
+  }
+}
+```
+
+#### 6. Text-to-Speech - POST `/api/ai-dermatology-expert/text-to-speech`
+
+**Request:**
+```json
+{
+  "text": "For dry sensitive skin, look for hyaluronic acid, ceramides, and glycerin. Avoid fragrance and alcohol."
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "audio": "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZw...",
+  "format": "mp3",
+  "timestamp": "2024-11-30T11:10:22.891Z",
+  "processingTime": 1247
+}
+```
+
+#### 7. Create Email Campaign - POST `/email-campaigns/campaigns`
+
+**Request:**
+```json
+{
+  "name": "Black Friday 2024 - Exclusive Skincare Deals",
+  "subject": "🎉 50% OFF Premium Skincare | Black Friday Exclusive",
+  "content": "Dear {{firstName}}, Get ready for our biggest sale of the year! Enjoy 50% off all premium skincare products...",
+  "htmlContent": "<html><body><h1>Black Friday Sale</h1><p>Dear {{firstName}},</p><p>Get ready for our biggest sale...</p></body></html>",
+  "templateId": "674e2a3b4c5d6e7f89012345",
+  "type": "promotion",
+  "targetAudience": "segment",
+  "segmentCriteria": {
+    "subscriptionDateFrom": "2024-01-01T00:00:00.000Z",
+    "subscriptionDateTo": "2024-11-30T23:59:59.999Z",
+    "sources": ["website", "mobile-app"],
+    "preferences": {
+      "promotions": true
+    }
+  },
+  "scheduledAt": "2024-11-29T08:00:00.000Z",
+  "settings": {
+    "trackOpens": true,
+    "trackClicks": true,
+    "unsubscribeLink": true
+  }
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Campaign created successfully",
+  "data": {
+    "_id": "674f3b4c5d6e7f8901234567",
+    "name": "Black Friday 2024 - Exclusive Skincare Deals",
+    "subject": "🎉 50% OFF Premium Skincare | Black Friday Exclusive",
+    "content": "Dear {{firstName}}, Get ready for our biggest sale of the year! Enjoy 50% off all premium skincare products...",
+    "htmlContent": "<html><body><h1>Black Friday Sale</h1><p>Dear {{firstName}},</p><p>Get ready for our biggest sale...</p></body></html>",
+    "templateId": {
+      "_id": "674e2a3b4c5d6e7f89012345",
+      "name": "Promotional Email Template",
+      "category": "promotional"
+    },
+    "status": "scheduled",
+    "type": "promotion",
+    "createdBy": {
+      "_id": "674a1b2c3d4e5f6789012345",
+      "username": "admin",
+      "email": "admin@wrencos.com"
+    },
+    "targetAudience": "segment",
+    "segmentCriteria": {
+      "subscriptionDateFrom": "2024-01-01T00:00:00.000Z",
+      "subscriptionDateTo": "2024-11-30T23:59:59.999Z",
+      "sources": ["website", "mobile-app"],
+      "preferences": {
+        "newProducts": null,
+        "promotions": true,
+        "newsletter": null
+      },
+      "customEmails": null
+    },
+    "scheduledAt": "2024-11-29T08:00:00.000Z",
+    "sentAt": null,
+    "analytics": {
+      "totalRecipients": 0,
+      "emailsSent": 0,
+      "emailsDelivered": 0,
+      "emailsBounced": 0,
+      "emailsOpened": 0,
+      "uniqueOpens": 0,
+      "emailsClicked": 0,
+      "uniqueClicks": 0,
+      "emailsUnsubscribed": 0,
+      "emailsComplained": 0,
+      "conversionRate": 0,
+      "revenue": 0
+    },
+    "settings": {
+      "trackOpens": true,
+      "trackClicks": true,
+      "unsubscribeLink": true,
+      "replyTo": null,
+      "fromName": null,
+      "testMode": false
+    },
+    "errorLogs": [],
+    "createdAt": "2024-11-28T15:30:00.000Z",
+    "updatedAt": "2024-11-28T15:30:00.000Z"
+  }
+}
+```
+
+#### 8. Send Email Campaign - POST `/email-campaigns/campaigns/:id/send`
+
+**Request:**
+```json
+{
+  "testMode": false,
+  "testRecipients": []
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Campaign sent successfully",
+  "data": {
+    "_id": "674f3b4c5d6e7f8901234567",
+    "name": "Black Friday 2024 - Exclusive Skincare Deals",
+    "status": "sent",
+    "sentAt": "2024-11-29T08:00:15.234Z",
+    "analytics": {
+      "totalRecipients": 3547,
+      "emailsSent": 3547,
+      "emailsDelivered": 3521,
+      "emailsBounced": 26,
+      "emailsOpened": 1876,
+      "uniqueOpens": 1654,
+      "emailsClicked": 892,
+      "uniqueClicks": 743,
+      "emailsUnsubscribed": 12,
+      "emailsComplained": 2,
+      "conversionRate": 4.7,
+      "revenue": 18943.50
+    }
+  }
+}
+```
+
+#### 9. Get Campaign Analytics - GET `/email-campaigns/campaigns/:id/analytics`
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "campaignId": "674f3b4c5d6e7f8901234567",
+    "campaignName": "Black Friday 2024 - Exclusive Skincare Deals",
+    "status": "sent",
+    "sentAt": "2024-11-29T08:00:15.234Z",
+    "analytics": {
+      "totalRecipients": 3547,
+      "emailsSent": 3547,
+      "emailsDelivered": 3521,
+      "emailsBounced": 26,
+      "deliveryRate": 99.27,
+      "emailsOpened": 1876,
+      "uniqueOpens": 1654,
+      "openRate": 46.98,
+      "emailsClicked": 892,
+      "uniqueClicks": 743,
+      "clickRate": 21.11,
+      "clickToOpenRate": 44.92,
+      "emailsUnsubscribed": 12,
+      "unsubscribeRate": 0.34,
+      "emailsComplained": 2,
+      "complaintRate": 0.06,
+      "conversionRate": 4.7,
+      "revenue": 18943.50
+    },
+    "engagement": {
+      "topClickedLinks": [
+        {
+          "url": "https://wrencos.com/products/hydrating-serum",
+          "clicks": 342,
+          "uniqueClicks": 287
+        },
+        {
+          "url": "https://wrencos.com/black-friday-collection",
+          "clicks": 289,
+          "uniqueClicks": 243
+        }
+      ],
+      "deviceBreakdown": {
+        "mobile": 2134,
+        "desktop": 1187,
+        "tablet": 200
+      },
+      "geographicDistribution": {
+        "US": 1876,
+        "UK": 543,
+        "CA": 312,
+        "AU": 287,
+        "Other": 503
+      }
+    },
+    "timeline": [
+      {
+        "hour": 1,
+        "opens": 892,
+        "clicks": 423
+      },
+      {
+        "hour": 2,
+        "opens": 456,
+        "clicks": 234
+      }
+    ]
+  }
+}
+```
+
+
