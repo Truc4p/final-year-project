@@ -57,121 +57,23 @@ Objective 4: To implement WebSocket infrastructure supporting real-time live vid
 
 **Scope:** 
 
-**In-Scope Features:**
+In-Scope Features
 
-*E-Commerce Module:*
-- Complete product catalog with full-text search across name, description, ingredients, benefits, and tags
-- Shopping cart with persistent storage and quantity management
-- Checkout process with order creation and payment processing
-- Order management with status tracking and history
-- Inventory management with stock quantity tracking
-- Product categorization and filtering by skin type, concerns, and benefits
-- Product details including ingredients, usage instructions, and skincare benefits
-- Image upload and management for products
-
-*Live Streaming Module:*
-- WebSocket-based real-time video streaming infrastructure
-- Concurrent viewer support with viewer count tracking
-- Real-time chat functionality during streams with message history
-- Product pinning during streams with display ordering
-- Viewer engagement analytics
-- Stream quality options
-- Stream recording and archival capabilities
-- Stream scheduling and management
-- Admin livestream broadcasting from mobile app
-
-*AI Chat Support System:*
-- Google Gemini AI integration for conversational responses
-- Context-aware dialogue with conversation history management
-- Conversational product recommendations based on skin type and concerns
-- FAQ management with predefined responses
-- Staff escalation workflow for complex queries
-- Session management for both authenticated and anonymous users
-- Message history persistence
-
-*Skin Study Feature (AI Dermatology Expert):*
-- AI dermatology expert with text-based consultation
-- Voice chat with automatic speech-to-text transcription
-- Skin image analysis with AI-powered assessment
-- Real-time audio streaming for voice interactions
-- RAG-based knowledge base with curated dermatology literature
-- Chat history management with conversation persistence
-- Multi-language support with automatic language detection and translation
-- Evidence-based recommendations with source citations
-- Integration across web and mobile platforms
-
-*Email Marketing Module:*
-- Email campaign creation and management
-- Email template design and customization
-- Customer segmentation based on purchase history and preferences
-- Newsletter subscription management
-- Subscriber list management with unsubscribe functionality
-- Campaign scheduling and automated sending
-- Email analytics (open rates, click rates, conversion tracking)
-- Audience targeting and personalization
-
-*Analytics Dashboards:*
-- Sales metrics and revenue tracking
-- Product performance analysis
-- Customer insights and behavior analytics
-- Order analytics and trends
-- Revenue forecasting and analysis
-- Viewer analytics for livestreams
-- Email campaign performance metrics
-- Conversion rate analysis
-
-*Financial Management Module:*
-- Cash flow transaction tracking
-- Expense recording and categorization
-- Financial reporting and statements
-- Profit and loss analysis
-- Budget tracking and forecasting
-- Transaction history and audit trails
-
-*HR Module:*
-- Employee record management
-- Department and role management
-- Employee document management
-- Performance tracking capabilities
-
-*Authentication & Authorization:*
-- JWT token-based authentication
-- Role-based access control (Admin/Customer roles)
-- Secure password hashing with bcryptjs
-- Token expiration and refresh mechanisms
-- Session management
-
-*API & Documentation:*
-- RESTful API with endpoints across route modules
-- Swagger/OpenAPI documentation with interactive testing
-- Comprehensive API error handling and validation
-- Rate limiting to prevent abuse
-- CORS configuration for cross-origin requests
-
-*Multi-Platform Support:*
-- Vue.js web application for admin dashboard
-- Vue.js web application for customer interface
-- React Native mobile app for customers (iOS 14+, Android 10+) with integrated Skin Study
-- React Native mobile app for admin livestream management (iOS 14+, Android 10+)
-- Responsive design for desktop, tablet, and mobile devices
-- Web browser compatibility: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
-- Mobile support: iOS 14+ and Android 10+
-
-*Database & Infrastructure:*
-- MongoDB with Mongoose ORM for data persistence
-- Qdrant vector database for RAG implementation
-- WebSocket infrastructure for real-time communication
-- Docker containerization for deployment
-- File upload and storage management
-- Database indexing for performance optimization
-
-*Additional Features:*
-- Internationalization (i18n) support for multiple languages
-- Performance monitoring and optimization
-- Security measures including CORS, rate limiting, input validation
-- Automated task scheduling with node-cron
-- QR code generation for orders and products
-- Text-to-speech capabilities for accessibility
+| Feature Category | In-Scope Components |
+|---|---|
+| **E-Commerce** | Product catalog, shopping cart, payment, orders, inventory, categories |
+| **Live Streaming** | WebSocket-based video streaming infrastructure, real-time chat, product pinning, viewer analytics |
+| **AI Chat** | Google Gemini integration, conversational product recommendations, FAQ management with staff escalation |
+| **Skin Study Feature** | AI dermatology expert with text and voice chat, skin image analysis, RAG-based knowledge base with curated dermatology literature, chat history management, multi-language support, real-time audio streaming |
+| **Email Marketing** | Campaigns, customer segmentation, email templates, newsletter management, audience targeting |
+| **Analytics Dashboards** | Sales metrics, customer insights, product performance |
+| **Financial Management** | Cash flow tracking, expense recording, financial reporting, profit analysis |
+| **HR Module** | Employee records, document management |
+| **Authentication & Security** | JWT tokens, role-based access control (admin/customer roles) |
+| **API Documentation** | Swagger/OpenAPI |
+| **Multi-Platform Support** | web admin, web customer, iOS/Android mobile customer app, iOS/Android mobile admin app |
+| **Browser Compatibility** | Chrome 90+, Firefox 88+, Safari 14+, Edge 90+ |
+| **Mobile Support** | iOS 14+, Android 10+ |
 
 Out-of-scope: advanced payment gateway integration beyond basic structure, complex logistics integration with third-party fulfillment systems, AR virtual try-on functionality, social commerce feature integration (social media shopping), advanced marketing automation beyond email segmentation, enterprise multi-tenancy support, video processing effects for live streams, subscription business model implementation, real-time inventory sync with external systems, blockchain integration, advanced recommendation engine using collaborative filtering, machine learning-based customer segmentation, video compression and adaptive bitrate streaming, integration with third-party CRM systems, advanced fraud detection systems, and marketplace functionality allowing multiple sellers.
 
@@ -209,7 +111,17 @@ Out-of-scope: advanced payment gateway integration beyond basic structure, compl
 
 ## 10. LSEPI Considerations and Risks
 
-**LSEPI:** Data protection requires explicit user consent for information collection, clear privacy policies explaining data usage, secure storage preventing unauthorized access, and user rights enabling data deletion requests. AI recommendation systems must acknowledge potential biases in training data and include disclaimers that recommendations supplement but do not replace professional advice. Accessibility follows WCAG guidelines enabling screen reader compatibility and keyboard navigation. Internationalization (i18n) support accommodates non-English speakers. Professional responsibility emphasizes creating reliable systems, implementing security measures appropriate to data sensitivity, and documenting limitations distinguishing academic work from production-ready systems.
+Legal Compliance
+The application complies with GDPR requirements for data protection, mandating explicit user consent, data minimisation, and erasure rights (European Union, 2016). User data is stored in MongoDB Atlas with encryption at rest and in transit per GDPR Article 32. Role-based access control (RBAC) enforces least privilege principles. All third-party libraries use permissive open-source licenses with documented dependencies. Payment processing adheres to PCI DSS by delegating sensitive payment handling to a certified third-party processor, ensuring card information is neither stored nor transmitted by the application.
+
+Ethical Data Handling
+Users receive explicit privacy notices before account creation, explaining data collection and usage in accordance with informed consent principles (Stark and Hoey, 2021). Only essential data is retained. Sensitive skin analysis information is processed through Google Generative AI with consent and not permanently stored without request. Passwords are hashed using bcryptjs (salt factor 10), preventing plaintext storage (Provos and Mazières, 2019). RBAC restricts access to sensitive operations. File uploads are validated via Multer middleware with type and size restrictions. Input validation via express-validator prevents injection attacks. Users can request data deletion through dedicated endpoints.
+
+Social Impact
+The platform provides multilingual support via Vue-i18n, reducing language barriers (Graddol, 2010). Live streaming enables direct seller-customer engagement, while AI dermatology consultation democratises skincare advice for users lacking professional access. Multi-platform availability (web, iOS, Android) ensures broad accessibility. However, the beauty product focus may inadvertently reinforce societal beauty standards (Tiggemann and Slater, 2013). Mitigation strategies include educational content promoting diverse beauty standards. Future iterations should implement product authenticity verification via Tesseract.js OCR and seller verification mechanisms to prevent counterfeit products and protect consumers.
+
+Professional Standards
+The codebase implements modular architecture with separation of concerns—controllers handle requests, services manage business logic, and models define data structures (Martin, 2017). Development followed Agile methodology with Git version control and meaningful commits. Comprehensive testing (unit, integration, acceptance) ensures quality assurance. API documentation uses Swagger/OpenAPI standards. Security practices include input validation, parameterised queries, rate limiting, and JWT authentication. Environment-based configuration via dotenv separates credentials from source code. The application is containerised using Docker for consistent deployment. These practices ensure the platform meets industry standards for reliability, security, maintainability, and scalability.
 
 **Risks:**
 
@@ -261,4 +173,17 @@ Hwang, J. & Youn, S. (2023) ‘From brick-and-mortar to livestream shopping: pro
 
 Yun, X. & Chun, M. H. (2024) ‘The impact of personalized recommendation on purchase intention under the background of big data’, Big Data and Information Analytics, 8, pp. 80–108.
 
-**Word Count:  words**
+European Union (2016) 'Regulation (EU) 2016/679 of the European Parliament and of the Council of 27 April 2016 on the protection of natural persons with regard to the processing of personal data and on the free movement of such data', *Official Journal of the European Union*, 119, pp. 1–88.
+
+Graddol, D. (2010) *English next India: The rising demand for English in India*. London: British Council.
+
+Martin, R. C. (2017) *Clean architecture: A craftsman's guide to software structure and design*. Boston: Prentice Hall.
+
+Payment Card Industry Security Standards Council (2018) *PCI Data Security Standard Version 3.2.1: Requirements and Security Assessment Procedures*. Wayne, PA: PCI Security Standards Council.
+
+Provos, N. and Mazières, D. (2019) 'A future-adaptable password scheme', in *Proceedings of the USENIX Annual Technical Conference*. Berkeley: USENIX Association.
+
+Stark, L. and Hoey, J. (2021) 'The ethics of emotion in artificial intelligence systems', in *Proceedings of the 2021 ACM Conference on Fairness, Accountability, and Transparency*, pp. 782–793.
+
+Tiggemann, M. and Slater, A. (2013) 'NetGirls: The internet, Facebook, and body image concern in adolescent girls', *Journal of Early Adolescence*, 33(5), pp. 541–564.
+

@@ -1,5 +1,13 @@
 # WRENCOS PROJECT REPORT
 
+## Abstract
+
+The beauty e-commerce industry, valued at USD 120 billion in 2024 and projected to exceed USD 200 billion by 2027, faces critical challenges that hinder consumer confidence and limit small business competitiveness. Beauty retailers struggle with high product return rates exceeding 40% due to sensory deficits—customers cannot physically evaluate products online—while small to medium-sized enterprises (SMEs) operate with fragmented technology ecosystems requiring multiple disconnected platforms at costs of USD 500–3,000 monthly. This fragmentation creates data silos that prevent effective personalization, limiting SMEs to generic recommendation algorithms achieving only 5% conversion rates compared to 15–20% for personalized systems.
+
+This project designed, developed, and deployed WRENCOS, an integrated e-commerce platform specifically tailored for beauty SMEs. The platform addresses market gaps by combining e-commerce functionality with real-time live streaming commerce, artificial intelligence-powered personalized assistance, and comprehensive business management tools within a unified system. The architecture integrates modern web and mobile technologies, real-time communication infrastructure, and advanced AI capabilities with knowledge retrieval systems to deliver personalized product recommendations and dermatology consultation services.
+
+Key achievements demonstrate technical feasibility and business value: the platform implements comprehensive backend services supporting six core business modules with secure authentication and role-based access control; delivers cross-platform user experiences across web and mobile applications with strong performance metrics; enables real-time livestreaming supporting hundreds of concurrent viewers with minimal latency; and provides AI-powered consultation features with multilingual support, voice interaction, and image analysis capabilities. System validation through performance testing confirmed fast response times, high availability, and scalability. The platform successfully consolidates previously fragmented business functions into a unified solution, addressing the gap between limited SME-friendly tools and expensive enterprise systems while demonstrating how contemporary technologies can democratize advanced retail capabilities for small businesses in the beauty industry.
+
 ## 1. Introduction
 
 ### 1.1 General Overview

@@ -135,4 +135,127 @@
 
 ### Sample Request/Response
 
+#### 1. Create Livestream - POST `/livestreams`
+
+**Request:**
+```json
+{
+  "title": "Summer Skincare Collection Launch",
+  "description": "Discover our new hydrating summer collection with exclusive livestream discounts",
+  "quality": "1080p",
+  "categories": "sunscreen,moisturizer,serum",
+  "tags": "summer,hydration,new-launch",
+  "streamUrl": "rtmp://streaming-server.com/live/stream-key-12345"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "message": "Livestream created successfully",
+  "livestream": {
+    "_id": "674b8e9c1a2b3c4d5e6f7890",
+    "title": "Summer Skincare Collection Launch",
+    "description": "Discover our new hydrating summer collection with exclusive livestream discounts",
+    "videoUrl": "",
+    "streamUrl": "rtmp://streaming-server.com/live/stream-key-12345",
+    "thumbnailUrl": "",
+    "duration": 0,
+    "viewCount": 0,
+    "likes": 0,
+    "likedBy": [],
+    "maxViewers": 0,
+    "startTime": "2024-11-30T10:30:00.000Z",
+    "endTime": null,
+    "quality": "1080p",
+    "isActive": true,
+    "isRecorded": false,
+    "categories": ["sunscreen", "moisturizer", "serum"],
+    "tags": ["summer", "hydration", "new-launch"],
+    "createdBy": "674a1b2c3d4e5f6789012345",
+    "pinnedProducts": [],
+    "chatMessages": [],
+    "createdAt": "2024-11-30T10:30:00.000Z",
+    "updatedAt": "2024-11-30T10:30:00.000Z"
+  }
+}
+```
+
+#### 2. Analyze Skin Image - POST `/api/ai-dermatology-expert/analyze-skin`
+
+**Request (multipart/form-data):**
+```
+image: [binary file data - skin-condition.jpg]
+message: "I've been experiencing these red patches on my cheeks. Should I be concerned?"
+conversationHistory: "[]"
+```
+
+**Response (200 OK):**
+```json
+{
+  "response": "Based on the image analysis, I can observe red patches on both cheeks with some visible inflammation. While I cannot provide a definitive diagnosis, these characteristics could be consistent with several conditions:\n\n**Possible Conditions:**\n1. **Rosacea** - Common inflammatory skin...",
+  "sources": [
+    {
+      "title": "Rosacea: Clinical Features and Management",
+      "content": "Rosacea is a chronic inflammatory skin condition characterized by facial erythema, telangiectasia, papules, and pustules...",
+      "category": "Inflammatory Skin Conditions",
+      "chapterNumber": "8",
+      "pageReference": "127-135"
+    },
+    {
+      "title": "Contact Dermatitis: Diagnosis and Treatment",
+      "content": "Contact dermatitis presents as localized erythema, pruritus, and inflammation following exposure to allergens or irritants...",
+      "category": "Allergic Skin Conditions",
+      "chapterNumber": "9",
+      "pageReference": "142-149"
+    }
+  ],
+  "timestamp": "2024-11-30T11:05:42.567Z",
+  "_performance": {
+    "totalTime": 4523,
+    "contextSize": 4187,
+    "chunks": 6
+  }
+}
+```
+
+#### 3. Send Email Campaign - POST `/email-campaigns/campaigns/:id/send`
+
+**Request:**
+```json
+{
+  "testMode": false,
+  "testRecipients": []
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Campaign sent successfully",
+  "data": {
+    "_id": "674f3b4c5d6e7f8901234567",
+    "name": "Black Friday 2024 - Exclusive Skincare Deals",
+    "status": "sent",
+    "sentAt": "2024-11-29T08:00:15.234Z",
+    "analytics": {
+      "totalRecipients": 3547,
+      "emailsSent": 3547,
+      "emailsDelivered": 3521,
+      "emailsBounced": 26,
+      "emailsOpened": 1876,
+      "uniqueOpens": 1654,
+      "emailsClicked": 892,
+      "uniqueClicks": 743,
+      "emailsUnsubscribed": 12,
+      "emailsComplained": 2,
+      "conversionRate": 4.7,
+      "revenue": 18943.50
+    }
+  }
+}
+```
+
+
 

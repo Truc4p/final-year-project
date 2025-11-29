@@ -1063,27 +1063,138 @@ graph LR
 | 1 | `/auth/register` | POST | Register user (admin/customer) | username, password, role, adminKey (when role=admin) | {token} |
 | 2 | `/auth/login` | POST | Login with credentials | username, password | {token, role, userId} |
 | 3 | `/products` | GET | List all products | - | [{...Product}] |
-| 4 | `/products` | POST | Create product (admin only) | multipart/form-data: image, name, categoryId, price, description, stockQuantity, ingredients[], skinType[], benefits[], tags[], usage, skinConcerns[] | {...Product} |
-| 5 | `/orders` | POST | Create order (checkout) | products[{productId, quantity, price?}], paymentMethod, totalPrice | {...Order} |
-| 6 | `/orders` | GET | Get orders (admin: all, customer: own) | from JWT | [{...Order}] |
-| 7 | `/chat/ai` | POST | Send message to AI chatbot | message, sessionId? | {success, data: {message, sessionId, intent, confidence, relatedProducts[], relatedFAQs[]}} |
-| 8 | `/chat/conversation/:sessionId` | GET | Get conversation history | limit? | {success, data: {messages[], conversationState}} |
-| 9 | `/livestreams` | POST | Create live stream (admin only) | title, description, startTime? | {...LiveStream} |
-| 10 | `/analytics/sales` | GET | Sales analytics (admin only) | period? (days) | {period, salesData: [{date, revenue, orders}], totalRevenue, totalOrders, averageDailyRevenue} |
-| 11 | `/analytics/products` | GET | Product analytics (admin only) | - | {topProducts: [{productId, name, totalSold, totalRevenue}], categoryDistribution: [{categoryId, name, count}], lowStockProducts: [{name, stockQuantity, price}]} |
-| 12 | `/api/ai-dermatology-expert/chat` | POST | AI Dermatology Expert chat | message, conversationHistory[] | {response, sources: [{title, content}], images: [], timestamp} |
-| 13 | `/api/ai-dermatology-expert/analyze-skin` | POST | Analyze skin image | image (multipart), message?, conversationHistory[]? | {response, sources: [{title, content}], timestamp} |
-| 14 | `/api/ai-dermatology-expert/transcribe` | POST | Transcribe audio to text | audio (multipart) | {transcription, timestamp, processingTime} |
-| 15 | `/api/ai-dermatology-expert/text-to-speech` | POST | Text to speech | text | {audio, format: 'mp3', timestamp, processingTime} |
-| 16 | `/email-campaigns/campaigns` | POST | Create email campaign (admin only) | name, subject, templateId, scheduledAt, targetAudience/segmentCriteria | {...Campaign} |
-| 17 | `/users` | GET | List users (admin only) | page?, limit?, role? | [{userId, username, role, createdAt}] |
-| 18 | `/cashflow/dashboard` | GET | Cash flow dashboard (admin only) | period? (days) | {currentBalance, netCashFlow, totalInflows, totalOutflows, runway, ...} |
-| 19 | `/livestreams/active` | GET | Get the currently active livestream | - | { message, livestream|null } |
-| 20 | `/livestreams/past` | GET | Get paginated list of past livestreams | page, limit | { livestreams: [], pagination: { currentPage, totalPages, total } } |
-| 21 | `/livestreams/agora/token` | POST | Generate Agora RTC token for streaming/viewing | channelName, uid?, role? | { token, appId, channelName, uid, expiresAt } |
-| 22 | `/livestreams` | POST | Create a new livestream (admin only) | title, description, quality, categories, tags, streamUrl? | { message, livestream } |
-| 23 | `/livestreams/:id` | DELETE | Delete livestream and associated files (admin only) | id (path) | { message, deletedFiles: [] } |
-| 24 | `/livestreams/:id/pinned-products/order` | PUT | Update pinned product display order (admin only) | id (path), productOrders: [{ productId, displayOrder }] | { message, pinnedProducts: [] } |
+| 4 | `/products/:id` | GET | Get product by ID | id (path) | {...Product} |
+| 5 | `/products` | POST | Create product (admin only) | multipart/form-data: image, name, categoryId, price, description, stockQuantity, ingredients[], skinType[], benefits[], tags[], usage, skinConcerns[] | {...Product} |
+| 6 | `/products/:id` | PUT | Update product (admin only) | id (path), multipart/form-data: image?, name?, categoryId?, price?, description?, stockQuantity? | {...Product} |
+| 7 | `/products/:id` | DELETE | Delete product (admin only) | id (path) | {success, message} |
+| 8 | `/categories` | GET | List all categories | - | [{...Category}] |
+| 9 | `/categories/:id` | GET | Get category by ID | id (path) | {...Category} |
+| 10 | `/categories` | POST | Create category (admin only) | name, description? | {...Category} |
+| 11 | `/categories/:id` | PUT | Update category (admin only) | id (path), name?, description? | {...Category} |
+| 12 | `/categories/:id` | DELETE | Delete category (admin only) | id (path) | {success, message} |
+| 13 | `/orders` | GET | Get orders (admin: all, customer: own) | from JWT | [{...Order}] |
+| 14 | `/orders` | POST | Create order (checkout) | products[{productId, quantity, price?}], paymentMethod, totalPrice | {...Order} |
+| 15 | `/orders/:id` | PUT | Update order status (admin only) | id (path), status | {...Order} |
+| 16 | `/orders/:id` | DELETE | Delete order by customer | id (path) | {success, message} |
+| 17 | `/orders/admin/:id` | DELETE | Delete order by admin | id (path) | {success, message} |
+| 18 | `/orders/user/:id` | GET | Get orders by user ID | id (path) | [{...Order}] |
+| 19 | `/orders/order/:id` | GET | Get order by order ID | id (path) | {...Order} |
+| 20 | `/payments/vnpay/create` | POST | Create VNPay payment URL (customer only) | amount, orderInfo, returnUrl? | {paymentUrl, transactionId} |
+| 21 | `/payments/vnpay/return` | GET | VNPay return URL callback | vnp_* (query params) | {success, message, order} |
+| 22 | `/payments/vnpay/ipn` | GET | VNPay IPN callback | vnp_* (query params) | {RspCode, Message} |
+| 23 | `/users` | GET | List users (admin only) | page?, limit?, role? | [{userId, username, role, createdAt}] |
+| 24 | `/users/:id` | GET | Get user by ID | id (path) | {...User} |
+| 25 | `/users/:id` | PUT | Update user | id (path), username?, email?, phone?, address? | {...User} |
+| 26 | `/analytics/dashboard` | GET | Get overall dashboard statistics (admin only) | - | {totalOrders, totalProducts, totalUsers, totalRevenue, ...} |
+| 27 | `/analytics/sales` | GET | Get sales analytics (admin only) | period? (days) | {period, salesData: [{date, revenue, orders}], totalRevenue, totalOrders, averageDailyRevenue} |
+| 28 | `/analytics/products` | GET | Get product analytics (admin only) | - | {topProducts: [{productId, name, totalSold, totalRevenue}], categoryDistribution: [...], lowStockProducts: [...]} |
+| 29 | `/analytics/users` | GET | Get user analytics (admin only) | period? (days) | {newUsers, activeUsers, totalUsers, userGrowth: [...]} |
+| 30 | `/analytics/orders` | GET | Get order analytics (admin only) | - | {totalOrders, averageOrderValue, orderTrend: [...], paymentMethodBreakdown: [...]} |
+| 31 | `/chat/faqs` | GET | Get predefined FAQs | category?, limit? | {success, data: [{...FAQ}]} |
+| 32 | `/chat/faq/:faqId/answer` | POST | Get specific FAQ answer | faqId (path), sessionId | {success, data: {answer, faqId}} |
+| 33 | `/chat/ai` | POST | Send message to AI chatbot | message, sessionId? | {success, data: {message, sessionId, intent, confidence, relatedProducts[], relatedFAQs[]}} |
+| 34 | `/chat/conversation/:sessionId` | GET | Get conversation history | sessionId (path), limit? | {success, data: {messages[], conversationState}} |
+| 35 | `/chat/conversation/:sessionId` | DELETE | Clear conversation history | sessionId (path) | {success, message, data: {cleared: boolean}} |
+| 36 | `/chat/admin/faq` | POST | Create FAQ (admin only) | question, answer, category?, tags?, priority? | {success, data: {...FAQ}} |
+| 37 | `/chat/admin/faq/:faqId` | PUT | Update FAQ (admin only) | faqId (path), question?, answer?, category?, tags?, priority?, isActive? | {success, data: {...FAQ}} |
+| 38 | `/chat/admin/faq/:faqId` | DELETE | Delete FAQ (admin only) | faqId (path) | {success, message} |
+| 39 | `/chat/staff/connect` | POST | Connect customer to staff chat | sessionId | {success, data: {sessionId, waitingForStaff: boolean}} |
+| 40 | `/chat/staff/message` | POST | Customer sends message to staff | sessionId, message | {success, data: {messageId, timestamp}} |
+| 41 | `/chat/staff/messages/:sessionId` | GET | Get new staff messages for customer | sessionId (path) | {success, data: {messages: []}} |
+| 42 | `/chat/admin/active-chats` | GET | Get all active customer chats (admin only) | - | {success, data: [{sessionId, customerName, lastMessage, timestamp}]} |
+| 43 | `/chat/admin/messages/:sessionId` | GET | Get messages for a specific chat (admin only) | sessionId (path) | {success, data: {messages: [], customer: {...}}} |
+| 44 | `/chat/admin/reply` | POST | Staff replies to customer (admin only) | sessionId, message | {success, data: {messageId, timestamp}} |
+| 45 | `/chat/find-user-conversation` | GET | Find existing conversation for authenticated user | - | {success, data: {conversation: {...}|null}} |
+| 46 | `/api/ai-dermatology-expert/chat` | POST | AI Dermatology Expert chat | message, conversationHistory[] | {response, sources: [{title, content}], images: [], timestamp} |
+| 47 | `/api/ai-dermatology-expert/analyze-skin` | POST | Analyze skin image | image (multipart), message?, conversationHistory[]? | {response, sources: [{title, content}], timestamp} |
+| 48 | `/api/ai-dermatology-expert/transcribe` | POST | Transcribe audio to text | audio (multipart) | {transcription, timestamp, processingTime} |
+| 49 | `/api/ai-dermatology-expert/text-to-speech` | POST | Text to speech | text | {audio, format: 'mp3', timestamp, processingTime} |
+| 50 | `/livestreams` | GET | Get all livestreams (admin only) | - | [{...LiveStream}] |
+| 51 | `/livestreams` | POST | Create a new livestream (admin only) | title, description, quality, categories, tags, streamUrl? | {message, livestream} |
+| 52 | `/livestreams/active` | GET | Get the currently active livestream | - | {message, livestream|null} |
+| 53 | `/livestreams/past` | GET | Get paginated list of past livestreams | page, limit | {livestreams: [], pagination: {currentPage, totalPages, total}} |
+| 54 | `/livestreams/:id` | GET | Get specific livestream by ID | id (path) | {...LiveStream} |
+| 55 | `/livestreams/:id` | PUT | Update livestream (admin only) | id (path), title?, description?, quality?, categories?, tags? | {...LiveStream} |
+| 56 | `/livestreams/:id` | DELETE | Delete livestream (admin only) | id (path) | {message, deletedFiles: []} |
+| 57 | `/livestreams/:id/view` | POST | Increment view count | id (path) | {success, viewCount} |
+| 58 | `/livestreams/:id/chat` | POST | Add chat message to livestream | id (path), message, username? | {success, data: {...ChatMessage}} |
+| 59 | `/livestreams/:id/stop` | POST | Stop livestream (admin only) | id (path) | {success, message, livestream} |
+| 60 | `/livestreams/:id/upload` | POST | Upload video file (admin only) | id (path), multipart/form-data: video | {message, filename, path, size} |
+| 61 | `/livestreams/agora/token` | POST | Generate Agora RTC token | channelName, uid?, role? | {token, appId, channelName, uid, expiresAt} |
+| 62 | `/livestreams/cleanup` | POST | Force cleanup stuck active streams (admin only) | - | {success, message, cleaned: number} |
+| 63 | `/livestreams/:id/pinned-products` | GET | Get pinned products for livestream | id (path) | {success, data: [{...PinnedProduct}]} |
+| 64 | `/livestreams/:id/pin-product` | POST | Pin a product to livestream (admin only) | id (path), productId, displayOrder? | {success, data: {...PinnedProduct}} |
+| 65 | `/livestreams/:id/unpin-product/:productId` | DELETE | Unpin a product from livestream (admin only) | id (path), productId (path) | {success, message} |
+| 66 | `/livestreams/:id/pinned-products/order` | PUT | Update pinned product display order (admin only) | id (path), productOrders: [{productId, displayOrder}] | {message, pinnedProducts: []} |
+| 67 | `/cashflow/dashboard` | GET | Get cash flow dashboard (admin only) | period? (days) | {currentBalance, netCashFlow, totalInflows, totalOutflows, runway, ...} |
+| 68 | `/cashflow/history` | GET | Get historical cash flow data (admin only) | period? (days) | {history: [{date, inflow, outflow, balance}]} |
+| 69 | `/cashflow/categories` | GET | Get cash flow breakdown by categories (admin only) | period? (days) | {categories: [{name, inflow, outflow}]} |
+| 70 | `/cashflow/forecast` | GET | Get 3-month cash flow forecast (admin only) | - | {forecast: [{month, projectedInflow, projectedOutflow}]} |
+| 71 | `/cashflow/transactions` | GET | Get all cash flow transactions (admin only) | page?, limit?, type?, category?, startDate?, endDate? | {transactions: [], pagination: {page, limit, total}} |
+| 72 | `/cashflow/transactions` | POST | Create manual cash flow transaction (admin only) | type, category, amount, description?, date? | {...CashFlowTransaction} |
+| 73 | `/cashflow/dashboard-sync` | GET | Get cash flow dashboard with optional real data sync (admin only) | period? (days), sync? | {dashboard: {...}, syncStatus: {...}} |
+| 74 | `/cashflow/sync` | POST | Sync all real data to cash flow transactions (admin only) | startDate, endDate | {success, results: {...}, message} |
+| 75 | `/cashflow/sync-orders` | POST | Sync completed orders to cash flow transactions (admin only) | startDate?, endDate? | {message, syncedCount, totalOrdersChecked, results: []} |
+| 76 | `/cashflow/artificial-transactions` | DELETE | Remove artificial COGS and shipping transactions (admin only) | - | {success, message, removed: number, newTotals: {...}} |
+| 77 | `/cashflow/debug/balance` | GET | Get detailed balance breakdown (admin only) | - | {balance: {...}, breakdown: [...]} |
+| 78 | `/cashflow/debug/orders-vs-transactions` | GET | Compare completed orders vs product sales transactions (admin only) | - | {orders: [...], transactions: [...], comparison: {...}} |
+| 79 | `/cashflow/debug/recent` | GET | Get all transactions for debugging (admin only) | period? | {totalTransactions, manualTransactions, automatedTransactions, recentTransactions: []} |
+| 80 | `/hr/employees` | GET | Get all employees (admin only) | department?, status?, page?, limit? | {employees: [], totalPages, currentPage, total} |
+| 81 | `/hr/employees/search` | GET | Search employees (admin only) | q, department?, status? | [{...Employee}] |
+| 82 | `/hr/employees/:id` | GET | Get employee by ID (admin only) | id (path) | {...Employee} |
+| 83 | `/hr/employees` | POST | Create new employee (admin only) | employeeId, firstName, lastName, email, department, position, startDate, salary, ... | {...Employee} |
+| 84 | `/hr/employees/:id` | PUT | Update employee (admin only) | id (path), firstName?, lastName?, email?, department?, position?, salary?, ... | {...Employee} |
+| 85 | `/hr/employees/:id` | DELETE | Delete employee (admin only) | id (path) | {success, message} |
+| 86 | `/hr/employees/:id/performance` | POST | Add performance review (admin only) | id (path), rating, comments | {success, data: {...PerformanceReview}} |
+| 87 | `/hr/employees/:id/leave-balance` | PUT | Update employee leave balance (admin only) | id (path), vacation?, sick?, personal? | {...Employee} |
+| 88 | `/hr/employees/:id/documents` | POST | Upload employee document (admin only) | id (path), multipart/form-data: document, documentType, documentName | {success, data: {...Document}} |
+| 89 | `/hr/analytics` | GET | Get HR analytics and dashboard data (admin only) | - | {overview: {...}, departmentBreakdown: [...], employmentTypeBreakdown: [...], recentHires: [...]} |
+| 90 | `/hr/department-stats` | GET | Get department statistics (admin only) | - | [{department, employeeCount, averageSalary, totalSalary}] |
+| 91 | `/hr/payroll-summary` | GET | Get payroll summary (admin only) | department?, month?, year? | {totalMonthlyPayroll, departmentPayroll: {...}, employmentTypePayroll: {...}, employeeCount} |
+| 92 | `/hr/employees/bulk-update` | PUT | Bulk update employees (admin only) | employeeIds, updateData | {success, updated: number, message} |
+| 93 | `/hr/employees/manager/:managerId` | GET | Get employees by manager (admin only) | managerId (path) | [{...Employee}] |
+| 94 | `/email-campaigns/campaigns` | GET | Get all campaigns (admin only) | - | [{...EmailCampaign}] |
+| 95 | `/email-campaigns/campaigns/:id` | GET | Get specific campaign (admin only) | id (path) | {...EmailCampaign} |
+| 96 | `/email-campaigns/campaigns` | POST | Create email campaign (admin only) | name, subject, templateId, scheduledAt, targetAudience/segmentCriteria | {...EmailCampaign} |
+| 97 | `/email-campaigns/campaigns/:id` | PUT | Update campaign (admin only) | id (path), name?, subject?, templateId?, scheduledAt?, targetAudience? | {...EmailCampaign} |
+| 98 | `/email-campaigns/campaigns/:id` | DELETE | Delete campaign (admin only) | id (path) | {success, message} |
+| 99 | `/email-campaigns/campaigns/send` | POST | Create and send campaign (admin only) | name, subject, templateId, targetAudience | {success, data: {...Campaign}} |
+| 100 | `/email-campaigns/campaigns/:id/send` | POST | Send specific campaign (admin only) | id (path), testMode?, testRecipients? | {success, data: {...Campaign}} |
+| 101 | `/email-campaigns/campaigns/:id/analytics` | GET | Get campaign analytics (admin only) | id (path) | {success, data: {opens, clicks, conversions, revenue, ...}} |
+| 102 | `/email-campaigns/campaigns/:id/preview` | GET | Get campaign preview (admin only) | id (path) | {success, data: {htmlContent, textContent}} |
+| 103 | `/email-campaigns/analytics` | GET | Get general email analytics (admin only) | - | {success, data: {totalCampaigns, totalRecipients, averageOpenRate, ...}} |
+| 104 | `/email-campaigns/analytics/export` | GET | Export analytics data (admin only) | - | {success, data: {csv|json}} |
+| 105 | `/email-campaigns/stats` | GET | Get campaign stats (admin only) | - | {success, data: {totalCampaigns, sent, opened, clicked, ...}} |
+| 106 | `/email-templates` | GET | Get all templates (admin only) | - | [{...EmailTemplate}] |
+| 107 | `/email-templates/:id` | GET | Get specific template (admin only) | id (path) | {...EmailTemplate} |
+| 108 | `/email-templates` | POST | Create template (admin only) | name, description, category, htmlContent, textContent, variables? | {...EmailTemplate} |
+| 109 | `/email-templates/:id` | PUT | Update template (admin only) | id (path), name?, description?, htmlContent?, textContent?, variables? | {...EmailTemplate} |
+| 110 | `/email-templates/:id` | DELETE | Delete template (admin only) | id (path) | {success, message} |
+| 111 | `/email-templates/popular` | GET | Get popular templates (admin only) | - | [{...EmailTemplate}] |
+| 112 | `/email-templates/category/:category` | GET | Get templates by category (admin only) | category (path) | [{...EmailTemplate}] |
+| 113 | `/email-templates/:id/preview` | POST | Preview template (admin only) | id (path), variables? | {success, data: {htmlPreview, textPreview}} |
+| 114 | `/email-templates/:id/duplicate` | POST | Duplicate template (admin only) | id (path) | {success, data: {...EmailTemplate}} |
+| 115 | `/email-segments` | GET | Get all segments (admin only) | - | [{...EmailSegment}] |
+| 116 | `/email-segments` | POST | Create segment (admin only) | name, description, criteria | {...EmailSegment} |
+| 117 | `/email-segments/:id` | GET | Get specific segment (admin only) | id (path) | {...EmailSegment} |
+| 118 | `/email-segments/:id` | PUT | Update segment (admin only) | id (path), name?, description?, criteria? | {...EmailSegment} |
+| 119 | `/email-segments/:id` | DELETE | Delete segment (admin only) | id (path) | {success, message} |
+| 120 | `/email-segments/:id/subscribers` | GET | Get segment subscribers (admin only) | id (path) | {success, data: {subscribers: [], count}} |
+| 121 | `/email-segments/preview` | POST | Preview segment (admin only) | criteria | {success, data: {subscribers: [], count}} |
+| 122 | `/email-segments/initialize` | POST | Initialize default segments (admin only) | - | {success, data: {created: number}} |
+| 123 | `/email-segments/refresh-counts` | POST | Refresh all segment counts (admin only) | - | {success, data: {segments: [{name, count}]}} |
+| 124 | `/newsletter/subscribe` | POST | Subscribe to newsletter | email, preferences? | {success, message, subscriptionToken} |
+| 125 | `/newsletter/unsubscribe/:token` | POST | Unsubscribe from newsletter | token (path) | {success, message} |
+| 125 | `/newsletter/unsubscribe-by-email` | POST | Unsubscribe by email | email | {success, message} |
+| 127 | `/newsletter/preferences/:token` | PUT | Update subscription preferences | token (path), preferences | {success, data: {...NewsletterSubscription}} |
+| 128 | `/newsletter/subscriptions` | GET | Get active subscriptions (admin only) | - | [{...NewsletterSubscription}] |
+| 129 | `/newsletter/subscriptions/analytics` | GET | Get subscription analytics (admin only) | - | {totalSubscribers, activeSubscribers, unsubscribed, growthRate, ...} |
+| 130 | `/newsletter/subscriptions/export` | GET | Export subscriptions (admin only) | - | {success, data: {csv|json}} |
+| 131 | `/newsletter/subscriptions/stats` | GET | Get subscription stats (admin only) | - | {totalSubscribers, activeSubscribers, unsubscribedCount, bounceCount, ...} |
+| 132 | `/newsletter/subscriptions/:id` | GET | Get specific subscription (admin only) | id (path) | {...NewsletterSubscription} |
+| 133 | `/newsletter/subscriptions/:id` | PUT | Update subscription (admin only) | id (path), isActive?, preferences? | {...NewsletterSubscription} |
+| 134 | `/newsletter/subscriptions/bulk` | POST | Bulk update subscriptions (admin only) | subscriptionIds, updateData | {success, updated: number} |
+| 135 | `/uploads/thumbnail` | POST | Upload thumbnail (admin only) | multipart/form-data: thumbnail | {message, filename, path, size} |
 
 ### Sample Request/Response
 
