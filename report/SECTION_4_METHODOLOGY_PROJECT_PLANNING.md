@@ -6,7 +6,7 @@ This project adopted the Agile Scrum methodology for its suitability to full-sta
 
 **Sprint Structure and Ceremonies:** Development was organized into 2-week sprints, each comprising sprint planning, daily standups (self-directed progress tracking), sprint reviews, and retrospectives. Sprint reviews and retrospectives were hosted by the project supervisor to evaluate feature completeness, provide technical guidance, and assess alignment with project objectives. This cadence enabled regular checkpoint validation while maintaining development momentum.
 
-**Requirements Prioritization:** Requirements derived from Section 3.3 were prioritized using the MoSCoW framework, ensuring critical e-commerce and authentication functionality shipped first, followed by differentiating features (live streaming, AI chat, Skin Study), and optional enhancements (business management tools) in later sprints.
+**Requirements Prioritization:** Requirements derived from Section 3.3 were prioritized using the MoSCoW framework, ensuring critical e-commerce and authentication functionality shipped first, followed by differentiating features, and optional enhancements in later sprints.
 
 **Sprint Planning and Feature Allocation:** The table below maps functional requirements to 20 development sprints across the 10-month project timeline, demonstrating progression from foundational backend infrastructure through customer-facing interfaces and advanced AI features.
 
@@ -33,15 +33,13 @@ This project adopted the Agile Scrum methodology for its suitability to full-sta
 | **Sprint 19** | Weeks 37–38 | Email Marketing & HR Features | ADMIN_04, CUSTOMER_10, CUSTOMER_07, CUSTOMER_09, ADMIN_10 (Could) | Email campaign management, customer segmentation, newsletter templates, staff chat, purchase history, HR module (optional) |
 | **Sprint 20** | Weeks 39–40 | Testing, Documentation & Deployment | All requirements validation | UAT execution, bug fixes, Swagger API documentation, performance optimization, deployment pipeline, final demo preparation |
 
-**Rationale for Sprint Allocation:** Sprints 1–5 established foundational infrastructure (authentication, database, core e-commerce APIs) required for all subsequent features. Sprints 6–7 delivered web interfaces enabling early user validation. Sprints 8–9 implemented business management modules for supervisor review. Sprints 10–11 added AI chat personalization. Sprints 12–13 introduced live streaming commerce. Sprints 14–15 implemented the complex Skin Study module with RAG knowledge base and voice/image analysis. Sprints 16–18 extended platform reach via mobile applications for both customer and admin users. Sprint 19 completed secondary features and optional modules. Sprint 20 ensured production readiness through comprehensive testing and deployment preparation.
+**Rationale for Sprint Allocation:** Sprints 1–5 established foundational infrastructure required for all subsequent features. Sprints 6–7 delivered web interfaces enabling early user validation. Sprints 8–9 implemented business management modules for supervisor review. Sprints 10–11 added AI chat personalization. Sprints 12–13 introduced live streaming commerce. Sprints 14–15 implemented the complex Skin Study module with RAG knowledge base and voice/image analysis. Sprints 16–18 extended platform reach via mobile applications for both customer and admin users. Sprint 19 completed secondary features and optional modules. Sprint 20 ensured production readiness through comprehensive testing and deployment preparation.
 
 **Risk Mitigation Through Agile:** Agile Scrum enabled early identification and resolution of technical risks. For example, Sprint 5 livestreaming implementation revealed WebSocket scalability challenges, addressed through architecture refinement before Sprint 7 mobile integration. Sprint 6 Skin Study RAG implementation required knowledge base curation, identified during sprint planning and mitigated through parallel documentation effort.
 
 **Tools and Collaboration:** Version control via Git/GitHub enabled collaborative development and supervisor code review. API documentation via Swagger ensured contract-driven development between frontend and backend. Issue tracking and sprint planning via GitHub Projects maintained visibility into progress and blockers.
 
 ## 4.2 Project Plan & Timeline
-
-This section presents the project timeline spanning 10 months (40 weeks) from March to December 2025, organized into five major phases: Discovery & Planning, Foundation Development, Feature Development, Integration & Testing, and Deployment & Finalization. The Gantt chart below visualizes the temporal allocation of sprints and key milestones.
 
 ### Timeline Overview (10 Months, 20 Sprints)
 

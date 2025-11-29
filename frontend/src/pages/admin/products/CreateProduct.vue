@@ -121,7 +121,6 @@
                   rows="4"
                 ></textarea>
                 <div class="text-sm text-secondary-500 mt-1 space-y-1">
-                  <p>{{ t('descriptionNote') || 'Line breaks and formatting will be preserved as you type them.' }}</p>
                   <div class="text-xs bg-secondary-50 p-2 rounded border">
                     <strong>Formatting tips:</strong><br>
                     • Use **text** for <strong>bold</strong><br>
