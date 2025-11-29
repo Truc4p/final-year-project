@@ -37,7 +37,7 @@ import Users from '@/pages/admin/users/Users.vue';
 
 // Admin - Finance
 import CashFlow from '@/pages/admin/finance/CashFlow.vue';
-import HumanResources from '@/pages/admin/finance/HumanResources.vue';
+import HumanResources from '@/pages/admin/hr/HumanResources.vue';
 
 // Admin - Analytics
 import Analytics from '@/pages/admin/analytics/Analytics.vue';

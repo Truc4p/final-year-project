@@ -976,24 +976,41 @@ graph LR
 
 | ID | URL | Method | Description | Params | Returns |
 |---|---|---|---|---|---|
-| 1 | `/api/auth/register` | POST | User registration (customer/admin/staff) | email, password, firstName, lastName, role | {userId, token, refreshToken} |
-| 2 | `/api/auth/login` | POST | User login with credentials | email, password | {token, refreshToken, user} |
-| 3 | `/api/products` | GET | List all products with optional filters | page, limit, category, skinType, concern, search | {products: [], totalCount, page, totalPages} |
-| 4 | `/api/products` | POST | Create new product (admin only) | name, price, description, ingredients[], skinTypes[], concern[] | {productId, message} |
-| 5 | `/api/cart/checkout` | POST | Process checkout and create order | paymentMethodId, shippingAddress | {orderId, totalPrice, estimatedDelivery} |
-| 6 | `/api/orders` | GET | Get user's order history | userId (from JWT), page, limit | {orders: [{orderId, date, totalPrice, status, items[]}], totalCount} |
-| 7 | `/api/chat` | POST | Send message to AI chatbot | userId (from JWT), message, conversationId | {response, conversationId, messageId} |
-| 8 | `/api/chat/history` | GET | Get conversation history with AI | userId (from JWT), conversationId | {messages: [{role, content, timestamp}]} |
-| 9 | `/api/livestreams` | POST | Create new live stream (admin/staff) | title, description, scheduledStart, productIds[] | {streamId, message} |
-| 10 | `/api/analytics/sales` | GET | Get sales analytics dashboard | startDate, endDate, groupBy | {totalRevenue, totalOrders, conversionRate, topProducts[], dailyRevenue[]} |
-| 11 | `/api/analytics/customers` | GET | Get customer analytics (admin only) | startDate, endDate | {newCustomers, repeatCustomers, avgOrderValue, churnRate} |
-| 12 | `/api/ai-dermatology-expert/chat` | POST | Send message to AI Dermatology Expert | message, conversationHistory[] | {response, sources: [{title, content}], images: [], timestamp} |
-| 13 | `/api/ai-dermatology-expert/analyze-skin` | POST | Analyze skin image with AI Dermatology Expert | image (multipart), message, conversationHistory[] | {response, sources: [{title, content}], timestamp} |
+| 1 | `/auth/register` | POST | Register user (admin/customer) | username, password, role, adminKey (when role=admin) | {token} |
+| 2 | `/auth/login` | POST | Login with credentials | username, password | {token, role, userId} |
+| 3 | `/products` | GET | List all products | - | [{...Product}] |
+| 4 | `/products` | POST | Create product (admin only) | multipart/form-data: image, name, categoryId, price, description, stockQuantity, ingredients[], skinType[], benefits[], tags[], usage, skinConcerns[] | {...Product} |
+| 5 | `/orders` | POST | Create order (checkout) | products[{productId, quantity, price?}], paymentMethod, totalPrice | {...Order} |
+| 6 | `/orders` | GET | Get orders (admin: all, customer: own) | from JWT | [{...Order}] |
+| 7 | `/chat/ai` | POST | Send message to AI chatbot | message, sessionId? | {success, data: {message, sessionId, intent, confidence, relatedProducts[], relatedFAQs[]}} |
+| 8 | `/chat/conversation/:sessionId` | GET | Get conversation history | limit? | {success, data: {messages[], conversationState}} |
+| 9 | `/livestreams` | POST | Create live stream (admin only) | title, description, startTime? | {...LiveStream} |
+| 10 | `/analytics/sales` | GET | Sales analytics (admin only) | period? (days) | {...} |
+| 11 | `/analytics/users` | GET | User analytics (admin only) | period? (days) | {...} |
+| 12 | `/api/ai-dermatology-expert/chat` | POST | AI Dermatology Expert chat | message, conversationHistory[] | {response, sources: [{title, content}], images: [], timestamp} |
+| 13 | `/api/ai-dermatology-expert/analyze-skin` | POST | Analyze skin image | image (multipart), message?, conversationHistory[]? | {response, sources: [{title, content}], timestamp} |
 | 14 | `/api/ai-dermatology-expert/transcribe` | POST | Transcribe audio to text | audio (multipart) | {transcription, timestamp, processingTime} |
-| 15 | `/api/ai-dermatology-expert/text-to-speech` | POST | Convert text to speech using Google Cloud TTS | text | {audio (base64), format: 'mp3', timestamp, processingTime} |
-| 16 | `/api/campaigns` | POST | Create email campaign (admin only) | name, subject, template, audienceFilter, scheduledTime | {campaignId, message} |
-| 17 | `/api/users` | GET | List all users (admin only) | page, limit, role | {users: [{userId, email, role, createdAt}], totalCount} |
-| 18 | `/api/financial/reports` | GET | Get financial reports (admin only) | month, year | {revenue, expenses, profit, productBreakdown[], categoryBreakdown[]} |
+| 15 | `/api/ai-dermatology-expert/text-to-speech` | POST | Text to speech | text | {audio, format: 'mp3', timestamp, processingTime} |
+| 16 | `/email-campaigns/campaigns` | POST | Create email campaign (admin only) | name, subject, templateId, scheduledAt, targetAudience/segmentCriteria | {...Campaign} |
+| 17 | `/users` | GET | List users (admin only) | page?, limit?, role? | [{userId, username, role, createdAt}] |
+| 18 | `/cashflow/dashboard` | GET | Cash flow dashboard (admin only) | period? (days) | {currentBalance, netCashFlow, totalInflows, totalOutflows, runway, ...} |
+
+| 19 | `/livestreams/active` | GET | Get the currently active livestream (public) | - | { message, livestream|null } |
+| 20 | `/livestreams/past` | GET | Get paginated list of past livestreams (public) | page, limit | { livestreams: [], pagination: { currentPage, totalPages, total } } |
+| 21 | `/livestreams/:id` | GET | Get livestream details by ID (public) | id (path) | { message, livestream } |
+| 22 | `/livestreams/:id/view` | POST | Increment view count for a livestream (public) | id (path) | { message, viewCount } |
+| 23 | `/livestreams/:id/chat` | POST | Add a chat message to a livestream (optional auth) | id (path), username, message, isAdmin? | { message, chatMessage: { username, message, timestamp, isAdmin } } |
+| 24 | `/livestreams/agora/token` | POST | Generate Agora RTC token for streaming/viewing (optional auth) | channelName, uid?, role? | { token, appId, channelName, uid, expiresAt } |
+| 25 | `/livestreams` | GET | List livestreams with optional status filter (admin only) | page, limit, status=active\|past\|all | { livestreams: [], pagination: { currentPage, totalPages, total, hasNext, hasPrev } } |
+| 26 | `/livestreams` | POST | Create a new livestream (admin only) | title, description, quality, categories, tags, streamUrl? | { message, livestream } |
+| 27 | `/livestreams/:id` | PUT | Update livestream details (admin only) | id (path), partial livestream fields | { message, livestream } |
+| 28 | `/livestreams/:id/stop` | POST | Stop an active livestream and finalize stats (admin only) | id (path), videoUrl?, thumbnailUrl?, maxViewers?, viewCount?, likes? | { message, livestream } |
+| 29 | `/livestreams/:id/upload` | POST | Upload recorded video file (admin only, multipart) | id (path), video (file) | { message, filename, path, size } |
+| 30 | `/livestreams/:id` | DELETE | Delete livestream and associated files (admin only) | id (path) | { message, deletedFiles: [] } |
+| 31 | `/livestreams/:id/pinned-products` | GET | Get active pinned products for a livestream (public) | id (path) | { message, pinnedProducts: [] } |
+| 32 | `/livestreams/:id/pin-product` | POST | Pin a product to a livestream (admin only) | id (path), productId, displayOrder? | { message, pinnedProducts: [] } |
+| 33 | `/livestreams/:id/unpin-product/:productId` | DELETE | Unpin a product from a livestream (admin only) | id (path), productId (path) | { message, pinnedProducts: [] } |
+| 34 | `/livestreams/:id/pinned-products/order` | PUT | Update pinned product display order (admin only) | id (path), productOrders: [{ productId, displayOrder }] | { message, pinnedProducts: [] } |
 
 ### Sample Request/Response
 
