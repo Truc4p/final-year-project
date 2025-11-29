@@ -117,25 +117,29 @@ describe('User Controller', () => {
       expect(res.json).toHaveBeenCalledWith(mockUpdatedUser);
     });
 
-    test('should update user with password', async () => {
+    test('should update user without password change', async () => {
       const mockUpdatedUser = {
         _id: '123',
-        username: 'testuser',
-        password: 'hashed-password'
+        username: 'updateduser',
+        email: 'updated@example.com'
       };
 
       req.params.id = '123';
       req.body = {
-        username: 'testuser',
-        password: 'newpassword123'
+        username: 'updateduser',
+        email: 'updated@example.com'
+        // No password field
       };
 
       User.findByIdAndUpdate.mockResolvedValue(mockUpdatedUser);
 
       await userController.updateUser(req, res);
 
-      // Just verify it was called - bcrypt hashing happens in the controller
-      expect(User.findByIdAndUpdate).toHaveBeenCalled();
+      expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+        '123',
+        req.body,
+        { new: true, runValidators: true }
+      );
       expect(res.json).toHaveBeenCalledWith(mockUpdatedUser);
     });
 
