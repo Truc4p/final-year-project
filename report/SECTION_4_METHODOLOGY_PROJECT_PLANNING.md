@@ -2,9 +2,11 @@
 
 ## 4.1 Development Methodology
 
+The Scrum process begins by establishing a high-level Vision and User Stories, which form the prioritized Product Backlog. From this master list, specific tasks are selected during Sprint Planning to be completed within a fixed 2-week Sprint cycle, guided by Daily Scrums to track progress. This iteration results in a functional software Increment, which is then evaluated during the Sprint Review and Retrospective, allowing stakeholder feedback and process improvements to cycle back into the backlog for future development.
+
 This project adopted the Agile Scrum methodology for its suitability to full-stack development. This approach enabled iterative development and incremental delivery, allowing for adaptive planning and effective risk mitigation. Systematic delivery of functional increments were ensured by incorporating continuous feedback from supervisor reviews and user validation sessions, which required frequent integration testing and user input.
 
-**Sprint Structure and Ceremonies:** Development was organized into 2-week sprints, each comprising sprint planning, daily standups (self-directed progress tracking), sprint reviews, and retrospectives. Sprint reviews and retrospectives were hosted by the project supervisor to evaluate feature completeness, provide technical guidance, and assess alignment with project objectives. This cadence enabled regular checkpoint validation while maintaining development momentum.
+**Sprint Structure and Ceremonies:** Development was organized into 2-week sprints, each comprising sprint planning, daily standups (self-directed progress tracking: What did I do yesterday? What will I do today? Any Blockers?), sprint reviews, and retrospectives (What went well? What went wrong? Action Plan for next Sprint). Sprint reviews and retrospectives were hosted by the project supervisor to evaluate feature completeness, provide technical guidance, and assess alignment with project objectives. This cadence enabled regular checkpoint validation while maintaining development momentum.
 
 **Requirements Prioritization:** Requirements derived from Section 3.3 were prioritized using the MoSCoW framework, ensuring critical e-commerce and authentication functionality shipped first, followed by differentiating features, and optional enhancements in later sprints.
 
