@@ -985,8 +985,8 @@ graph LR
 | 7 | `/chat/ai` | POST | Send message to AI chatbot | message, sessionId? | {success, data: {message, sessionId, intent, confidence, relatedProducts[], relatedFAQs[]}} |
 | 8 | `/chat/conversation/:sessionId` | GET | Get conversation history | limit? | {success, data: {messages[], conversationState}} |
 | 9 | `/livestreams` | POST | Create live stream (admin only) | title, description, startTime? | {...LiveStream} |
-| 10 | `/analytics/sales` | GET | Sales analytics (admin only) | period? (days) | {...} |
-| 11 | `/analytics/users` | GET | User analytics (admin only) | period? (days) | {...} |
+| 10 | `/analytics/sales` | GET | Sales analytics (admin only) | period? (days) | {period, salesData: [{date, revenue, orders}], totalRevenue, totalOrders, averageDailyRevenue} |
+| 11 | `/analytics/users` | GET | User analytics (admin only) | period? (days) | {period, registrationData: [{date, registrations}], topCustomers: [{userId, username, totalSpent, orderCount}], totalNewUsers} |
 | 12 | `/api/ai-dermatology-expert/chat` | POST | AI Dermatology Expert chat | message, conversationHistory[] | {response, sources: [{title, content}], images: [], timestamp} |
 | 13 | `/api/ai-dermatology-expert/analyze-skin` | POST | Analyze skin image | image (multipart), message?, conversationHistory[]? | {response, sources: [{title, content}], timestamp} |
 | 14 | `/api/ai-dermatology-expert/transcribe` | POST | Transcribe audio to text | audio (multipart) | {transcription, timestamp, processingTime} |
@@ -994,23 +994,12 @@ graph LR
 | 16 | `/email-campaigns/campaigns` | POST | Create email campaign (admin only) | name, subject, templateId, scheduledAt, targetAudience/segmentCriteria | {...Campaign} |
 | 17 | `/users` | GET | List users (admin only) | page?, limit?, role? | [{userId, username, role, createdAt}] |
 | 18 | `/cashflow/dashboard` | GET | Cash flow dashboard (admin only) | period? (days) | {currentBalance, netCashFlow, totalInflows, totalOutflows, runway, ...} |
-
-| 19 | `/livestreams/active` | GET | Get the currently active livestream (public) | - | { message, livestream|null } |
-| 20 | `/livestreams/past` | GET | Get paginated list of past livestreams (public) | page, limit | { livestreams: [], pagination: { currentPage, totalPages, total } } |
-| 21 | `/livestreams/:id` | GET | Get livestream details by ID (public) | id (path) | { message, livestream } |
-| 22 | `/livestreams/:id/view` | POST | Increment view count for a livestream (public) | id (path) | { message, viewCount } |
-| 23 | `/livestreams/:id/chat` | POST | Add a chat message to a livestream (optional auth) | id (path), username, message, isAdmin? | { message, chatMessage: { username, message, timestamp, isAdmin } } |
-| 24 | `/livestreams/agora/token` | POST | Generate Agora RTC token for streaming/viewing (optional auth) | channelName, uid?, role? | { token, appId, channelName, uid, expiresAt } |
-| 25 | `/livestreams` | GET | List livestreams with optional status filter (admin only) | page, limit, status=active\|past\|all | { livestreams: [], pagination: { currentPage, totalPages, total, hasNext, hasPrev } } |
-| 26 | `/livestreams` | POST | Create a new livestream (admin only) | title, description, quality, categories, tags, streamUrl? | { message, livestream } |
-| 27 | `/livestreams/:id` | PUT | Update livestream details (admin only) | id (path), partial livestream fields | { message, livestream } |
-| 28 | `/livestreams/:id/stop` | POST | Stop an active livestream and finalize stats (admin only) | id (path), videoUrl?, thumbnailUrl?, maxViewers?, viewCount?, likes? | { message, livestream } |
-| 29 | `/livestreams/:id/upload` | POST | Upload recorded video file (admin only, multipart) | id (path), video (file) | { message, filename, path, size } |
-| 30 | `/livestreams/:id` | DELETE | Delete livestream and associated files (admin only) | id (path) | { message, deletedFiles: [] } |
-| 31 | `/livestreams/:id/pinned-products` | GET | Get active pinned products for a livestream (public) | id (path) | { message, pinnedProducts: [] } |
-| 32 | `/livestreams/:id/pin-product` | POST | Pin a product to a livestream (admin only) | id (path), productId, displayOrder? | { message, pinnedProducts: [] } |
-| 33 | `/livestreams/:id/unpin-product/:productId` | DELETE | Unpin a product from a livestream (admin only) | id (path), productId (path) | { message, pinnedProducts: [] } |
-| 34 | `/livestreams/:id/pinned-products/order` | PUT | Update pinned product display order (admin only) | id (path), productOrders: [{ productId, displayOrder }] | { message, pinnedProducts: [] } |
+| 19 | `/livestreams/active` | GET | Get the currently active livestream | - | { message, livestream|null } |
+| 20 | `/livestreams/past` | GET | Get paginated list of past livestreams | page, limit | { livestreams: [], pagination: { currentPage, totalPages, total } } |
+| 21 | `/livestreams/agora/token` | POST | Generate Agora RTC token for streaming/viewing | channelName, uid?, role? | { token, appId, channelName, uid, expiresAt } |
+| 22 | `/livestreams` | POST | Create a new livestream (admin only) | title, description, quality, categories, tags, streamUrl? | { message, livestream } |
+| 23 | `/livestreams/:id` | DELETE | Delete livestream and associated files (admin only) | id (path) | { message, deletedFiles: [] } |
+| 24 | `/livestreams/:id/pinned-products/order` | PUT | Update pinned product display order (admin only) | id (path), productOrders: [{ productId, displayOrder }] | { message, pinnedProducts: [] } |
 
 ### Sample Request/Response
 
