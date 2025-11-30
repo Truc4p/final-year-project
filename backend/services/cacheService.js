@@ -294,7 +294,7 @@ class CacheService {
     }
 
     /**
-     * Clear all AI dermatology cache
+     * Clear all AI dermatology cache 
      * @returns {number} Number of keys deleted
      */
     async clearAIDermatologyCache() {
