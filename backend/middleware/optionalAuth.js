@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
+const secretManager = require("../services/secretManager");
 
 // Optional authentication middleware - doesn't block if no token, but identifies user if token exists
-module.exports = function (req, res, next) {
+module.exports = async function (req, res, next) {
   console.log('🔍 Optional auth called for:', req.method, req.originalUrl);
   
   // Try Authorization header first (Bearer token format)
@@ -24,7 +25,9 @@ module.exports = function (req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, "secret");
+    // Get JWT secret from Secret Manager
+    const jwtSecret = await secretManager.getSecret('JWT_SECRET');
+    const decoded = jwt.verify(token, jwtSecret);
     req.user = decoded.user;
     console.log('🔍 Optional auth successful for user:', decoded.user?.username || decoded.user?.id);
     next();

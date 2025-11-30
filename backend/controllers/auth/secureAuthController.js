@@ -1,4 +1,4 @@
-const secretManager = require('../services/secretManager');
+const secretManager = require('../../services/secretManager');
 
 /**
  * Enhanced authentication controller with secure secret management
@@ -84,13 +84,13 @@ exports.loginUser = async (req, res) => {
     let user = await User.findOne({ username });
 
     if (!user) {
-      return res.status(400).json({ msg: "Invalid credentials" });
+      return res.status(400).json({ msg: "Invalid Credentials" });
     }
 
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
-      return res.status(400).json({ msg: "Invalid credentials" });
+      return res.status(400).json({ msg: "Invalid Credentials" });
     }
 
     const payload = {
@@ -106,7 +106,8 @@ exports.loginUser = async (req, res) => {
     
     jwt.sign(payload, jwtSecret, { expiresIn: "30d" }, (err, token) => {
       if (err) throw err;
-      res.json({ token });
+      console.log("User role in backend:", user.role); // Debugging line to check the role
+      res.json({ token, role: user.role, userId: user.id }); // Include role and userId in the response
     });
   } catch (err) {
     console.error(err.message);

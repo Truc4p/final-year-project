@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const secretManager = require("../services/secretManager");
 
-module.exports = function (req, res, next) {
+module.exports = async function (req, res, next) {
   // Only log non-polling requests to reduce noise
   const isPollingRequest = req.originalUrl.includes('/chat/admin/active-chats') || 
                           req.originalUrl.includes('/chat/admin/messages/') ||
@@ -26,7 +27,9 @@ module.exports = function (req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, "secret");
+    // Get JWT secret from Secret Manager
+    const jwtSecret = await secretManager.getSecret('JWT_SECRET');
+    const decoded = jwt.verify(token, jwtSecret);
     req.user = decoded.user;
     
     // Only log successful auth for non-polling requests
