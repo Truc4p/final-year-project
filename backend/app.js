@@ -23,13 +23,23 @@ const emailCampaignRoutes = require("./routes/marketing/emailCampaignRoutes");
 const emailTemplateRoutes = require("./routes/marketing/emailTemplateRoutes");
 const emailSegmentRoutes = require("./routes/marketing/emailSegmentRoutes");
 const aiDermatologyExpertRoutes = require("./routes/skin-study/aiDermatologyExpert");
+const { initializeSecrets } = require("./services/secretInitializer");
 
 const connectDB = require("./db");
 const path = require("path"); // Import the path module
 
 const app = express();
 
-connectDB(); // Connect to MongoDB
+// Initialize secrets before connecting to database
+(async () => {
+    try {
+        await initializeSecrets();
+        connectDB(); // Connect to MongoDB after secrets are initialized
+    } catch (error) {
+        console.error('❌ Failed to start application:', error.message);
+        process.exit(1);
+    }
+})();
 
 
 // Enable CORS for all origins

@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const jwt = require('jsonwebtoken');
+const secretManager = require('./services/secretManager');
 const ChatConversation = require('./models/communication/chatConversation');
 
 class WebSocketManager {
@@ -194,7 +195,8 @@ class WebSocketManager {
       // Try to extract user info from token if provided
       if (token) {
         try {
-          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          const jwtSecret = await secretManager.getSecret('JWT_SECRET');
+          const decoded = jwt.verify(token, jwtSecret);
           userId = decoded.id;
           userRole = decoded.role;
         } catch (err) {
@@ -240,14 +242,14 @@ class WebSocketManager {
       // Verify admin token
       if (token) {
         try {
+          const jwtSecret = await secretManager.getSecret('JWT_SECRET');
           console.log('🔐 Verifying admin token...', {
             tokenPresent: !!token,
             tokenStart: token ? token.substring(0, 20) + '...' : 'N/A',
-            jwtSecretPresent: !!process.env.JWT_SECRET,
-            actualSecret: 'secret' // Use same as auth middleware
+            jwtSecretPresent: !!jwtSecret
           });
           
-          const decoded = jwt.verify(token, "secret"); // Use same secret as auth middleware
+          const decoded = jwt.verify(token, jwtSecret);
           console.log('🔓 Token decoded successfully:', {
             id: decoded.user?.id,
             role: decoded.user?.role,

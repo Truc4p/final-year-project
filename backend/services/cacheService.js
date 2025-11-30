@@ -1,4 +1,5 @@
 const redis = require('redis');
+const secretManager = require('./secretManager');
 
 class CacheService {
     constructor() {
@@ -20,9 +21,12 @@ class CacheService {
 
     async initializeClient() {
         try {
+            // Get Redis URL from secret manager
+            const redisUrl = await secretManager.getSecret('REDIS_URL').catch(() => 'redis://localhost:6379');
+            
             // Create Redis client
             this.client = redis.createClient({
-                url: process.env.REDIS_URL || 'redis://localhost:6379',
+                url: redisUrl,
                 socket: {
                     connectTimeout: 5000,
                     lazyConnect: true,

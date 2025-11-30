@@ -5,22 +5,50 @@ const { Document } = require('langchain/document');
 const fs = require('fs').promises;
 const path = require('path');
 const performanceMonitor = require('../utils/performanceMonitor');
+const secretManager = require('./secretManager');
 
 class VectorService {
     constructor() {
-        this.qdrantClient = new QdrantClient({
-            url: process.env.QDRANT_URL || 'http://localhost:6333',
-            apiKey: process.env.QDRANT_API_KEY || undefined
-        });
-        
-        console.log('🆓 Using Gemini embeddings');
-        this.embeddings = new GoogleGenerativeAIEmbeddings({
-            apiKey: process.env.GEMINI_API_KEY,
-            modelName: 'text-embedding-004' // Gemini's latest embedding model
-        });
+        this.qdrantClient = null;
+        this.embeddings = null;
+        this.isInitialized = false;
         this.vectorSize = 768; // Gemini embedding dimension
-        
         this.collectionName = 'dermatology_knowledge';
+    }
+    
+    async initialize() {
+        if (this.isInitialized) return;
+        
+        try {
+            // Initialize Qdrant client with secrets
+            const qdrantUrl = await secretManager.getSecret('QDRANT_URL').catch(() => 'http://localhost:6333');
+            const qdrantApiKey = await secretManager.getSecret('QDRANT_API_KEY').catch(() => null);
+            
+            this.qdrantClient = new QdrantClient({
+                url: qdrantUrl,
+                apiKey: qdrantApiKey
+            });
+            
+            // Initialize Gemini embeddings
+            const geminiApiKey = await secretManager.getSecret('GEMINI_API_KEY');
+            console.log('🆓 Using Gemini embeddings');
+            this.embeddings = new GoogleGenerativeAIEmbeddings({
+                apiKey: geminiApiKey,
+                modelName: 'text-embedding-004' // Gemini's latest embedding model
+            });
+            
+            this.isInitialized = true;
+            console.log('🔗 VectorService initialized with secure credentials');
+        } catch (error) {
+            console.error('❌ Failed to initialize VectorService:', error.message);
+            throw error;
+        }
+    }
+    
+    async ensureInitialized() {
+        if (!this.isInitialized) {
+            await this.initialize();
+        }
     }
 
     /**
@@ -222,6 +250,8 @@ class VectorService {
      * Search for relevant documents based on query
      */
     async searchRelevantDocs(query, limit = 5, debugMode = false) {
+        await this.ensureInitialized();
+        
         try {
             // Generate embedding for the query
             const queryEmbedding = await this.embeddings.embedQuery(query);

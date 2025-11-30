@@ -2,30 +2,14 @@ require('dotenv').config();
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs').promises;
 const performanceMonitor = require('../utils/performanceMonitor');
-
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const secretManager = require('./secretManager');
 
 class GeminiService {
     constructor() {
-        this.model = genAI.getGenerativeModel({ 
-            model: 'gemini-2.0-flash', // Using faster experimental model
-            generationConfig: {
-                temperature: 0.7,  // Slightly reduced for faster, more focused responses
-                topP: 0.9,
-                topK: 40,          // Reduced for faster token selection
-                maxOutputTokens: 4096, // OPTIMIZED: Reduced from 8192 for faster generation
-            }
-        });
-        
-        // Translation model for non-English queries
-        this.translationModel = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash',
-            generationConfig: {
-                temperature: 0.1, // Low temperature for accurate translation
-                maxOutputTokens: 500,
-            }
-        });
+        this.genAI = null;
+        this.model = null;
+        this.translationModel = null;
+        this.isInitialized = false;
         
         // Retry configuration for rate limiting
         this.maxRetries = 3;
@@ -38,6 +22,53 @@ class GeminiService {
 - Cosmetic procedures and treatments
 - Evidence-based skincare routines
 - Product recommendations based on skin type and concerns
+        if (this.isInitialized) return;
+        
+        try {
+            const geminiApiKey = await secretManager.getSecret('GEMINI_API_KEY');
+            this.genAI = new GoogleGenerativeAI(geminiApiKey);
+            
+            this.model = this.genAI.getGenerativeModel({ 
+                model: 'gemini-2.0-flash', // Using faster experimental model
+                generationConfig: {
+                    temperature: 0.7,  // Slightly reduced for faster, more focused responses
+                    topP: 0.9,
+                    topK: 40,          // Reduced for faster token selection
+                    maxOutputTokens: 4096, // OPTIMIZED: Reduced from 8192 for faster generation
+                }
+            });
+            
+            // Translation model for non-English queries
+            this.translationModel = this.genAI.getGenerativeModel({
+                model: 'gemini-2.0-flash',
+                generationConfig: {
+                    temperature: 0.1, // Low temperature for accurate translation
+                    maxOutputTokens: 500,
+                }
+            });
+            
+            this.isInitialized = true;
+            console.log('🤖 GeminiService initialized with secure API key');
+        } catch (error) {
+            console.error('❌ Failed to initialize GeminiService:', error.message);
+            throw error;
+        }
+    }
+    
+    async ensureInitialized() {
+        if (!this.isInitialized) {
+            await this.initialize();
+        }
+    }
+        
+        // Retry configuration for rate limiting
+        this.maxRetries = 3;
+        this.retryDelay = 1000; // Start with 1 second
+        
+    }
+    
+    async initialize() {
+        if (this.isInitialized) return;
 
 You provide professional, evidence-based advice while being empathetic and easy to understand.
 
@@ -55,6 +86,8 @@ If unsure about something not in the knowledge base, recommend consulting an in-
      * Detect if text is in a non-English language and needs translation
      */
     async detectAndTranslate(text) {
+        await this.ensureInitialized();
+        
         try {
             console.log(`🌐 Detecting language for text: "${text}"`);
             
@@ -112,6 +145,8 @@ IMPORTANT:
      * Generate content with retry logic for handling API overload
      */
     async generateWithRetry(prompt, maxRetries = 3, initialDelay = 1000) {
+        await this.ensureInitialized();
+        
         let lastError;
         
         for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -144,6 +179,8 @@ IMPORTANT:
      * Generate response using RAG-retrieved context from vector database
      */
     async generateResponseWithContext(userMessage, ragContext, conversationHistory = []) {
+        await this.ensureInitialized();
+        
         try {
             console.log(`📚 Using RAG context for query: "${userMessage}"`);
             

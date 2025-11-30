@@ -1,22 +1,49 @@
 const nodemailer = require('nodemailer');
+const secretManager = require('./secretManager');
 
 class EmailService {
   constructor() {
     this.transporter = null;
-    this.initializeTransporter();
+    this.isInitialized = false;
+  }
+  
+  async initialize() {
+    if (this.isInitialized) return;
+    
+    try {
+      const gmailUser = await secretManager.getSecret('GMAIL_USER');
+      const gmailPassword = await secretManager.getSecret('GMAIL_APP_PASSWORD');
+      
+      this.transporter = nodemailer.createTransporter({
+        service: 'gmail',
+        auth: {
+          user: gmailUser,
+          pass: gmailPassword
+        }
+      });
+      
+      this.isInitialized = true;
+      console.log('📧 EmailService initialized with secure credentials');
+    } catch (error) {
+      console.error('❌ Failed to initialize EmailService:', error.message);
+      throw error;
+    }
+  }
+  
+  async ensureInitialized() {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
   }
 
   initializeTransporter() {
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
-      }
-    });
+    // Legacy method - now calls initialize for backward compatibility
+    this.initialize().catch(console.error);
   }
 
   async verifyConnection() {
+    await this.ensureInitialized();
+    
     try {
       await this.transporter.verify();
       console.log('Email service is ready to send messages');
