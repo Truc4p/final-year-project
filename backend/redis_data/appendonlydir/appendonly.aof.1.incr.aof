@@ -1,0 +1,16 @@
+*2
+$6
+SELECT
+$1
+0
+*5
+$3
+SET
+$142
+ai_dermatology:English:d2hhdCBhcmUgdGhlIGRpZmZlcmVudCB0eXBlcyBvZiBjaGVtaW:what are the different types of chemical peels and how do they work?
+$1474
+{"question":"What are the different types of chemical peels and how do they work?","response":"Chemical peels are a method of resurfacing the skin to address a variety of skin conditions [3]. They involve applying a chemical solution to the skin, which causes the dead skin to slough off and peel [1]. The regenerated skin is smoother, healthier, and less wrinkled than the old skin [1]. Chemical peels force turnover of skin cells and can improve photodamage, rhytides, pigmentation abnormalities, and scarring [3].\n\nThere are varying degrees of peeling treatments available, ranging from light enzyme peels to strong surgical peels [2]. Chemical peels can resurface part or all of the epidermis (very superficial and superficial peels), the papillary dermis (medium-depth peels), and even down to the level of the upper or mid-reticular dermis (deep peels) [3].\n\nThe mechanism of action of chemical peel solutions can be classified into three separate mechanisms [1]:\n1.  **Acidity** [1]\n2.  **Toxicity** [1]\n3.  **Metabolic interactions** [1]\n\nIt is advised to seek training with a specialist, such as a dermatologist or plastic surgeon, experienced in the specific types of peels you wish to perform [1].\n\n### References\n[1,3] Chemical Peels - Procedures in Cosmetic Dermatology Series, 3rd Edition (2020) by Suzan Obagi\n[2] Skin Care - Beyond the Basics, 4th Edition\n","images":[],"timestamp":"2025-11-30T10:22:22.005Z","language":"English","cached":true}
+$4
+PXAT
+$13
+1765102942010

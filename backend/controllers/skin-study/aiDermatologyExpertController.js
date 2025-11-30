@@ -1,6 +1,7 @@
 const geminiService = require('../../services/geminiService');
 const vectorService = require('../../services/vectorService');
 const ttsService = require('../../services/ttsService');
+const cacheService = require('../../services/cacheService');
 const fs = require('fs').promises;
 const path = require('path');
 const performanceMonitor = require('../../utils/performanceMonitor');
@@ -19,12 +20,46 @@ exports.chat = async (req, res) => {
             return res.status(400).json({ error: 'Message is required' });
         }
 
+        console.log(`💬 Processing question: "${message}"`);
+
         // Detect and translate the query if needed for better RAG results
         console.log('🌍 Detecting language and translating if needed...');
         const translationResult = await geminiService.detectAndTranslate(message);
         const queryForRAG = translationResult.translatedText; // Use English for vector search
         
         console.log(`📝 Query for RAG: "${queryForRAG}"`);
+
+        // Check if this is a sample question and try cache first
+        const isSampleQuestion = cacheService.isSampleQuestion(message);
+        console.log(`🎯 Is sample question: ${isSampleQuestion}`);
+
+        // Try to get cached response for sample questions (regardless of conversation history)
+        // or for new conversations without history
+        let cachedResponse = null;
+        if (isSampleQuestion || !conversationHistory || conversationHistory.length === 0) {
+            cachedResponse = await cacheService.getAIDermatologyResponse(
+                message, 
+                translationResult.languageName || 'English'
+            );
+        }
+
+        if (cachedResponse) {
+            console.log('⚡ Returning cached response');
+            const totalTime = performanceMonitor.endTimer(totalStart);
+            
+            // Add performance info to cached response
+            cachedResponse._performance = process.env.NODE_ENV === 'development' ? {
+                totalTime,
+                cached: true,
+                detectedLanguage: translationResult.languageName,
+                translatedQuery: translationResult.isEnglish ? null : queryForRAG
+            } : undefined;
+
+            return res.json(cachedResponse);
+        }
+
+        // No cache hit, generate new response
+        console.log('🔄 No cache hit, generating new response...');
 
         // Use RAG to retrieve relevant context (using translated English query)
         const ragResult = await vectorService.ragQuery(queryForRAG, conversationHistory || []);
@@ -46,7 +81,8 @@ exports.chat = async (req, res) => {
             chunksRetrieved: ragResult.sources.length
         });
 
-        res.json({
+        // Prepare response object
+        const responseObj = {
             response: result.response,
             sources: ragResult.sources,
             images: result.images || [],
@@ -56,9 +92,23 @@ exports.chat = async (req, res) => {
                 contextSize: ragResult.context.length,
                 chunks: ragResult.sources.length,
                 detectedLanguage: translationResult.languageName,
-                translatedQuery: translationResult.isEnglish ? null : queryForRAG
+                translatedQuery: translationResult.isEnglish ? null : queryForRAG,
+                cached: false
             } : undefined
-        });
+        };
+
+        // Cache the response if it's a sample question (always) or new chat (no conversation history)
+        if (isSampleQuestion || !conversationHistory || conversationHistory.length === 0) {
+            console.log('💾 Caching response for future use...');
+            await cacheService.setAIDermatologyResponse(
+                message,
+                result,
+                translationResult.languageName || 'English',
+                isSampleQuestion ? 604800 : 86400 // Sample questions: 7 days, others: 1 day
+            );
+        }
+
+        res.json(responseObj);
     } catch (error) {
         console.error('AI Chat error:', error);
         
@@ -352,6 +402,56 @@ exports.textToSpeech = async (req, res) => {
         
         res.status(500).json({ 
             error: 'Failed to generate speech',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+/**
+ * @desc    Get cache statistics for AI Dermatology Expert
+ * @route   GET /api/ai-dermatology-expert/cache/stats
+ * @access  Public (Development only)
+ */
+exports.getCacheStats = async (req, res) => {
+    try {
+        if (process.env.NODE_ENV === 'production') {
+            return res.status(403).json({ error: 'Cache management not available in production' });
+        }
+
+        const stats = await cacheService.getCacheStats();
+        res.json({
+            message: 'Cache statistics retrieved successfully',
+            stats
+        });
+    } catch (error) {
+        console.error('Cache stats error:', error);
+        res.status(500).json({ 
+            error: 'Failed to retrieve cache statistics',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+/**
+ * @desc    Clear AI Dermatology Expert cache
+ * @route   DELETE /api/ai-dermatology-expert/cache
+ * @access  Public (Development only)
+ */
+exports.clearCache = async (req, res) => {
+    try {
+        if (process.env.NODE_ENV === 'production') {
+            return res.status(403).json({ error: 'Cache management not available in production' });
+        }
+
+        const deletedCount = await cacheService.clearAIDermatologyCache();
+        res.json({
+            message: 'Cache cleared successfully',
+            deletedEntries: deletedCount
+        });
+    } catch (error) {
+        console.error('Clear cache error:', error);
+        res.status(500).json({ 
+            error: 'Failed to clear cache',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }

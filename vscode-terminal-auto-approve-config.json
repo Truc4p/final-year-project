@@ -1,0 +1,80 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    // Safe development commands
+    "npm install": true,
+    "npm start": true,
+    "npm run": true,
+    "npm test": true,
+    "npm run build": true,
+    "npm run dev": true,
+    "yarn": true,
+    "pnpm": true,
+    
+    // Git commands (safe operations)
+    "git status": true,
+    "git log": true,
+    "git diff": true,
+    "git show": true,
+    "git branch": true,
+    "git checkout": true,
+    "git pull": true,
+    "git push": true,
+    "git add": true,
+    "git commit": true,
+    
+    // Docker commands
+    "docker ps": true,
+    "docker images": true,
+    "docker logs": true,
+    "docker compose up": true,
+    "docker compose down": true,
+    "docker compose restart": true,
+    "docker build": true,
+    
+    // File operations
+    "ls": true,
+    "pwd": true,
+    "cat": true,
+    "head": true,
+    "tail": true,
+    "find": true,
+    "grep": true,
+    "mkdir": true,
+    "touch": true,
+    "cp": true,
+    "mv": true,
+    
+    // Development tools
+    "code": true,
+    "node": true,
+    "python": true,
+    "python3": true,
+    "pip": true,
+    "pip3": true,
+    "curl": true,
+    "wget": true,
+    
+    // Process management
+    "ps": true,
+    "top": true,
+    "htop": true,
+    "kill": false,  // Require approval for kill commands
+    
+    // Dangerous commands (require approval)
+    "rm": false,
+    "rmdir": false,
+    "sudo": false,
+    "chmod": false,
+    "chown": false,
+    "dd": false,
+    "format": false,
+    "fdisk": false,
+    
+    // Regular expressions for more flexible matching
+    "/^git (status|log|diff|show|branch)$/": true,
+    "/^npm (install|start|test|run)\\b/": true,
+    "/^docker (ps|images|logs)$/": true,
+    "/^ls\\b/": true,
+    "/^cd\\b/": true
+  }
+}

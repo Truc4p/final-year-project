@@ -99,4 +99,16 @@ router.post('/transcribe', audioUpload.single('audio'), aiDermatologyExpertContr
  */
 router.post('/text-to-speech', aiDermatologyExpertController.textToSpeech);
 
+/**
+ * GET /api/ai-dermatology-expert/cache/stats
+ * Get cache statistics (Development only)
+ */
+router.get('/cache/stats', aiDermatologyExpertController.getCacheStats);
+
+/**
+ * DELETE /api/ai-dermatology-expert/cache
+ * Clear AI Dermatology Expert cache (Development only)
+ */
+router.delete('/cache', aiDermatologyExpertController.clearCache);
+
 module.exports = router;
