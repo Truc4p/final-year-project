@@ -3,6 +3,7 @@ const EmailTemplate = require('../../models/marketing/emailTemplate');
 const EmailAnalytics = require('../../models/marketing/emailAnalytics');
 const NewsletterSubscription = require('../../models/marketing/newsletterSubscription');
 const emailService = require('../../services/emailService');
+const emailScheduler = require('../../services/emailScheduler');
 
 // Get all email campaigns with pagination and filters
 const getCampaigns = async (req, res) => {
@@ -115,6 +116,11 @@ const createCampaign = async (req, res) => {
     
     await campaign.populate('createdBy', 'username email');
     
+    // Schedule campaign if status is 'scheduled' and scheduledAt is set
+    if (campaign.status === 'scheduled' && campaign.scheduledAt) {
+      emailScheduler.scheduleCampaign(campaign);
+    }
+    
     res.status(201).json({
       success: true,
       message: 'Campaign created successfully',
@@ -170,6 +176,15 @@ const updateCampaign = async (req, res) => {
       { new: true, runValidators: true }
     ).populate('createdBy', 'username email');
     
+    // Handle scheduling changes
+    if (existingCampaign.status === 'scheduled' && campaign.status !== 'scheduled') {
+      // Campaign was scheduled but now isn't - cancel it
+      emailScheduler.cancelCampaign(id);
+    } else if (campaign.status === 'scheduled' && campaign.scheduledAt) {
+      // Campaign is scheduled - reschedule it (handles both new and updated schedules)
+      emailScheduler.rescheduleCampaign(campaign);
+    }
+    
     res.status(200).json({
       success: true,
       message: 'Campaign updated successfully',
@@ -205,6 +220,9 @@ const deleteCampaign = async (req, res) => {
         message: 'Cannot delete sent campaigns'
       });
     }
+    
+    // Cancel scheduled timer if exists
+    emailScheduler.cancelCampaign(id);
     
     await EmailCampaign.findByIdAndDelete(id);
     

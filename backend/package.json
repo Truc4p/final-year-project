@@ -12,7 +12,8 @@
     "test:integration": "jest tests/integration --runInBand",
     "secrets": "node scripts/secretCLI.js",
     "secrets:init": "node -e \"require('./services/secretInitializer').initializeSecrets().then(() => process.exit(0)).catch(e => {console.error(e); process.exit(1)})\"",
-    "secrets:health": "npm run secrets health"
+    "secrets:health": "npm run secrets health",
+    "send-scheduled-emails": "node scripts/sendScheduledCampaigns.js"
   },
   "keywords": [],
   "author": "",

@@ -24,6 +24,7 @@ const emailTemplateRoutes = require("./routes/marketing/emailTemplateRoutes");
 const emailSegmentRoutes = require("./routes/marketing/emailSegmentRoutes");
 const aiDermatologyExpertRoutes = require("./routes/skin-study/aiDermatologyExpert");
 const { initializeSecrets } = require("./services/secretInitializer");
+const emailScheduler = require("./services/emailScheduler");
 
 const connectDB = require("./db");
 const path = require("path"); // Import the path module
@@ -35,6 +36,16 @@ const app = express();
     try {
         await initializeSecrets();
         connectDB(); // Connect to MongoDB after secrets are initialized
+        
+        // Load scheduled campaigns into memory (efficient, no polling)
+        setTimeout(async () => {
+            try {
+                await emailScheduler.loadScheduledCampaigns();
+            } catch (error) {
+                console.error('❌ Failed to load scheduled campaigns:', error);
+            }
+        }, 3000); // Wait 3 seconds for DB connection to establish
+        
     } catch (error) {
         console.error('❌ Failed to start application:', error.message);
         process.exit(1);
