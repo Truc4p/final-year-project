@@ -36,6 +36,9 @@
           <router-link :to="{ path: '/admin/live-stream' }" exact-active-class="router-link-exact-active" class="navbar-link">
             {{ t('liveStream') }}
           </router-link>
+          <router-link :to="{ path: '/admin/finance' }" exact-active-class="router-link-exact-active" class="navbar-link">
+            Finance
+          </router-link>
           
           <!-- Email Marketing Dropdown -->
           <div class="relative group">
@@ -128,6 +131,9 @@
         </router-link>
         <router-link :to="{ path: '/admin/live-stream' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
           {{ t('liveStream') }}
+        </router-link>
+        <router-link :to="{ path: '/admin/finance' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
+          Finance
         </router-link>
         
         <!-- Email Marketing Mobile Menu -->
