@@ -6,9 +6,22 @@
         <h1 class="text-3xl font-bold text-gray-900">Bills (Accounts Payable)</h1>
         <p class="text-gray-600 mt-2">Manage vendor bills and payments</p>
       </div>
-      <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+      <button @click="openCreateInfo()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
         + Create Bill
       </button>
+    </div>
+
+    <!-- Info alert for creation wiring -->
+    <div v-if="showCreateHint" class="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-6">
+      <div class="flex items-start">
+        <svg class="w-5 h-5 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
+        </svg>
+        <div>
+          <p class="font-semibold">Bill creation requires Vendors and Chart of Accounts.</p>
+          <p class="text-sm mt-1">Your list is now connected to MongoDB. To enable creating bills from the UI, we need a vendor and expense accounts to select. I can wire this next, or you can seed a Vendor and COA, then we’ll enable the form.</p>
+        </div>
+      </div>
     </div>
 
     <!-- Filters -->
@@ -26,9 +39,12 @@
         >
           <option value="">All Status</option>
           <option value="draft">Draft</option>
-          <option value="received">Received</option>
+          <option value="pending_approval">Pending Approval</option>
+          <option value="approved">Approved</option>
+          <option value="partial">Partial</option>
           <option value="paid">Paid</option>
           <option value="overdue">Overdue</option>
+          <option value="void">Void</option>
         </select>
         <input 
           v-model="filters.dateFrom" 
@@ -42,6 +58,10 @@
         >
       </div>
     </div>
+
+    <!-- Loading / Error -->
+    <div v-if="isLoading" class="bg-white rounded-lg shadow p-6 mb-6 text-gray-600">Loading bills...</div>
+    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">{{ error }}</div>
 
     <!-- Bills Table -->
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -57,10 +77,10 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
-          <tr v-for="bill in filteredBills" :key="bill.id" class="hover:bg-gray-50 transition-colors">
+          <tr v-for="bill in filteredBills" :key="bill._id" class="hover:bg-gray-50 transition-colors">
             <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ bill.billNumber }}</td>
-            <td class="px-6 py-4 text-sm text-gray-600">{{ bill.vendor }}</td>
-            <td class="px-6 py-4 text-sm font-semibold text-gray-900">${{ bill.amount.toLocaleString('en-US', {minimumFractionDigits: 2}) }}</td>
+            <td class="px-6 py-4 text-sm text-gray-600">{{ formatVendor(bill.vendor) }}</td>
+            <td class="px-6 py-4 text-sm font-semibold text-gray-900">${{ (bill.totalAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</td>
             <td class="px-6 py-4 text-sm text-gray-600">{{ formatDate(bill.dueDate) }}</td>
             <td class="px-6 py-4 text-sm">
               <span :class="getStatusClass(bill.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
@@ -68,49 +88,26 @@
               </span>
             </td>
             <td class="px-6 py-4 text-sm space-x-2">
-              <button @click="viewBill(bill.id)" class="text-blue-600 hover:text-blue-800 font-medium">View</button>
-              <button @click="editBill(bill.id)" class="text-green-600 hover:text-green-800 font-medium">Edit</button>
-              <button @click="deleteBill(bill.id)" class="text-red-600 hover:text-red-800 font-medium">Delete</button>
+              <button @click="viewBill(bill._id)" class="text-blue-600 hover:text-blue-800 font-medium">View</button>
+              <button v-if="bill.status==='draft'" @click="editBill(bill._id)" class="text-green-600 hover:text-green-800 font-medium">Edit</button>
+              <button v-if="bill.status==='draft'" @click="deleteBillHandler(bill._id)" class="text-red-600 hover:text-red-800 font-medium">Delete</button>
             </td>
+          </tr>
+          <tr v-if="!isLoading && bills.length===0">
+            <td colspan="6" class="px-6 py-8 text-center text-gray-500">No bills found.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Create Bill</h2>
-        <form @submit.prevent="submitBill" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
-              <input v-model="formData.vendor" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Bill Date</label>
-              <input v-model="formData.billDate" type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-              <input v-model="formData.dueDate" type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-              <input v-model.number="formData.amount" type="number" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea v-model="formData.description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
-          </div>
-          <div class="flex justify-end space-x-3 pt-4">
-            <button @click="showCreateModal = false" type="button" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-            <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Create Bill</button>
-          </div>
-        </form>
+    <!-- Pagination summary -->
+    <div v-if="pagination.total" class="mt-4 flex items-center justify-between text-sm text-gray-600">
+      <div>
+        Total: <span class="font-semibold">{{ pagination.total }}</span> | Page {{ pagination.currentPage }} of {{ pagination.totalPages }}
+      </div>
+      <div class="space-x-2">
+        <button :disabled="!pagination.hasPrev" @click="goPage(pagination.currentPage-1)" class="px-3 py-1 border rounded disabled:opacity-50">Prev</button>
+        <button :disabled="!pagination.hasNext" @click="goPage(pagination.currentPage+1)" class="px-3 py-1 border rounded disabled:opacity-50">Next</button>
       </div>
     </div>
   </div>
@@ -118,11 +115,15 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import financeService from '@/services/financeService';
 
 const { t } = useI18n();
 
-const showCreateModal = ref(false);
+const isLoading = ref(false);
+const error = ref(null);
+const showCreateHint = ref(false);
+
 const filters = ref({
   search: '',
   status: '',
@@ -130,76 +131,95 @@ const filters = ref({
   dateTo: ''
 });
 
-const formData = ref({
-  vendor: '',
-  billDate: new Date().toISOString().split('T')[0],
-  dueDate: '',
-  amount: 0,
-  description: ''
+const bills = ref([]);
+const pagination = ref({ currentPage: 1, totalPages: 1, total: 0, hasNext: false, hasPrev: false });
+
+const fetchBills = async (page = 1) => {
+  isLoading.value = true;
+  error.value = null;
+  try {
+    const params = { page, limit: 20 };
+    if (filters.value.status) params.status = filters.value.status;
+    if (filters.value.dateFrom) params.startDate = filters.value.dateFrom;
+    if (filters.value.dateTo) params.endDate = filters.value.dateTo;
+
+    const data = await financeService.getBills(params);
+    bills.value = data.bills || [];
+    pagination.value = data.pagination || pagination.value;
+  } catch (err) {
+    error.value = err?.message || 'Failed to fetch bills';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(async () => {
+  await fetchBills(1);
 });
 
-// Sample data
-const bills = ref([
-  { id: 1, billNumber: 'BILL-001', vendor: 'Office Supplies Co', amount: 1500, dueDate: '2024-02-15', status: 'paid' },
-  { id: 2, billNumber: 'BILL-002', vendor: 'Tech Equipment Ltd', amount: 5000, dueDate: '2024-02-20', status: 'received' },
-  { id: 3, billNumber: 'BILL-003', vendor: 'Utilities Provider', amount: 800, dueDate: '2024-02-10', status: 'overdue' },
-  { id: 4, billNumber: 'BILL-004', vendor: 'Maintenance Services', amount: 2200, dueDate: '2024-03-01', status: 'draft' },
-  { id: 5, billNumber: 'BILL-005', vendor: 'Consulting Firm', amount: 3500, dueDate: '2024-02-28', status: 'received' },
-]);
+watch(() => [filters.value.status, filters.value.dateFrom, filters.value.dateTo], () => fetchBills(1));
 
 const filteredBills = computed(() => {
+  const q = (filters.value.search || '').toLowerCase();
   return bills.value.filter(bill => {
-    const matchesSearch = bill.billNumber.toLowerCase().includes(filters.value.search.toLowerCase()) ||
-                         bill.vendor.toLowerCase().includes(filters.value.search.toLowerCase());
-    const matchesStatus = !filters.value.status || bill.status === filters.value.status;
-    return matchesSearch && matchesStatus;
+    const vendorName = formatVendor(bill.vendor).toLowerCase();
+    const matchesSearch = bill.billNumber?.toLowerCase().includes(q) || vendorName.includes(q);
+    return matchesSearch;
   });
 });
 
+const formatVendor = (vendor) => {
+  if (!vendor) return '';
+  if (typeof vendor === 'string') return vendor;
+  return vendor.companyName || vendor.contactPerson || vendor.vendorNumber || '';
+};
+
 const formatDate = (date) => {
+  if (!date) return '';
   return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
 const getStatusClass = (status) => {
   const classes = {
     'draft': 'bg-gray-100 text-gray-800',
-    'received': 'bg-blue-100 text-blue-800',
+    'pending_approval': 'bg-yellow-100 text-yellow-800',
+    'approved': 'bg-blue-100 text-blue-800',
+    'partial': 'bg-purple-100 text-purple-800',
     'paid': 'bg-green-100 text-green-800',
-    'overdue': 'bg-red-100 text-red-800'
+    'overdue': 'bg-red-100 text-red-800',
+    'void': 'bg-gray-200 text-gray-700'
   };
   return classes[status] || 'bg-gray-100 text-gray-800';
 };
 
+const openCreateInfo = () => {
+  showCreateHint.value = true;
+};
+
 const viewBill = (id) => {
-  console.log('View bill:', id);
+  // navigate to bill detail if you add route later
+  console.log('View bill', id);
 };
 
 const editBill = (id) => {
-  console.log('Edit bill:', id);
+  console.log('Edit bill', id);
 };
 
-const deleteBill = (id) => {
-  bills.value = bills.value.filter(b => b.id !== id);
+const deleteBillHandler = async (id) => {
+  if (!confirm('Delete this draft bill?')) return;
+  try {
+    await financeService.deleteBill(id);
+    bills.value = bills.value.filter(b => b._id !== id);
+    // adjust pagination totals locally
+    if (pagination.value.total > 0) pagination.value.total -= 1;
+  } catch (err) {
+    alert(err?.message || 'Failed to delete bill');
+  }
 };
 
-const submitBill = () => {
-  const newBill = {
-    id: bills.value.length + 1,
-    billNumber: `BILL-${String(bills.value.length + 1).padStart(3, '0')}`,
-    vendor: formData.value.vendor,
-    amount: formData.value.amount,
-    dueDate: formData.value.dueDate,
-    status: 'draft'
-  };
-  bills.value.push(newBill);
-  showCreateModal.value = false;
-  formData.value = {
-    vendor: '',
-    billDate: new Date().toISOString().split('T')[0],
-    dueDate: '',
-    amount: 0,
-    description: ''
-  };
+const goPage = async (page) => {
+  if (page < 1 || page > pagination.value.totalPages) return;
+  await fetchBills(page);
 };
 </script>
 
@@ -208,4 +228,3 @@ const submitBill = () => {
   padding: 2rem;
 }
 </style>
-

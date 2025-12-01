@@ -3,7 +3,7 @@
  * Handles all API calls for the Finance module
  */
 
-const API_BASE_URL = process.env.VUE_APP_API_URL || 'http://localhost:3000';
+const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || 'http://localhost:3000';
 
 // Helper function for API calls
 const apiCall = async (endpoint, options = {}) => {
@@ -13,10 +13,11 @@ const apiCall = async (endpoint, options = {}) => {
     ...options.headers
   };
 
-  // Add auth token if available
-  const token = localStorage.getItem('authToken');
+  // Add auth token if available (support multiple keys for compatibility)
+  const token = localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('jwt');
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+    headers['x-auth-token'] = token; // backward compatibility with some endpoints
   }
 
   try {
