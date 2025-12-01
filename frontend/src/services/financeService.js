@@ -1,0 +1,228 @@
+/**
+ * Finance Service
+ * Handles all API calls for the Finance module
+ */
+
+const API_BASE_URL = process.env.VUE_APP_API_URL || 'http://localhost:3000';
+
+// Helper function for API calls
+const apiCall = async (endpoint, options = {}) => {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
+  };
+
+  // Add auth token if available
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API Call Error:', error);
+    throw error;
+  }
+};
+
+// ==================== DASHBOARD ====================
+
+export const financeService = {
+  // Dashboard
+  getDashboard: () => apiCall('/api/finance/dashboard'),
+
+  // ==================== INVOICES ====================
+  
+  // Get all invoices
+  getInvoices: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/invoices${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get single invoice
+  getInvoice: (id) => apiCall(`/invoices/${id}`),
+
+  // Create invoice
+  createInvoice: (data) => apiCall('/invoices', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Update invoice
+  updateInvoice: (id, data) => apiCall(`/invoices/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  // Delete invoice
+  deleteInvoice: (id) => apiCall(`/invoices/${id}`, {
+    method: 'DELETE'
+  }),
+
+  // ==================== BILLS ====================
+
+  // Get all bills
+  getBills: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/bills${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get single bill
+  getBill: (id) => apiCall(`/bills/${id}`),
+
+  // Create bill
+  createBill: (data) => apiCall('/bills', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Update bill
+  updateBill: (id, data) => apiCall(`/bills/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  // Delete bill
+  deleteBill: (id) => apiCall(`/bills/${id}`, {
+    method: 'DELETE'
+  }),
+
+  // ==================== BANK ACCOUNTS ====================
+
+  // Get all bank accounts
+  getBankAccounts: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/bank-accounts${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get single bank account
+  getBankAccount: (id) => apiCall(`/api/finance/bank-accounts/${id}`),
+
+  // Create bank account
+  createBankAccount: (data) => apiCall('/api/finance/bank-accounts', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Update bank account
+  updateBankAccount: (id, data) => apiCall(`/api/finance/bank-accounts/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  // Delete bank account
+  deleteBankAccount: (id) => apiCall(`/api/finance/bank-accounts/${id}`, {
+    method: 'DELETE'
+  }),
+
+  // Get bank account transactions
+  getBankAccountTransactions: (id, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/bank-accounts/${id}/transactions${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Add bank transaction
+  addBankTransaction: (id, data) => apiCall(`/api/finance/bank-accounts/${id}/transactions`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Get bank account summary
+  getBankAccountSummary: (id) => apiCall(`/api/finance/bank-accounts/${id}/summary`),
+
+  // ==================== CHART OF ACCOUNTS ====================
+
+  // Get all chart of accounts
+  getChartOfAccounts: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/chart-of-accounts${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get single account
+  getAccount: (id) => apiCall(`/api/finance/chart-of-accounts/${id}`),
+
+  // Create account
+  createAccount: (data) => apiCall('/api/finance/chart-of-accounts', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Update account
+  updateAccount: (id, data) => apiCall(`/api/finance/chart-of-accounts/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  // Delete account
+  deleteAccount: (id) => apiCall(`/api/finance/chart-of-accounts/${id}`, {
+    method: 'DELETE'
+  }),
+
+  // ==================== FINANCIAL REPORTS ====================
+
+  // Get income statement
+  getIncomeStatement: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/financial-reports/income-statement${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get balance sheet
+  getBalanceSheet: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/financial-reports/balance-sheet${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get cash flow statement
+  getCashFlowStatement: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/financial-reports/cash-flow${queryString ? '?' + queryString : ''}`);
+  },
+
+  // ==================== GENERAL LEDGER ====================
+
+  // Get all journal entries
+  getJournalEntries: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/general-ledger${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get single journal entry
+  getJournalEntry: (id) => apiCall(`/api/finance/general-ledger/${id}`),
+
+  // Create journal entry
+  createJournalEntry: (data) => apiCall('/api/finance/general-ledger', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Update journal entry
+  updateJournalEntry: (id, data) => apiCall(`/api/finance/general-ledger/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  // Delete journal entry
+  deleteJournalEntry: (id) => apiCall(`/api/finance/general-ledger/${id}`, {
+    method: 'DELETE'
+  }),
+
+  // Get trial balance
+  getTrialBalance: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/general-ledger/trial-balance${queryString ? '?' + queryString : ''}`);
+  }
+};
+
+export default financeService;
+

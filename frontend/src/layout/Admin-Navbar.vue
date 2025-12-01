@@ -36,9 +36,66 @@
           <router-link :to="{ path: '/admin/live-stream' }" exact-active-class="router-link-exact-active" class="navbar-link">
             {{ t('liveStream') }}
           </router-link>
-          <router-link :to="{ path: '/admin/finance' }" exact-active-class="router-link-exact-active" class="navbar-link">
-            Finance
-          </router-link>
+
+          <!-- Finance Dropdown -->
+          <div class="relative group">
+            <div class="navbar-link flex items-center space-x-1 cursor-pointer">
+              <span>{{ t('finance') || 'Finance' }}</span>
+              <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+            
+            <!-- Invisible bridge to prevent gap -->
+            <div class="absolute top-full left-0 w-56 h-2 bg-transparent group-hover:block hidden"></div>
+            
+            <div 
+              class="absolute top-full left-0 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2"
+            >
+              <router-link 
+                :to="{ path: '/admin/finance' }" 
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Dashboard
+              </router-link>
+              <router-link 
+                :to="{ path: '/admin/finance/invoices' }" 
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Invoices (AR)
+              </router-link>
+              <router-link 
+                :to="{ path: '/admin/finance/bills' }" 
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Bills (AP)
+              </router-link>
+              <router-link 
+                :to="{ path: '/admin/finance/bank-accounts' }" 
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Bank Accounts
+              </router-link>
+              <router-link 
+                :to="{ path: '/admin/finance/chart-of-accounts' }" 
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Chart of Accounts
+              </router-link>
+              <router-link 
+                :to="{ path: '/admin/finance/reports' }" 
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Financial Reports
+              </router-link>
+              <router-link 
+                :to="{ path: '/admin/finance/general-ledger' }" 
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                General Ledger
+              </router-link>
+            </div>
+          </div>
           
           <!-- Email Marketing Dropdown -->
           <div class="relative group">
@@ -132,9 +189,70 @@
         <router-link :to="{ path: '/admin/live-stream' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
           {{ t('liveStream') }}
         </router-link>
-        <router-link :to="{ path: '/admin/finance' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-          Finance
-        </router-link>
+
+        <!-- Finance Mobile Menu -->
+        <div class="py-2">
+          <button 
+            @click="financeMobileDropdownOpen = !financeMobileDropdownOpen"
+            class="w-full text-left navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 flex items-center justify-between"
+          >
+            <span>{{ t('finance') || 'Finance' }}</span>
+            <svg 
+              :class="{ 'rotate-180': financeMobileDropdownOpen }"
+              class="w-4 h-4 transition-transform"
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          
+          <div v-if="financeMobileDropdownOpen" class="ml-4 mt-2 space-y-1">
+            <router-link 
+              :to="{ path: '/admin/finance' }" 
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
+            >
+              Dashboard
+            </router-link>
+            <router-link 
+              :to="{ path: '/admin/finance/invoices' }" 
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
+            >
+              Invoices (AR)
+            </router-link>
+            <router-link 
+              :to="{ path: '/admin/finance/bills' }" 
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
+            >
+              Bills (AP)
+            </router-link>
+            <router-link 
+              :to="{ path: '/admin/finance/bank-accounts' }" 
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
+            >
+              Bank Accounts
+            </router-link>
+            <router-link 
+              :to="{ path: '/admin/finance/chart-of-accounts' }" 
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
+            >
+              Chart of Accounts
+            </router-link>
+            <router-link 
+              :to="{ path: '/admin/finance/reports' }" 
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
+            >
+              Financial Reports
+            </router-link>
+            <router-link 
+              :to="{ path: '/admin/finance/general-ledger' }" 
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
+            >
+              General Ledger
+            </router-link>
+          </div>
+        </div>
         
         <!-- Email Marketing Mobile Menu -->
         <div class="py-2">
@@ -209,6 +327,7 @@ const { locale, t } = useI18n();
 const currentLocale = ref(locale.value);
 const mobileMenuOpen = ref(false);
 const emailMobileDropdownOpen = ref(false);
+const financeMobileDropdownOpen = ref(false);
 
 const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value;

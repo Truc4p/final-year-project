@@ -37,7 +37,6 @@ import Users from '@/pages/admin/users/Users.vue';
 
 // Admin - Finance
 import CashFlow from '@/pages/admin/finance/CashFlow.vue';
-import Finance from '@/pages/admin/Finance.vue';
 import HumanResources from '@/pages/admin/hr/HumanResources.vue';
 
 // Admin - Analytics
@@ -106,7 +105,6 @@ const routes = [
       { path: "users", component: Users },
       { path: "analytics", component: Analytics },
       { path: "cashflow", component: CashFlow },
-      { path: "finance", component: Finance },
       { path: "hr", component: HumanResources },
 
       { path: "orders", component: Orders },
