@@ -38,6 +38,13 @@ import Users from '@/pages/admin/users/Users.vue';
 // Admin - Finance
 import CashFlow from '@/pages/admin/finance/CashFlow.vue';
 import HumanResources from '@/pages/admin/hr/HumanResources.vue';
+import FinanceDashboard from '@/pages/admin/finance/FinanceDashboard.vue';
+import InvoicesPage from '@/pages/admin/finance/InvoicesPage.vue';
+import BillsPage from '@/pages/admin/finance/BillsPage.vue';
+import BankAccountsPage from '@/pages/admin/finance/BankAccountsPage.vue';
+import ChartOfAccountsPage from '@/pages/admin/finance/ChartOfAccountsPage.vue';
+import FinancialReportsPage from '@/pages/admin/finance/FinancialReportsPage.vue';
+import GeneralLedgerPage from '@/pages/admin/finance/GeneralLedgerPage.vue';
 
 // Admin - Analytics
 import Analytics from '@/pages/admin/analytics/Analytics.vue';
@@ -114,6 +121,15 @@ const routes = [
       
       { path: "live-stream", component: AdminLiveStream },
       { path: "live-stream/watch/:id", component: LiveStreamWatch },
+
+      // Finance Module Routes
+      { path: "finance", component: FinanceDashboard },
+      { path: "finance/invoices", component: InvoicesPage },
+      { path: "finance/bills", component: BillsPage },
+      { path: "finance/bank-accounts", component: BankAccountsPage },
+      { path: "finance/chart-of-accounts", component: ChartOfAccountsPage },
+      { path: "finance/reports", component: FinancialReportsPage },
+      { path: "finance/general-ledger", component: GeneralLedgerPage },
 
       // Email Marketing Routes
       { path: "email-marketing/subscribers", component: () => import("@/pages/admin/email-marketing/Subscribers.vue") },
