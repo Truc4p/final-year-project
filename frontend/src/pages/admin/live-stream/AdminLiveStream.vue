@@ -572,8 +572,8 @@ const stopLiveStream = async () => {
 
 const fetchPastStreams = async () => {
   try {
-    console.log('Fetching past streams from:', `${apiUrl}/livestreams/past?limit=6`);
-    const response = await fetch(`${apiUrl}/livestreams/past?limit=6`);
+    console.log('Fetching past streams from:', `${apiUrl}/livestreams/past`);
+    const response = await fetch(`${apiUrl}/livestreams/past`);
     if (!response.ok) {
       throw new Error('Failed to fetch past streams');
     }

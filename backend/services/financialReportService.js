@@ -1,0 +1,371 @@
+const GeneralLedger = require("../models/finance/generalLedger");
+const ChartOfAccounts = require("../models/finance/chartOfAccounts");
+const JournalEntry = require("../models/finance/journalEntry");
+
+class FinancialReportService {
+  /**
+   * Generate Income Statement (Profit & Loss)
+   */
+  static async generateIncomeStatement(startDate, endDate) {
+    try {
+      // Get all revenue accounts
+      const revenueAccounts = await ChartOfAccounts.find({
+        accountType: 'revenue',
+        isActive: true
+      });
+
+      // Get all expense accounts
+      const expenseAccounts = await ChartOfAccounts.find({
+        accountType: 'expense',
+        isActive: true
+      });
+
+      // Calculate revenue
+      const revenueData = await this._calculateAccountBalances(
+        revenueAccounts.map(a => a._id),
+        startDate,
+        endDate
+      );
+
+      // Calculate expenses
+      const expenseData = await this._calculateAccountBalances(
+        expenseAccounts.map(a => a._id),
+        startDate,
+        endDate
+      );
+
+      // Calculate totals
+      const totalRevenue = revenueData.reduce((sum, item) => sum + item.balance, 0);
+      const totalExpenses = expenseData.reduce((sum, item) => sum + item.balance, 0);
+      const netIncome = totalRevenue - totalExpenses;
+
+      // Group by sub-types
+      const revenueByType = this._groupBySubType(revenueData);
+      const expensesByType = this._groupBySubType(expenseData);
+
+      return {
+        period: {
+          startDate,
+          endDate
+        },
+        revenue: {
+          items: revenueData,
+          byType: revenueByType,
+          total: totalRevenue
+        },
+        expenses: {
+          items: expenseData,
+          byType: expensesByType,
+          total: totalExpenses
+        },
+        netIncome,
+        profitMargin: totalRevenue > 0 ? (netIncome / totalRevenue) * 100 : 0
+      };
+    } catch (error) {
+      console.error("Error generating income statement:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate Balance Sheet
+   */
+  static async generateBalanceSheet(asOfDate = new Date()) {
+    try {
+      // Get accounts by type
+      const assetAccounts = await ChartOfAccounts.find({
+        accountType: 'asset',
+        isActive: true
+      });
+
+      const liabilityAccounts = await ChartOfAccounts.find({
+        accountType: 'liability',
+        isActive: true
+      });
+
+      const equityAccounts = await ChartOfAccounts.find({
+        accountType: 'equity',
+        isActive: true
+      });
+
+      // Calculate balances as of date
+      const assetData = await this._calculateAccountBalances(
+        assetAccounts.map(a => a._id),
+        null,
+        asOfDate
+      );
+
+      const liabilityData = await this._calculateAccountBalances(
+        liabilityAccounts.map(a => a._id),
+        null,
+        asOfDate
+      );
+
+      const equityData = await this._calculateAccountBalances(
+        equityAccounts.map(a => a._id),
+        null,
+        asOfDate
+      );
+
+      // Calculate totals
+      const totalAssets = assetData.reduce((sum, item) => sum + item.balance, 0);
+      const totalLiabilities = liabilityData.reduce((sum, item) => sum + item.balance, 0);
+      const totalEquity = equityData.reduce((sum, item) => sum + item.balance, 0);
+
+      // Group by sub-types
+      const assetsByType = this._groupBySubType(assetData);
+      const liabilitiesByType = this._groupBySubType(liabilityData);
+      const equityByType = this._groupBySubType(equityData);
+
+      return {
+        asOfDate,
+        assets: {
+          items: assetData,
+          byType: assetsByType,
+          total: totalAssets
+        },
+        liabilities: {
+          items: liabilityData,
+          byType: liabilitiesByType,
+          total: totalLiabilities
+        },
+        equity: {
+          items: equityData,
+          byType: equityByType,
+          total: totalEquity
+        },
+        totalLiabilitiesAndEquity: totalLiabilities + totalEquity,
+        isBalanced: Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 0.01
+      };
+    } catch (error) {
+      console.error("Error generating balance sheet:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate Trial Balance
+   */
+  static async generateTrialBalance(startDate, endDate) {
+    try {
+      const accounts = await ChartOfAccounts.find({ isActive: true });
+      
+      const trialBalanceData = [];
+      let totalDebits = 0;
+      let totalCredits = 0;
+
+      for (const account of accounts) {
+        const ledgerEntries = await GeneralLedger.find({
+          account: account._id,
+          entryDate: {
+            $gte: startDate,
+            $lte: endDate
+          }
+        });
+
+        const debitSum = ledgerEntries.reduce((sum, entry) => sum + entry.debit, 0);
+        const creditSum = ledgerEntries.reduce((sum, entry) => sum + entry.credit, 0);
+
+        // Calculate balance based on normal balance type
+        let balance;
+        if (account.normalBalance === 'debit') {
+          balance = debitSum - creditSum;
+        } else {
+          balance = creditSum - debitSum;
+        }
+
+        if (debitSum > 0 || creditSum > 0) {
+          trialBalanceData.push({
+            accountCode: account.accountCode,
+            accountName: account.accountName,
+            accountType: account.accountType,
+            normalBalance: account.normalBalance,
+            debit: debitSum,
+            credit: creditSum,
+            balance
+          });
+
+          totalDebits += debitSum;
+          totalCredits += creditSum;
+        }
+      }
+
+      return {
+        period: { startDate, endDate },
+        accounts: trialBalanceData,
+        totals: {
+          debits: totalDebits,
+          credits: totalCredits,
+          difference: Math.abs(totalDebits - totalCredits)
+        },
+        isBalanced: Math.abs(totalDebits - totalCredits) < 0.01
+      };
+    } catch (error) {
+      console.error("Error generating trial balance:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate Cash Flow Statement (Indirect Method)
+   */
+  static async generateCashFlowStatement(startDate, endDate) {
+    try {
+      // Get net income from income statement
+      const incomeStatement = await this.generateIncomeStatement(startDate, endDate);
+      const netIncome = incomeStatement.netIncome;
+
+      // Get changes in working capital accounts
+      const operatingActivities = await this._calculateOperatingActivities(startDate, endDate, netIncome);
+      const investingActivities = await this._calculateInvestingActivities(startDate, endDate);
+      const financingActivities = await this._calculateFinancingActivities(startDate, endDate);
+
+      const netCashFlow = operatingActivities.total + investingActivities.total + financingActivities.total;
+
+      // Get beginning and ending cash balances
+      const cashAccounts = await ChartOfAccounts.find({
+        accountType: 'asset',
+        reportCategory: 'cash_and_equivalents',
+        isActive: true
+      });
+
+      const beginningCash = await this._getCashBalance(cashAccounts, startDate);
+      const endingCash = await this._getCashBalance(cashAccounts, endDate);
+
+      return {
+        period: { startDate, endDate },
+        operatingActivities,
+        investingActivities,
+        financingActivities,
+        netCashFlow,
+        beginningCash,
+        endingCash,
+        netChange: endingCash - beginningCash
+      };
+    } catch (error) {
+      console.error("Error generating cash flow statement:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Helper: Calculate account balances for a period
+   */
+  static async _calculateAccountBalances(accountIds, startDate, endDate) {
+    const results = [];
+
+    for (const accountId of accountIds) {
+      const account = await ChartOfAccounts.findById(accountId);
+      if (!account) continue;
+
+      const query = { account: accountId };
+      if (startDate) query.entryDate = { $gte: startDate };
+      if (endDate) {
+        query.entryDate = query.entryDate || {};
+        query.entryDate.$lte = endDate;
+      }
+
+      const ledgerEntries = await GeneralLedger.find(query);
+
+      const debitSum = ledgerEntries.reduce((sum, entry) => sum + entry.debit, 0);
+      const creditSum = ledgerEntries.reduce((sum, entry) => sum + entry.credit, 0);
+
+      let balance;
+      if (account.normalBalance === 'debit') {
+        balance = debitSum - creditSum;
+      } else {
+        balance = creditSum - debitSum;
+      }
+
+      if (Math.abs(balance) > 0.01) {
+        results.push({
+          accountCode: account.accountCode,
+          accountName: account.accountName,
+          accountType: account.accountType,
+          accountSubType: account.accountSubType,
+          balance
+        });
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Helper: Group accounts by sub-type
+   */
+  static _groupBySubType(accountData) {
+    const grouped = {};
+    
+    accountData.forEach(item => {
+      const subType = item.accountSubType;
+      if (!grouped[subType]) {
+        grouped[subType] = {
+          accounts: [],
+          total: 0
+        };
+      }
+      grouped[subType].accounts.push(item);
+      grouped[subType].total += item.balance;
+    });
+
+    return grouped;
+  }
+
+  /**
+   * Helper: Calculate operating activities for cash flow
+   */
+  static async _calculateOperatingActivities(startDate, endDate, netIncome) {
+    // Simplified version - in production, you'd calculate actual changes
+    const items = [
+      { description: 'Net Income', amount: netIncome }
+    ];
+
+    // Add back non-cash expenses (depreciation, etc.)
+    // Adjust for changes in working capital
+    // This is a simplified version
+
+    return {
+      items,
+      total: netIncome
+    };
+  }
+
+  /**
+   * Helper: Calculate investing activities
+   */
+  static async _calculateInvestingActivities(startDate, endDate) {
+    // Get fixed asset purchases/sales
+    const items = [];
+    const total = items.reduce((sum, item) => sum + item.amount, 0);
+
+    return { items, total };
+  }
+
+  /**
+   * Helper: Calculate financing activities
+   */
+  static async _calculateFinancingActivities(startDate, endDate) {
+    // Get loans, equity transactions
+    const items = [];
+    const total = items.reduce((sum, item) => sum + item.amount, 0);
+
+    return { items, total };
+  }
+
+  /**
+   * Helper: Get cash balance at a specific date
+   */
+  static async _getCashBalance(cashAccounts, asOfDate) {
+    let totalCash = 0;
+
+    for (const account of cashAccounts) {
+      const balance = await GeneralLedger.getAccountBalance(account._id, asOfDate);
+      totalCash += balance;
+    }
+
+    return totalCash;
+  }
+}
+
+module.exports = FinancialReportService;

@@ -1562,6 +1562,7 @@ What would you like to know more about?`
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    margin-bottom: 20px;
 }
 
 .message {

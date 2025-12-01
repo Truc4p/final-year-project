@@ -7,7 +7,7 @@
       <router-view />
     </main>
     
-    <footer class="modern-footer text-white py-16">
+    <footer v-if="showFooter" class="modern-footer text-white py-16">
       <div class="container mx-auto px-6 footer-content">
         <div class="footer-grid">
           <!-- Brand Section -->
@@ -95,13 +95,20 @@
 import CustomerNavbar from "./Customer-Navbar.vue";
 import { useI18n } from 'vue-i18n';
 import { ref, computed } from 'vue';
+import { useRoute } from 'vue-router';
 
 const { locale, t } = useI18n();
 const currentLocale = ref(locale.value);
+const route = useRoute();
 
 const changeLanguage = (event) => {
   locale.value = event.target.value;
 };
+
+// Hide footer for AI Dermatology Expert page
+const showFooter = computed(() => {
+  return route.path !== '/customer/skin-study';
+});
 </script>
 
 <style scoped>
