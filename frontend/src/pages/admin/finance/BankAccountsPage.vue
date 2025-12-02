@@ -168,7 +168,7 @@ const fetchAccounts = async () => {
   error.value = null;
   try {
     const data = await financeService.getBankAccounts({ limit: 100 });
-    const accounts = data?.accounts || data || [];
+    const accounts = data?.data || [];
     bankAccounts.value = accounts.map(a => ({
       id: a._id || a.id,
       accountName: a.accountName || a.name || 'Bank Account',
@@ -192,15 +192,17 @@ const fetchAccounts = async () => {
 const fetchTransactions = async (accountId) => {
   try {
     const data = await financeService.getBankAccountTransactions(accountId, { limit: 10 });
-    const txns = data?.transactions || data || [];
+    const txns = Array.isArray(data?.data) ? data.data : [];
     recentTransactions.value = txns.map((t, idx) => ({
       id: t._id || idx,
-      date: t.entryDate || t.date || t.createdAt || new Date().toISOString(),
+      date: t.transactionDate || t.entryDate || t.date || t.createdAt || new Date().toISOString(),
       description: t.description || t.memo || 'Transaction',
-      // Fallback: prefer amount if present; else compute from debit/credit
-      amount: Number(t.amount !== undefined ? t.amount : (t.debit || 0) - (t.credit || 0)),
-      type: (t.type) || ((t.debit || 0) > 0 ? 'withdrawal' : 'deposit'),
-      status: t.status || 'reconciled'
+      // Prefer explicit amount; else derive from debit/credit when present
+      amount: Number(
+        t.amount !== undefined ? t.amount : ((t.debit !== undefined || t.credit !== undefined) ? ((t.debit || 0) - (t.credit || 0)) : 0)
+      ),
+      type: t.transactionType || t.type || ((t.debit || 0) > 0 ? 'withdrawal' : 'deposit'),
+      status: t.status || (t.isReconciled ? 'reconciled' : 'pending')
     }));
   } catch (e) {
     console.error('Failed to load transactions', e);
