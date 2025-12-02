@@ -24,6 +24,9 @@
           <router-link :to="{ path: '/admin/users' }" exact-active-class="router-link-exact-active" class="navbar-link">
             {{ t('users') }}
           </router-link>
+          <router-link :to="{ path: '/admin/live-stream' }" exact-active-class="router-link-exact-active" class="navbar-link">
+            {{ t('liveStream') }}
+          </router-link>
           <router-link :to="{ path: '/admin/analytics' }" exact-active-class="router-link-exact-active" class="navbar-link">
             {{ t('analytics') }}
           </router-link>
@@ -32,9 +35,6 @@
           </router-link>
           <router-link :to="{ path: '/admin/hr' }" exact-active-class="router-link-exact-active" class="navbar-link">
             {{ t('hr') }}
-          </router-link>
-          <router-link :to="{ path: '/admin/live-stream' }" exact-active-class="router-link-exact-active" class="navbar-link">
-            {{ t('liveStream') }}
           </router-link>
 
           <!-- Finance Dropdown -->

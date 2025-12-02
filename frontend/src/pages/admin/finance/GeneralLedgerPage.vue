@@ -137,9 +137,12 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import financeService from '@/services/financeService';
 
 const { t } = useI18n();
+const route = useRoute();
 
 const filters = ref({
   search: '',
@@ -148,78 +151,70 @@ const filters = ref({
   dateTo: ''
 });
 
-// Sample data
-const journalEntries = ref([
-  { id: 1, entryNumber: 'JE-001', date: '2024-01-15', account: '1000 - Cash', description: 'Customer Payment - Invoice INV-001', debit: 5000, credit: 0, status: 'posted' },
-  { id: 2, entryNumber: 'JE-001', date: '2024-01-15', account: '4000 - Sales Revenue', description: 'Customer Payment - Invoice INV-001', debit: 0, credit: 5000, status: 'posted' },
-  { id: 3, entryNumber: 'JE-002', date: '2024-01-14', account: '5000 - COGS', description: 'Inventory Purchase', debit: 2000, credit: 0, status: 'posted' },
-  { id: 4, entryNumber: 'JE-002', date: '2024-01-14', account: '2000 - Accounts Payable', description: 'Inventory Purchase', debit: 0, credit: 2000, status: 'posted' },
-  { id: 5, entryNumber: 'JE-003', date: '2024-01-13', account: '5100 - Salaries', description: 'Monthly Payroll', debit: 3500, credit: 0, status: 'draft' },
-]);
+const loading = ref(false);
+const error = ref(null);
+const journalEntries = ref([]);
+const trialBalance = ref([]);
 
-const trialBalance = ref([
-  { id: 1, name: '1000 - Cash', debit: 55000, credit: 0 },
-  { id: 2, name: '1100 - Accounts Receivable', debit: 25000, credit: 0 },
-  { id: 3, name: '2000 - Accounts Payable', debit: 0, credit: 15000 },
-  { id: 4, name: '3000 - Owner Capital', debit: 0, credit: 100000 },
-  { id: 5, name: '4000 - Sales Revenue', debit: 0, credit: 125000 },
-  { id: 6, name: '5000 - COGS', debit: 45000, credit: 0 },
-  { id: 7, name: '5100 - Salaries', debit: 35000, credit: 0 },
-]);
+const fetchGL = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const params = {};
+    if (filters.value.search) params.search = filters.value.search;
+    if (filters.value.account) params.account = filters.value.account;
+    if (filters.value.dateFrom) params.dateFrom = filters.value.dateFrom;
+    if (filters.value.dateTo) params.dateTo = filters.value.dateTo;
+
+    const data = await financeService.getJournalEntries(params);
+    const entries = data?.entries || [];
+    journalEntries.value = entries.map(e => ({
+      id: e.id,
+      entryNumber: e.entryNumber,
+      date: e.date,
+      account: e.account,
+      description: e.description,
+      debit: e.debit,
+      credit: e.credit,
+      status: e.status
+    }));
+
+    const tb = await financeService.getTrialBalance({ asOfDate: filters.value.dateTo || undefined });
+    trialBalance.value = (tb?.accounts || []).map(a => ({ id: a.id, name: a.name, debit: a.debit, credit: a.credit }));
+  } catch (e) {
+    error.value = e?.message || 'Failed to load general ledger';
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(async () => {
+  // If entryNumber passed from Bill/Invoice detail, prefill search
+  const jeNum = route.query.entryNumber;
+  if (jeNum) filters.value.search = String(jeNum);
+  await fetchGL();
+});
+
+watch(() => [filters.value.search, filters.value.account, filters.value.dateFrom, filters.value.dateTo], fetchGL);
 
 const filteredEntries = computed(() => {
-  return journalEntries.value.filter(entry => {
-    const matchesSearch = entry.entryNumber.includes(filters.value.search) ||
-                         entry.description.toLowerCase().includes(filters.value.search.toLowerCase());
-    const matchesAccount = !filters.value.account || entry.account.includes(filters.value.account);
-    return matchesSearch && matchesAccount;
-  });
+  // Additional client-side filter if needed (server already filters by params)
+  return journalEntries.value;
 });
 
-const totalDebits = computed(() => {
-  return filteredEntries.value.reduce((sum, entry) => sum + entry.debit, 0);
-});
+const totalDebits = computed(() => filteredEntries.value.reduce((s, e) => s + (e.debit || 0), 0));
+const totalCredits = computed(() => filteredEntries.value.reduce((s, e) => s + (e.credit || 0), 0));
+const difference = computed(() => totalDebits.value - totalCredits.value);
 
-const totalCredits = computed(() => {
-  return filteredEntries.value.reduce((sum, entry) => sum + entry.credit, 0);
-});
+const trialBalanceTotalDebit = computed(() => trialBalance.value.reduce((s, a) => s + (a.debit || 0), 0));
+const trialBalanceTotalCredit = computed(() => trialBalance.value.reduce((s, a) => s + (a.credit || 0), 0));
 
-const difference = computed(() => {
-  return totalDebits.value - totalCredits.value;
-});
+const formatDate = (date) => new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+const getStatusClass = (status) => ({ 'draft': 'bg-gray-100 text-gray-800', 'posted': 'bg-green-100 text-green-800', 'reversed': 'bg-red-100 text-red-800' }[status] || 'bg-gray-100 text-gray-800');
 
-const trialBalanceTotalDebit = computed(() => {
-  return trialBalance.value.reduce((sum, account) => sum + account.debit, 0);
-});
-
-const trialBalanceTotalCredit = computed(() => {
-  return trialBalance.value.reduce((sum, account) => sum + account.credit, 0);
-});
-
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-};
-
-const getStatusClass = (status) => {
-  const classes = {
-    'draft': 'bg-gray-100 text-gray-800',
-    'posted': 'bg-green-100 text-green-800',
-    'reversed': 'bg-red-100 text-red-800'
-  };
-  return classes[status] || 'bg-gray-100 text-gray-800';
-};
-
-const viewEntry = (id) => {
-  console.log('View entry:', id);
-};
-
-const editEntry = (id) => {
-  console.log('Edit entry:', id);
-};
-
-const deleteEntry = (id) => {
-  journalEntries.value = journalEntries.value.filter(entry => entry.id !== id);
-};
+const viewEntry = (id) => { console.log('View entry:', id); };
+const editEntry = (id) => { console.log('Edit entry:', id); };
+const deleteEntry = (id) => { /* future */ };
 </script>
 
 <style scoped>

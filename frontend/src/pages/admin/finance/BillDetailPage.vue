@@ -96,7 +96,12 @@
           <h2 class="text-lg font-semibold mb-4">Journal</h2>
           <div v-if="bill.isPosted && bill.journalEntry" class="text-sm text-gray-700">
             <div class="mb-2">Entry #: <span class="font-medium">{{ bill.journalEntry.entryNumber || bill.journalEntry }}</span></div>
-            <router-link class="text-blue-600 hover:text-blue-800 text-sm" to="/admin/finance/general-ledger">View in General Ledger →</router-link>
+            <router-link
+              class="text-blue-600 hover:text-blue-800 text-sm"
+              :to="{ path: '/admin/finance/general-ledger', query: { entryNumber: bill.journalEntry.entryNumber || '' } }"
+            >
+              View in General Ledger →
+            </router-link>
           </div>
           <div v-else class="text-sm text-gray-500">No journal entry yet.</div>
         </div>
