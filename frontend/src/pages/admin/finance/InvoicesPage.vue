@@ -6,21 +6,90 @@
         <h1 class="text-3xl font-bold text-gray-900">Invoices (Accounts Receivable)</h1>
         <p class="text-gray-600 mt-2">Manage customer invoices and payments</p>
       </div>
-      <button @click="openCreateInfo()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+      <button @click="openCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
         + Create Invoice
       </button>
     </div>
 
-    <!-- Info alert for creation wiring -->
-    <div v-if="showCreateHint" class="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-6">
-      <div class="flex items-start">
-        <svg class="w-5 h-5 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
-        </svg>
-        <div>
-          <p class="font-semibold">Invoice creation requires Customers and Revenue accounts.</p>
-          <p class="text-sm mt-1">Your list is now connected to MongoDB. To enable creating invoices from the UI, we need a customer to select and revenue accounts from your Chart of Accounts. I can wire this next, or you can seed a Customer and revenue COA, then we’ll enable the form.</p>
+    <!-- Create Invoice Modal -->
+    <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-2xl font-bold text-gray-900">Create Invoice</h2>
+          <button @click="closeCreateModal" class="text-gray-500 hover:text-gray-700">✕</button>
         </div>
+
+        <form @submit.prevent="submitInvoice" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+              <select v-model="createForm.customer" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="" disabled>Select customer...</option>
+                <option v-for="c in customers" :key="c._id" :value="c._id">
+                  {{ c.displayName || c.companyName || c.customerNumber }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Date</label>
+              <input v-model="createForm.invoiceDate" type="date" class="w-full px-3 py-2 border rounded-lg" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Line Items</label>
+            <div class="space-y-3">
+              <div v-for="(li, idx) in createForm.lineItems" :key="idx" class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
+                <div class="md:col-span-4">
+                  <input v-model="li.description" placeholder="Description" required class="w-full px-3 py-2 border rounded-lg" />
+                </div>
+                <div class="md:col-span-2">
+                  <input v-model.number="li.quantity" type="number" min="1" placeholder="Qty" required class="w-full px-3 py-2 border rounded-lg" />
+                </div>
+                <div class="md:col-span-2">
+                  <input v-model.number="li.unitPrice" type="number" min="0" step="0.01" placeholder="Unit Price" required class="w-full px-3 py-2 border rounded-lg" />
+                </div>
+                <div class="md:col-span-2">
+                  <input v-model.number="li.taxRate" type="number" min="0" max="100" step="0.01" placeholder="Tax %" class="w-full px-3 py-2 border rounded-lg" />
+                </div>
+                <div class="md:col-span-2">
+                  <select v-model="li.revenueAccount" required class="w-full px-3 py-2 border rounded-lg">
+                    <option value="" disabled>Revenue account</option>
+                    <option v-for="a in revenueAccounts" :key="a._id" :value="a._id">
+                      {{ a.accountCode }} - {{ a.accountName }}
+                    </option>
+                  </select>
+                </div>
+                <div class="md:col-span-12 flex justify-between">
+                  <div class="text-sm text-gray-600">Line total: ${{ lineTotal(li).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
+                  <button type="button" @click="removeLineItem(idx)" class="text-red-600 hover:text-red-800 text-sm" v-if="createForm.lineItems.length > 1">Remove</button>
+                </div>
+              </div>
+              <button type="button" @click="addLineItem" class="text-blue-600 hover:text-blue-800 text-sm">+ Add line</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Shipping</label>
+              <input v-model.number="createForm.shippingCost" type="number" min="0" step="0.01" class="w-full px-3 py-2 border rounded-lg" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Adjustments</label>
+              <input v-model.number="createForm.adjustments" type="number" step="0.01" class="w-full px-3 py-2 border rounded-lg" />
+            </div>
+            <div class="self-end text-right">
+              <div class="text-sm text-gray-600">Subtotal: ${{ subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
+              <div class="text-sm text-gray-600">Tax: ${{ totalTax.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
+              <div class="text-base font-semibold text-gray-900">Total: ${{ grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-2">
+            <button type="button" @click="closeCreateModal" class="px-4 py-2 border rounded-lg">Cancel</button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Create</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -89,6 +158,7 @@
             <td class="px-6 py-4 text-sm space-x-2">
               <button @click="viewInvoice(inv._id)" class="text-blue-600 hover:text-blue-800 font-medium">View</button>
               <button v-if="inv.status==='draft'" @click="editInvoice(inv._id)" class="text-green-600 hover:text-green-800 font-medium">Edit</button>
+              <button v-if="inv.status==='draft'" @click="postInvoice(inv._id)" class="text-purple-600 hover:text-purple-800 font-medium">Post</button>
               <button v-if="inv.status==='draft'" @click="deleteInvoiceHandler(inv._id)" class="text-red-600 hover:text-red-800 font-medium">Delete</button>
             </td>
           </tr>
@@ -121,7 +191,6 @@ const { t } = useI18n();
 
 const isLoading = ref(false);
 const error = ref(null);
-const showCreateHint = ref(false);
 
 const filters = ref({
   search: '',
@@ -132,6 +201,20 @@ const filters = ref({
 
 const invoices = ref([]);
 const pagination = ref({ currentPage: 1, totalPages: 1, total: 0, hasNext: false, hasPrev: false });
+
+// Create Invoice modal state
+const showCreateModal = ref(false);
+const customers = ref([]);
+const revenueAccounts = ref([]);
+const createForm = ref({
+  customer: '',
+  invoiceDate: new Date().toISOString().slice(0, 10),
+  lineItems: [
+    { description: '', quantity: 1, unitPrice: 0, taxRate: 0, revenueAccount: '' }
+  ],
+  shippingCost: 0,
+  adjustments: 0
+});
 
 const fetchInvoices = async (page = 1) => {
   isLoading.value = true;
@@ -190,8 +273,102 @@ const getStatusClass = (status) => {
   return classes[status] || 'bg-gray-100 text-gray-800';
 };
 
-const openCreateInfo = () => {
-  showCreateHint.value = true;
+// Modal helpers
+const todayStr = () => new Date().toISOString().slice(0, 10);
+
+const openCreateModal = async () => {
+  showCreateModal.value = true;
+  createForm.value = {
+    customer: '',
+    invoiceDate: todayStr(),
+    lineItems: [{ description: '', quantity: 1, unitPrice: 0, taxRate: 0, revenueAccount: '' }],
+    shippingCost: 0,
+    adjustments: 0
+  };
+  await Promise.all([loadCustomers(), loadRevenueAccounts()]);
+};
+
+const closeCreateModal = () => {
+  showCreateModal.value = false;
+};
+
+const loadCustomers = async () => {
+  try {
+    const data = await financeService.getCustomers({ status: 'active', limit: 100 });
+    customers.value = data.customers || [];
+  } catch (e) {
+    console.error('Failed to load customers', e);
+  }
+};
+
+const loadRevenueAccounts = async () => {
+  try {
+    const data = await financeService.getChartOfAccounts({ accountType: 'revenue', isActive: true, limit: 200 });
+    revenueAccounts.value = data.accounts || data || [];
+  } catch (e) {
+    console.error('Failed to load revenue accounts', e);
+  }
+};
+
+// Line items and totals
+const lineTotal = (li) => {
+  const qty = Number(li.quantity) || 0;
+  const price = Number(li.unitPrice) || 0;
+  const rate = Number(li.taxRate) || 0;
+  const subtotal = qty * price;
+  const tax = subtotal * rate / 100;
+  return subtotal + tax;
+};
+
+const subtotal = computed(() => createForm.value.lineItems.reduce((s, li) => s + ((Number(li.quantity)||0) * (Number(li.unitPrice)||0)), 0));
+const totalTax = computed(() => createForm.value.lineItems.reduce((s, li) => {
+  const sub = (Number(li.quantity)||0) * (Number(li.unitPrice)||0);
+  const rate = Number(li.taxRate)||0;
+  return s + sub * rate / 100;
+}, 0));
+const grandTotal = computed(() => subtotal.value + totalTax.value + (Number(createForm.value.shippingCost)||0) + (Number(createForm.value.adjustments)||0));
+
+const addLineItem = () => {
+  createForm.value.lineItems.push({ description: '', quantity: 1, unitPrice: 0, taxRate: 0, revenueAccount: '' });
+};
+const removeLineItem = (idx) => {
+  createForm.value.lineItems.splice(idx, 1);
+};
+
+const submitInvoice = async () => {
+  try {
+    if (!createForm.value.customer) {
+      alert('Please select a customer');
+      return;
+    }
+    if (createForm.value.lineItems.some(li => !li.description || !li.revenueAccount || (Number(li.quantity)||0) <= 0)) {
+      alert('Please complete all line items');
+      return;
+    }
+
+    const payload = {
+      customer: createForm.value.customer,
+      invoiceDate: createForm.value.invoiceDate,
+      lineItems: createForm.value.lineItems.map((li, idx) => ({
+        lineNumber: idx + 1,
+        description: li.description,
+        quantity: Number(li.quantity) || 0,
+        unitPrice: Number(li.unitPrice) || 0,
+        taxRate: Number(li.taxRate) || 0,
+        revenueAccount: li.revenueAccount
+      })),
+      shippingCost: Number(createForm.value.shippingCost) || 0,
+      adjustments: Number(createForm.value.adjustments) || 0
+    };
+
+    const res = await financeService.createInvoice(payload);
+    // Refresh list
+    await fetchInvoices(1);
+    closeCreateModal();
+  } catch (err) {
+    console.error(err);
+    alert(err?.message || 'Failed to create invoice');
+  }
 };
 
 const viewInvoice = (id) => {
@@ -200,6 +377,16 @@ const viewInvoice = (id) => {
 
 const editInvoice = (id) => {
   console.log('Edit invoice', id);
+};
+
+const postInvoice = async (id) => {
+  try {
+    await financeService.postInvoice(id);
+    await fetchInvoices(pagination.value.currentPage || 1);
+  } catch (err) {
+    console.error(err);
+    alert(err?.message || 'Failed to post invoice');
+  }
 };
 
 const deleteInvoiceHandler = async (id) => {

@@ -43,6 +43,20 @@ export const financeService = {
   // Dashboard
   getDashboard: () => apiCall('/api/finance/dashboard'),
 
+  // ==================== CUSTOMERS ====================
+  
+  // Get customers
+  getCustomers: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/customers${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Create customer
+  createCustomer: (data) => apiCall('/customers', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
   // ==================== INVOICES ====================
   
   // Get all invoices
@@ -70,6 +84,9 @@ export const financeService = {
   deleteInvoice: (id) => apiCall(`/invoices/${id}`, {
     method: 'DELETE'
   }),
+
+  // Post invoice to general ledger
+  postInvoice: (id) => apiCall(`/invoices/${id}/post`, { method: 'POST' }),
 
   // ==================== BILLS ====================
 

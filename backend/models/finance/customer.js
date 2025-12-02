@@ -196,8 +196,8 @@ CustomerSchema.statics.generateCustomerNumber = async function() {
   return `CUST-${number}`;
 };
 
-// Pre-save middleware
-CustomerSchema.pre('save', async function(next) {
+// Pre-validate middleware to ensure required fields are set before validation
+CustomerSchema.pre('validate', async function(next) {
   if (this.isNew && !this.customerNumber) {
     this.customerNumber = await this.constructor.generateCustomerNumber();
   }
