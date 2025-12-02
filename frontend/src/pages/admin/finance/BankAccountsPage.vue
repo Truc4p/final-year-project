@@ -102,6 +102,16 @@
                 <option value="money_market">Money Market</option>
               </select>
             </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Linked GL account</label>
+              <select v-model="formData.chartOfAccountsEntry" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <option value="" disabled>Select cash/asset account...</option>
+                <option v-for="a in coaAccounts" :key="a._id || a.id" :value="a._id || a.id">
+                  {{ a.accountCode }} - {{ a.accountName }}
+                </option>
+              </select>
+              <p v-if="!coaAccounts.length" class="text-xs text-gray-500 mt-1">No asset accounts found. Seed Chart of Accounts first.</p>
+            </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
@@ -127,11 +137,14 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import financeService from '@/services/financeService';
 
 const { t } = useI18n();
 
 const showCreateModal = ref(false);
+const isLoading = ref(false);
+const error = ref(null);
 
 const formData = ref({
   accountName: '',
@@ -139,71 +152,125 @@ const formData = ref({
   accountNumber: '',
   accountType: 'checking',
   currentBalance: 0,
-  isPrimary: false
+  isPrimary: false,
+  chartOfAccountsEntry: ''
 });
 
-// Sample data
-const bankAccounts = ref([
-  { id: 1, accountName: 'Main Operating Account', bankName: 'Chase Bank', accountNumber: '1234567890', accountNumberMasked: '****7890', accountType: 'checking', currentBalance: 55000, isPrimary: true },
-  { id: 2, accountName: 'Savings Account', bankName: 'Bank of America', accountNumber: '0987654321', accountNumberMasked: '****4321', accountType: 'savings', currentBalance: 25000, isPrimary: false },
-  { id: 3, accountName: 'Payroll Account', bankName: 'Wells Fargo', accountNumber: '5555666677', accountNumberMasked: '****6677', accountType: 'checking', currentBalance: 15000, isPrimary: false },
-]);
+const bankAccounts = ref([]);
+const selectedAccountId = ref(null);
+const recentTransactions = ref([]);
+const coaAccounts = ref([]);
 
-const recentTransactions = ref([
-  { id: 1, date: '2024-01-15', description: 'Customer Payment - Invoice INV-001', type: 'deposit', amount: 5000, status: 'reconciled' },
-  { id: 2, date: '2024-01-14', description: 'Vendor Payment - Bill BILL-001', type: 'withdrawal', amount: 1500, status: 'reconciled' },
-  { id: 3, date: '2024-01-13', description: 'Bank Fee', type: 'withdrawal', amount: 25, status: 'reconciled' },
-  { id: 4, date: '2024-01-12', description: 'Customer Payment - Invoice INV-002', type: 'deposit', amount: 3500, status: 'pending' },
-  { id: 5, date: '2024-01-11', description: 'Interest Earned', type: 'deposit', amount: 50, status: 'reconciled' },
-]);
+const maskAccount = (num) => (num ? `****${String(num).slice(-4)}` : '****');
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+const fetchAccounts = async () => {
+  isLoading.value = true;
+  error.value = null;
+  try {
+    const data = await financeService.getBankAccounts({ limit: 100 });
+    const accounts = data?.accounts || data || [];
+    bankAccounts.value = accounts.map(a => ({
+      id: a._id || a.id,
+      accountName: a.accountName || a.name || 'Bank Account',
+      bankName: a.bankName || a.institution || '',
+      accountNumberMasked: maskAccount(a.accountNumber || a.number),
+      accountType: a.accountType || a.type,
+      currentBalance: Number(a.currentBalance || 0),
+      isPrimary: !!a.isPrimary
+    }));
+    // select primary or first
+    const primary = bankAccounts.value.find(a => a.isPrimary) || bankAccounts.value[0];
+    selectedAccountId.value = primary ? primary.id : null;
+    if (selectedAccountId.value) await fetchTransactions(selectedAccountId.value);
+  } catch (e) {
+    error.value = e?.message || 'Failed to load bank accounts';
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-const getStatusClass = (status) => {
-  const classes = {
-    'reconciled': 'bg-green-100 text-green-800',
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'failed': 'bg-red-100 text-red-800'
-  };
-  return classes[status] || 'bg-gray-100 text-gray-800';
+const fetchTransactions = async (accountId) => {
+  try {
+    const data = await financeService.getBankAccountTransactions(accountId, { limit: 10 });
+    const txns = data?.transactions || data || [];
+    recentTransactions.value = txns.map((t, idx) => ({
+      id: t._id || idx,
+      date: t.entryDate || t.date || t.createdAt || new Date().toISOString(),
+      description: t.description || t.memo || 'Transaction',
+      // Fallback: prefer amount if present; else compute from debit/credit
+      amount: Number(t.amount !== undefined ? t.amount : (t.debit || 0) - (t.credit || 0)),
+      type: (t.type) || ((t.debit || 0) > 0 ? 'withdrawal' : 'deposit'),
+      status: t.status || 'reconciled'
+    }));
+  } catch (e) {
+    console.error('Failed to load transactions', e);
+    recentTransactions.value = [];
+  }
 };
 
-const viewAccount = (id) => {
-  console.log('View account:', id);
+const formatDate = (date) => new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+const getStatusClass = (status) => ({
+  reconciled: 'bg-green-100 text-green-800',
+  pending: 'bg-yellow-100 text-yellow-800',
+  failed: 'bg-red-100 text-red-800'
+}[status] || 'bg-gray-100 text-gray-800');
+
+const viewAccount = async (id) => {
+  selectedAccountId.value = id;
+  await fetchTransactions(id);
 };
 
 const editAccount = (id) => {
+  // Future: open edit modal prefilled
   console.log('Edit account:', id);
 };
 
-const deleteAccount = (id) => {
+const deleteAccount = async (id) => {
+  // Future: call delete API; for now, optimistic remove
   bankAccounts.value = bankAccounts.value.filter(acc => acc.id !== id);
 };
 
-const submitAccount = () => {
-  const newAccount = {
-    id: bankAccounts.value.length + 1,
-    accountName: formData.value.accountName,
-    bankName: formData.value.bankName,
-    accountNumber: formData.value.accountNumber,
-    accountNumberMasked: `****${formData.value.accountNumber.slice(-4)}`,
-    accountType: formData.value.accountType,
-    currentBalance: formData.value.currentBalance,
-    isPrimary: formData.value.isPrimary
-  };
-  bankAccounts.value.push(newAccount);
-  showCreateModal.value = false;
-  formData.value = {
-    accountName: '',
-    bankName: '',
-    accountNumber: '',
-    accountType: 'checking',
-    currentBalance: 0,
-    isPrimary: false
-  };
+const submitAccount = async () => {
+  try {
+    if (!formData.value.chartOfAccountsEntry) {
+      alert('Please select a linked GL account');
+      return;
+    }
+    const payload = {
+      accountName: formData.value.accountName,
+      bankName: formData.value.bankName,
+      accountNumber: formData.value.accountNumber,
+      accountType: formData.value.accountType,
+      currentBalance: Number(formData.value.currentBalance) || 0,
+      isPrimary: !!formData.value.isPrimary,
+      chartOfAccountsEntry: formData.value.chartOfAccountsEntry
+    };
+    await financeService.createBankAccount(payload);
+    showCreateModal.value = false;
+    formData.value = { accountName: '', bankName: '', accountNumber: '', accountType: 'checking', currentBalance: 0, isPrimary: false, chartOfAccountsEntry: '' };
+    await fetchAccounts();
+  } catch (e) {
+    alert(e?.message || 'Failed to add bank account');
+  }
 };
+
+const fetchCoaAccounts = async () => {
+  try {
+    const data = await financeService.getChartOfAccounts({ accountType: 'asset', isActive: true, limit: 200 });
+    const accounts = data?.accounts || data || [];
+    // Prefer accounts flagged as bankAccount; fallback to cash_and_equivalents or current_asset
+    const bankFlagged = accounts.filter(a => a.bankAccount === true);
+    coaAccounts.value = (bankFlagged.length ? bankFlagged : accounts).sort((a,b) => (a.accountCode||'').localeCompare(b.accountCode||''));
+  } catch (e) {
+    console.error('Failed to load chart of accounts', e);
+    coaAccounts.value = [];
+  }
+};
+
+onMounted(async () => {
+  await Promise.all([fetchAccounts(), fetchCoaAccounts()]);
+});
 </script>
 
 <style scoped>
