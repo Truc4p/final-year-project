@@ -239,7 +239,7 @@ const postBill = async (req, res) => {
       return res.status(400).json({ message: "Bill must be approved before posting" });
     }
 
-    const journalEntry = await bill.postToGeneralLedger(req.user._id);
+    const journalEntry = await bill.postToGeneralLedger((req.user && (req.user._id || req.user.id)));
 
     res.json({
       message: "Bill posted to general ledger successfully",

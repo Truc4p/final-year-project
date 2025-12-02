@@ -79,6 +79,8 @@
             <td class="px-6 py-4 text-sm space-x-2">
               <button @click="viewBill(bill._id)" class="text-blue-600 hover:text-blue-800 font-medium">View</button>
               <button v-if="bill.status==='draft'" @click="editBill(bill._id)" class="text-green-600 hover:text-green-800 font-medium">Edit</button>
+              <button v-if="bill.status==='draft'" @click="approveBillHandler(bill._id)" class="text-purple-600 hover:text-purple-800 font-medium">Approve</button>
+              <button v-if="bill.status==='approved'" @click="postBillHandler(bill._id)" class="text-orange-600 hover:text-orange-800 font-medium">Post</button>
               <button v-if="bill.status==='draft'" @click="deleteBillHandler(bill._id)" class="text-red-600 hover:text-red-800 font-medium">Delete</button>
             </td>
           </tr>
@@ -206,6 +208,25 @@ const deleteBillHandler = async (id) => {
     if (pagination.value.total > 0) pagination.value.total -= 1;
   } catch (err) {
     alert(err?.message || 'Failed to delete bill');
+  }
+};
+
+const approveBillHandler = async (id) => {
+  try {
+    await financeService.approveBill(id);
+    // refresh current page to reflect new status
+    await fetchBills(pagination.value.currentPage || 1);
+  } catch (err) {
+    alert(err?.message || 'Failed to approve bill');
+  }
+};
+
+const postBillHandler = async (id) => {
+  try {
+    await financeService.postBill(id);
+    await fetchBills(pagination.value.currentPage || 1);
+  } catch (err) {
+    alert(err?.message || 'Failed to post bill');
   }
 };
 

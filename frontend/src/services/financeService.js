@@ -116,6 +116,12 @@ export const financeService = {
     method: 'DELETE'
   }),
 
+  // Approve bill
+  approveBill: (id) => apiCall(`/bills/${id}/approve`, { method: 'POST' }),
+
+  // Post bill to general ledger
+  postBill: (id) => apiCall(`/bills/${id}/post`, { method: 'POST' }),
+
   // Bill form data helpers
   getBillVendors: (params = {}) => {
     const queryString = new URLSearchParams(params).toString();

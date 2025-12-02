@@ -337,15 +337,22 @@ BillSchema.methods.postToGeneralLedger = async function(userId) {
   
   // Debit: Expense accounts (increase expense)
   const expenseByAccount = new Map();
+  const normalizeAccountId = (val) => {
+    if (!val) return null;
+    // If populated document
+    if (val._id) return val._id;
+    return val; // assume ObjectId or string 24-hex
+  };
   this.lineItems.forEach(item => {
-    const accountId = item.expenseAccount.toString();
-    const current = expenseByAccount.get(accountId) || 0;
-    expenseByAccount.set(accountId, current + item.subtotal);
+    const accountId = normalizeAccountId(item.expenseAccount);
+    if (!accountId) return;
+    const current = expenseByAccount.get(String(accountId)) || 0;
+    expenseByAccount.set(String(accountId), current + item.subtotal);
   });
   
   for (const [accountId, amount] of expenseByAccount.entries()) {
     lines.push({
-      account: accountId,
+      account: accountId, // Mongoose will cast 24-hex string/ObjectId
       description: `Expense from Bill ${this.billNumber}`,
       debit: amount,
       credit: 0,
