@@ -102,7 +102,7 @@
       </div>
     </div>
     <!-- Create Bill Modal -->
-    <CreateBillModal :open="showCreateModal" @close="showCreateModal=false" @created="onBillCreated" />
+    <CreateBillModal :open="showCreateModal" :isEditing="isEditing" :billId="editingBillId" :initialBill="editingBill" @close="showCreateModal=false" @created="onBillCreated" />
   </div>
 </template>
 
@@ -119,6 +119,9 @@ const router = useRouter();
 const isLoading = ref(false);
 const error = ref(null);
 const showCreateModal = ref(false);
+const isEditing = ref(false);
+const editingBillId = ref('');
+const editingBill = ref(null);
 
 const filters = ref({
   search: '',
@@ -196,8 +199,18 @@ const viewBill = (id) => {
   router.push(`/admin/finance/bills/${id}`);
 };
 
-const editBill = (id) => {
-  console.log('Edit bill', id);
+const editBill = async (id) => {
+  try {
+    isEditing.value = true;
+    editingBillId.value = id;
+    // Fetch full bill details to prefill modal
+    const bill = await financeService.getBill(id);
+    editingBill.value = bill;
+    showCreateModal.value = true;
+  } catch (e) {
+    console.error(e);
+    alert(e?.message || 'Failed to load bill');
+  }
 };
 
 const deleteBillHandler = async (id) => {

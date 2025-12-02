@@ -98,11 +98,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import financeService from '@/services/financeService';
 
 const props = defineProps({
-  open: { type: Boolean, default: false }
+  open: { type: Boolean, default: false },
+  isEditing: { type: Boolean, default: false },
+  billId: { type: String, default: '' },
+  initialBill: { type: Object, default: null }
 });
 const emit = defineEmits(['close', 'created']);
 
@@ -135,42 +138,48 @@ const loadFormData = async () => {
   }
 };
 
-watch(() => props.open, (o) => {
+const hydrateFromInitial = () => {
+  if (!props.initialBill) return;
+  const b = props.initialBill;
+  form.vendor = typeof b.vendor === 'string' ? b.vendor : (b.vendor?._id || b.vendor?.id || '');
+  form.billDate = (b.billDate || '').slice(0,10) || todayISO();
+  form.dueDate = (b.dueDate || '').slice(0,10) || '';
+  form.lineItems = (b.lineItems || []).map(li => ({
+    description: li.description || '',
+    expenseAccount: (typeof li.expenseAccount === 'string') ? li.expenseAccount : (li.expenseAccount?._id || li.expenseAccount?.id || ''),
+    quantity: Number(li.quantity) || 1,
+    unitCost: Number(li.unitCost) || 0,
+    taxRate: Number(li.taxRate) || 0
+  }));
+  form.notes = b.notes || '';
+};
+
+watch(() => props.open, async (o) => {
   if (o) {
-    // reset form each open
-    form.vendor = '';
-    form.billDate = todayISO();
-    form.dueDate = '';
-    form.lineItems = [{ description: '', expenseAccount: '', quantity: 1, unitCost: 0, taxRate: 0 }];
-    form.notes = '';
-    loadFormData();
+    await loadFormData();
+    if (props.isEditing && props.initialBill) {
+      hydrateFromInitial();
+    } else {
+      // reset form for create
+      form.vendor = '';
+      form.billDate = todayISO();
+      form.dueDate = '';
+      form.lineItems = [{ description: '', expenseAccount: '', quantity: 1, unitCost: 0, taxRate: 0 }];
+      form.notes = '';
+    }
   }
 });
 
-const addLine = () => {
-  form.lineItems.push({ description: '', expenseAccount: '', quantity: 1, unitCost: 0, taxRate: 0 });
-};
-const removeLine = (idx) => {
-  form.lineItems.splice(idx, 1);
-};
+const addLine = () => { form.lineItems.push({ description: '', expenseAccount: '', quantity: 1, unitCost: 0, taxRate: 0 }); };
+const removeLine = (idx) => { form.lineItems.splice(idx, 1); };
 const close = () => emit('close');
 
 const submit = async () => {
-  if (!form.vendor) {
-    alert('Please select a vendor');
-    return;
-  }
-  // Validate line items
-  if (form.lineItems.length === 0) {
-    alert('Please add at least one line item');
-    return;
-  }
+  if (!form.vendor) { alert('Please select a vendor'); return; }
+  if (form.lineItems.length === 0) { alert('Please add at least one line item'); return; }
   for (let i = 0; i < form.lineItems.length; i++) {
     const li = form.lineItems[i];
-    if (!li.expenseAccount) {
-      alert(`Please select an expense account for line ${i + 1}`);
-      return;
-    }
+    if (!li.expenseAccount) { alert(`Please select an expense account for line ${i + 1}`); return; }
   }
 
   const items = form.lineItems.map((li, i) => ({
@@ -184,18 +193,29 @@ const submit = async () => {
 
   try {
     isSubmitting.value = true;
-    const payload = {
-      vendor: form.vendor,
-      billDate: form.billDate || undefined,
-      dueDate: form.dueDate || undefined,
-      lineItems: items,
-      notes: (form.notes || '').trim() || undefined
-    };
-    const res = await financeService.createBill(payload);
-    emit('created', res?.bill || null);
+    if (props.isEditing && props.billId) {
+      // Only fields allowed by backend updateBill
+      const updatePayload = {
+        lineItems: items,
+        notes: (form.notes || '').trim() || undefined,
+        dueDate: form.dueDate || undefined
+      };
+      const res = await financeService.updateBill(props.billId, updatePayload);
+      emit('created', res?.bill || null);
+    } else {
+      const payload = {
+        vendor: form.vendor,
+        billDate: form.billDate || undefined,
+        dueDate: form.dueDate || undefined,
+        lineItems: items,
+        notes: (form.notes || '').trim() || undefined
+      };
+      const res = await financeService.createBill(payload);
+      emit('created', res?.bill || null);
+    }
     close();
   } catch (e) {
-    alert(e?.message || 'Failed to create bill');
+    alert(e?.message || (props.isEditing ? 'Failed to save bill' : 'Failed to create bill'));
   } finally {
     isSubmitting.value = false;
   }
