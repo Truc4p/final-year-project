@@ -31,14 +31,12 @@ const InvoiceLineItemSchema = new Schema({
     default: 0,
     min: 0,
     max: 100
-    // Percentage discount
   },
   taxRate: {
     type: Number,
     default: 0,
     min: 0,
     max: 100
-    // Tax rate percentage
   },
   revenueAccount: {
     type: mongoose.Schema.Types.ObjectId,
@@ -49,7 +47,6 @@ const InvoiceLineItemSchema = new Schema({
   subtotal: {
     type: Number,
     default: 0
-    // quantity * unitPrice
   },
   discountAmount: {
     type: Number,
@@ -62,7 +59,6 @@ const InvoiceLineItemSchema = new Schema({
   total: {
     type: Number,
     default: 0
-    // (subtotal - discountAmount) + taxAmount
   }
 }, { _id: true });
 
@@ -85,17 +81,14 @@ const InvoicePaymentSchema = new Schema({
   reference: {
     type: String,
     trim: true
-    // Check number, transaction ID, etc.
   },
   bankAccount: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ChartOfAccounts'
-    // Bank account where payment was received
   },
   journalEntry: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'JournalEntry'
-    // Link to the payment journal entry
   },
   notes: {
     type: String,
@@ -113,8 +106,7 @@ const InvoiceSchema = new Schema({
     type: String,
     required: true,
     unique: true,
-    trim: true,
-    // Format: INV-YYYYMMDD-XXXX
+    trim: true
   },
   customer: {
     type: mongoose.Schema.Types.ObjectId,
@@ -141,57 +133,27 @@ const InvoiceSchema = new Schema({
   },
   // Line items
   lineItems: [InvoiceLineItemSchema],
-  
-  // Financial totals
-  subtotal: {
-    type: Number,
-    required: true,
-    default: 0
-  },
-  totalDiscount: {
-    type: Number,
-    default: 0
-  },
-  totalTax: {
-    type: Number,
-    default: 0
-  },
-  shippingCost: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-  adjustments: {
-    type: Number,
-    default: 0
-    // Any manual adjustments
-  },
-  totalAmount: {
-    type: Number,
-    required: true,
-    default: 0
-  },
-  amountPaid: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-  amountDue: {
-    type: Number,
-    default: 0
-    // totalAmount - amountPaid
-  },
-  
-  // Status tracking
+
+  // Totals
+  subtotal: { type: Number, required: true, default: 0 },
+  totalDiscount: { type: Number, default: 0 },
+  totalTax: { type: Number, default: 0 },
+  shippingCost: { type: Number, default: 0, min: 0 },
+  adjustments: { type: Number, default: 0 },
+  totalAmount: { type: Number, required: true, default: 0 },
+  amountPaid: { type: Number, default: 0, min: 0 },
+  amountDue: { type: Number, default: 0 },
+
+  // Status
   status: {
     type: String,
     enum: ['draft', 'sent', 'viewed', 'partial', 'paid', 'overdue', 'cancelled', 'void'],
     default: 'draft'
   },
-  
+
   // Payments
   payments: [InvoicePaymentSchema],
-  
+
   // Accounting integration
   accountsReceivableAccount: {
     type: mongoose.Schema.Types.ObjectId,
@@ -201,87 +163,34 @@ const InvoiceSchema = new Schema({
   journalEntry: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'JournalEntry'
-    // Link to the invoice journal entry (when posted)
   },
-  isPosted: {
-    type: Boolean,
-    default: false
-    // Whether journal entry has been created
-  },
-  postedDate: {
-    type: Date
-  },
-  
-  // Reference fields
-  purchaseOrder: {
-    type: String,
-    trim: true
-  },
-  order: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Order'
-    // Link to e-commerce order if applicable
-  },
-  
-  // Additional details
-  notes: {
-    type: String,
-    trim: true
-    // Internal notes
-  },
-  terms: {
-    type: String,
-    trim: true
-    // Terms and conditions shown on invoice
-  },
-  memo: {
-    type: String,
-    trim: true
-    // Message to customer
-  },
-  
-  // Metadata
-  currency: {
-    type: String,
-    default: 'USD',
-    trim: true
-  },
-  tags: [String],
-  attachments: [{
-    fileName: String,
-    fileUrl: String,
-    uploadDate: { type: Date, default: Date.now }
-  }],
-  
-  // Tracking
-  sentDate: {
-    type: Date
-  },
-  viewedDate: {
-    type: Date
-  },
-  lastReminderDate: {
-    type: Date
-  },
-  reminderCount: {
-    type: Number,
-    default: 0
-  },
-  
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  lastModifiedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }
-}, {
-  timestamps: true
-});
+  isPosted: { type: Boolean, default: false },
+  postedDate: { type: Date },
 
-// Indexes for performance
+  // References
+  purchaseOrder: { type: String, trim: true },
+  order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
+
+  // Additional
+  notes: { type: String, trim: true },
+  terms: { type: String, trim: true },
+  memo: { type: String, trim: true },
+
+  currency: { type: String, default: 'USD', trim: true },
+  tags: [String],
+  attachments: [{ fileName: String, fileUrl: String, uploadDate: { type: Date, default: Date.now } }],
+
+  // Tracking
+  sentDate: { type: Date },
+  viewedDate: { type: Date },
+  lastReminderDate: { type: Date },
+  reminderCount: { type: Number, default: 0 },
+
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  lastModifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+}, { timestamps: true });
+
+// Indexes
 InvoiceSchema.index({ invoiceNumber: 1 });
 InvoiceSchema.index({ customer: 1, invoiceDate: -1 });
 InvoiceSchema.index({ status: 1, dueDate: 1 });
@@ -289,20 +198,14 @@ InvoiceSchema.index({ invoiceDate: -1 });
 InvoiceSchema.index({ dueDate: 1, status: 1 });
 InvoiceSchema.index({ order: 1 });
 
-// Virtual for days overdue
+// Virtuals
 InvoiceSchema.virtual('daysOverdue').get(function() {
-  if (this.status === 'paid' || this.status === 'cancelled' || this.status === 'void') {
-    return 0;
-  }
+  if (this.status === 'paid' || this.status === 'cancelled' || this.status === 'void') return 0;
   const today = new Date();
   const due = new Date(this.dueDate);
-  if (today > due) {
-    return Math.floor((today - due) / (1000 * 60 * 60 * 24));
-  }
-  return 0;
+  return today > due ? Math.floor((today - due) / (1000 * 60 * 60 * 24)) : 0;
 });
 
-// Virtual for aging bucket
 InvoiceSchema.virtual('agingBucket').get(function() {
   const days = this.daysOverdue;
   if (days <= 0) return 'current';
@@ -312,7 +215,7 @@ InvoiceSchema.virtual('agingBucket').get(function() {
   return '90+';
 });
 
-// Method to calculate line item totals
+// Calculate line item totals
 InvoiceLineItemSchema.methods.calculateTotals = function() {
   this.subtotal = this.quantity * this.unitPrice;
   this.discountAmount = (this.subtotal * this.discount) / 100;
@@ -321,9 +224,8 @@ InvoiceLineItemSchema.methods.calculateTotals = function() {
   this.total = afterDiscount + this.taxAmount;
 };
 
-// Method to calculate invoice totals
+// Calculate invoice totals
 InvoiceSchema.methods.calculateTotals = function() {
-  // Calculate line item totals
   this.lineItems.forEach(item => {
     item.subtotal = item.quantity * item.unitPrice;
     item.discountAmount = (item.subtotal * item.discount) / 100;
@@ -331,50 +233,35 @@ InvoiceSchema.methods.calculateTotals = function() {
     item.taxAmount = (afterDiscount * item.taxRate) / 100;
     item.total = afterDiscount + item.taxAmount;
   });
-  
-  // Sum up totals
-  this.subtotal = this.lineItems.reduce((sum, item) => sum + item.subtotal, 0);
-  this.totalDiscount = this.lineItems.reduce((sum, item) => sum + item.discountAmount, 0);
-  this.totalTax = this.lineItems.reduce((sum, item) => sum + item.taxAmount, 0);
-  
+
+  this.subtotal = this.lineItems.reduce((sum, i) => sum + i.subtotal, 0);
+  this.totalDiscount = this.lineItems.reduce((sum, i) => sum + i.discountAmount, 0);
+  this.totalTax = this.lineItems.reduce((sum, i) => sum + i.taxAmount, 0);
   this.totalAmount = this.subtotal - this.totalDiscount + this.totalTax + this.shippingCost + this.adjustments;
   this.amountDue = this.totalAmount - this.amountPaid;
 };
 
-// Method to add payment
+// Add payment
 InvoiceSchema.methods.addPayment = async function(paymentData, userId) {
-  const payment = {
-    ...paymentData,
-    createdBy: userId
-  };
-  
+  const payment = { ...paymentData, createdBy: userId };
   this.payments.push(payment);
   this.amountPaid += payment.amount;
   this.amountDue = this.totalAmount - this.amountPaid;
-  
-  // Update status based on payment
-  if (this.amountDue <= 0) {
-    this.status = 'paid';
-  } else if (this.amountPaid > 0) {
-    this.status = 'partial';
-  }
-  
+  if (this.amountDue <= 0) this.status = 'paid';
+  else if (this.amountPaid > 0) this.status = 'partial';
   await this.save();
 };
 
-// Method to create journal entry for invoice
+// Post to GL
 InvoiceSchema.methods.postToGeneralLedger = async function(userId) {
-  if (this.isPosted) {
-    throw new Error('Invoice already posted to general ledger');
-  }
-  
+  if (this.isPosted) throw new Error('Invoice already posted to general ledger');
   const JournalEntry = mongoose.model('JournalEntry');
-  
-  // Create journal entry lines
+  const ChartOfAccounts = mongoose.model('ChartOfAccounts');
+
   const lines = [];
   let lineNumber = 1;
-  
-  // Debit: Accounts Receivable (increase asset)
+
+  // Debit AR
   lines.push({
     account: this.accountsReceivableAccount,
     description: `Invoice ${this.invoiceNumber}`,
@@ -382,130 +269,90 @@ InvoiceSchema.methods.postToGeneralLedger = async function(userId) {
     credit: 0,
     lineNumber: lineNumber++
   });
-  
-  // Credit: Revenue accounts (increase revenue)
+
+  // Credit revenue per account
   const revenueByAccount = new Map();
-  const normalizeAccountId = (val) => {
-    if (!val) return null;
-    if (val._id) return val._id; // populated doc
-    return val; // ObjectId or 24-hex string
-  };
+  const normalizeAccountId = (val) => (val && val._id) ? val._id : val;
   this.lineItems.forEach(item => {
     const accountId = normalizeAccountId(item.revenueAccount);
     if (!accountId) return;
     const current = revenueByAccount.get(String(accountId)) || 0;
     revenueByAccount.set(String(accountId), current + (item.subtotal - item.discountAmount));
   });
-  
   for (const [accountId, amount] of revenueByAccount.entries()) {
-    lines.push({
-      account: accountId,
-      description: `Revenue from Invoice ${this.invoiceNumber}`,
-      debit: 0,
-      credit: amount,
-      lineNumber: lineNumber++
-    });
+    lines.push({ account: accountId, description: `Revenue from Invoice ${this.invoiceNumber}`, debit: 0, credit: amount, lineNumber: lineNumber++ });
   }
-  
-  const ChartOfAccounts = mongoose.model('ChartOfAccounts');
-  // Credit: Shipping revenue if any
+
+  // Shipping revenue
   if (this.shippingCost > 0) {
     const shipAccount = await ChartOfAccounts.findOne({ accountCode: '4200' });
-    if (shipAccount) {
-      lines.push({
-        account: shipAccount._id,
-        description: `Shipping on Invoice ${this.invoiceNumber}`,
-        debit: 0,
-        credit: this.shippingCost,
-        lineNumber: lineNumber++
-      });
-    }
+    if (shipAccount) lines.push({ account: shipAccount._id, description: `Shipping on Invoice ${this.invoiceNumber}`, debit: 0, credit: this.shippingCost, lineNumber: lineNumber++ });
   }
-  
-  // Credit: Tax liability account if tax exists
+
+  // Tax liability
   if (this.totalTax > 0) {
     const taxAccount = await ChartOfAccounts.findOne({ accountCode: '2100' });
-    if (taxAccount) {
-      lines.push({
-        account: taxAccount._id,
-        description: `Sales tax on Invoice ${this.invoiceNumber}`,
-        debit: 0,
-        credit: this.totalTax,
-        lineNumber: lineNumber++
-      });
-    }
+    if (taxAccount) lines.push({ account: taxAccount._id, description: `Sales tax on Invoice ${this.invoiceNumber}`, debit: 0, credit: this.totalTax, lineNumber: lineNumber++ });
   }
-  
-  // Adjustments handling: positive -> credit Other Income (4900); negative -> debit Misc Expense (9100)
+
+  // Adjustments: + -> other income 4900, - -> misc expense 9100
   if (this.adjustments && this.adjustments !== 0) {
     if (this.adjustments > 0) {
       const otherIncome = await ChartOfAccounts.findOne({ accountCode: '4900' });
-      if (otherIncome) {
-        lines.push({
-          account: otherIncome._id,
-          description: `Adjustments on Invoice ${this.invoiceNumber}`,
-          debit: 0,
-          credit: this.adjustments,
-          lineNumber: lineNumber++
-        });
-      }
+      if (otherIncome) lines.push({ account: otherIncome._id, description: `Adjustments on Invoice ${this.invoiceNumber}`, debit: 0, credit: this.adjustments, lineNumber: lineNumber++ });
     } else {
       const miscExpense = await ChartOfAccounts.findOne({ accountCode: '9100' });
-      if (miscExpense) {
-        lines.push({
-          account: miscExpense._id,
-          description: `Adjustments on Invoice ${this.invoiceNumber}`,
-          debit: Math.abs(this.adjustments),
-          credit: 0,
-          lineNumber: lineNumber++
-        });
-      }
+      if (miscExpense) lines.push({ account: miscExpense._id, description: `Adjustments on Invoice ${this.invoiceNumber}`, debit: Math.abs(this.adjustments), credit: 0, lineNumber: lineNumber++ });
     }
   }
-  
-  // Create journal entry
+
   const journalEntry = new JournalEntry({
     entryNumber: await JournalEntry.generateEntryNumber(),
     entryDate: this.invoiceDate,
     entryType: 'sales',
     description: `Customer Invoice ${this.invoiceNumber}`,
     reference: this.invoiceNumber,
-    lines: lines,
-    sourceDocument: {
-      type: 'invoice',
-      id: this._id
-    },
+    lines,
+    sourceDocument: { type: 'invoice', id: this._id },
     fiscalPeriod: JournalEntry.calculateFiscalPeriod(this.invoiceDate),
     createdBy: userId,
     status: 'draft'
   });
-  
+
   journalEntry.calculateTotals();
   await journalEntry.save();
   await journalEntry.post(userId);
-  
+
   this.journalEntry = journalEntry._id;
   this.isPosted = true;
   this.postedDate = new Date();
   await this.save();
-  
+
   return journalEntry;
 };
 
-// Static method to generate invoice number
+// Robust invoice number generator
 InvoiceSchema.statics.generateInvoiceNumber = async function() {
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
-  
-  const count = await this.countDocuments({
-    invoiceNumber: new RegExp(`^INV-${dateStr}`)
-  });
-  
-  const sequence = String(count + 1).padStart(4, '0');
-  return `INV-${dateStr}-${sequence}`;
+  const prefix = `INV-${dateStr}-`;
+
+  const last = await this.findOne({ invoiceNumber: new RegExp(`^${prefix}\\d{4}$`) })
+    .sort({ invoiceNumber: -1 })
+    .select('invoiceNumber')
+    .lean();
+
+  let nextSeq = 1;
+  if (last && last.invoiceNumber) {
+    const parts = last.invoiceNumber.split('-');
+    const lastSeq = parseInt(parts[2], 10);
+    if (!isNaN(lastSeq)) nextSeq = lastSeq + 1;
+  }
+
+  return `${prefix}${String(nextSeq).padStart(4, '0')}`;
 };
 
-// Ensure required generated fields before validation
+// Pre-validate to ensure number exists
 InvoiceSchema.pre('validate', async function(next) {
   try {
     if (this.isNew && !this.invoiceNumber) {
@@ -517,23 +364,16 @@ InvoiceSchema.pre('validate', async function(next) {
   }
 });
 
-// Pre-save middleware
+// Pre-save totals and overdue status
 InvoiceSchema.pre('save', async function(next) {
-  // Calculate totals
   this.calculateTotals();
-  
-  // Update status based on due date
   if (this.status !== 'paid' && this.status !== 'cancelled' && this.status !== 'void') {
     const today = new Date();
-    if (today > this.dueDate && this.amountDue > 0) {
-      this.status = 'overdue';
-    }
+    if (today > this.dueDate && this.amountDue > 0) this.status = 'overdue';
   }
-  
   next();
 });
 
-// Ensure virtual fields are serialized
 InvoiceSchema.set('toJSON', { virtuals: true });
 InvoiceSchema.set('toObject', { virtuals: true });
 

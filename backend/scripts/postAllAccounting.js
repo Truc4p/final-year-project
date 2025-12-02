@@ -26,6 +26,12 @@ async function postAll(adminUserId) {
   for (const inv of invoices) {
     try {
       results.invoices.considered += 1;
+      // Mirror UI behavior: mark as sent when posting from draft
+      if (inv.status === 'draft') {
+        inv.status = 'sent';
+        inv.sentDate = new Date();
+        await inv.save();
+      }
       const je = await inv.postToGeneralLedger(adminUserId);
       if (je && inv.isPosted) results.invoices.posted += 1;
     } catch (e) {

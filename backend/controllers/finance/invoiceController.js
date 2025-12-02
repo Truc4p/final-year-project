@@ -55,7 +55,24 @@ const createInvoice = async (req, res) => {
       status: 'draft'
     });
 
-    await invoice.save();
+    // Save with retry in case another process generated the same invoiceNumber concurrently
+    let attempts = 0;
+    while (true) {
+      try {
+        await invoice.save();
+        break;
+      } catch (err) {
+        const dup = err && (err.code === 11000) && (err.keyPattern && err.keyPattern.invoiceNumber);
+        if (dup && attempts < 3) {
+          // Regenerate and retry
+          invoice.invoiceNumber = await Invoice.generateInvoiceNumber();
+          attempts++;
+          continue;
+        }
+        throw err;
+      }
+    }
+
     await invoice.populate('customer lineItems.revenueAccount');
 
     res.status(201).json({

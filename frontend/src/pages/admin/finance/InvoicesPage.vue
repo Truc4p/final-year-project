@@ -15,7 +15,7 @@
     <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 p-6">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-2xl font-bold text-gray-900">Create Invoice</h2>
+          <h2 class="text-2xl font-bold text-gray-900">{{ isEditing ? 'Edit Invoice' : 'Create Invoice' }}</h2>
           <button @click="closeCreateModal" class="text-gray-500 hover:text-gray-700">✕</button>
         </div>
 
@@ -23,7 +23,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-              <select v-model="createForm.customer" required class="w-full px-3 py-2 border rounded-lg">
+              <select v-model="createForm.customer" :disabled="isEditing" required class="w-full px-3 py-2 border rounded-lg">
                 <option value="" disabled>Select customer...</option>
                 <option v-for="c in customers" :key="c._id" :value="c._id">
                   {{ c.displayName || c.companyName || c.customerNumber }}
@@ -32,7 +32,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Date</label>
-              <input v-model="createForm.invoiceDate" type="date" class="w-full px-3 py-2 border rounded-lg" />
+              <input v-model="createForm.invoiceDate" :disabled="isEditing" type="date" class="w-full px-3 py-2 border rounded-lg" />
             </div>
           </div>
 
@@ -87,7 +87,7 @@
 
           <div class="flex justify-end space-x-3 pt-2">
             <button type="button" @click="closeCreateModal" class="px-4 py-2 border rounded-lg">Cancel</button>
-            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Create</button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">{{ isEditing ? 'Save' : 'Create' }}</button>
           </div>
         </form>
       </div>
@@ -157,7 +157,7 @@
             </td>
             <td class="px-6 py-4 text-sm space-x-2">
               <button @click="viewInvoice(inv._id)" class="text-blue-600 hover:text-blue-800 font-medium">View</button>
-              <button v-if="inv.status==='draft'" @click="editInvoice(inv._id)" class="text-green-600 hover:text-green-800 font-medium">Edit</button>
+              <button v-if="inv.status==='draft' && !inv.isPosted" @click="editInvoice(inv._id)" class="text-green-600 hover:text-green-800 font-medium">Edit</button>
               <button v-if="inv.status==='draft' && !inv.isPosted" @click="postInvoice(inv._id)" class="text-purple-600 hover:text-purple-800 font-medium">Post</button>
               <button v-if="inv.status==='draft'" @click="deleteInvoiceHandler(inv._id)" class="text-red-600 hover:text-red-800 font-medium">Delete</button>
             </td>
@@ -206,6 +206,8 @@ const pagination = ref({ currentPage: 1, totalPages: 1, total: 0, hasNext: false
 
 // Create Invoice modal state
 const showCreateModal = ref(false);
+const isEditing = ref(false);
+const editingInvoiceId = ref(null);
 const customers = ref([]);
 const revenueAccounts = ref([]);
 const createForm = ref({
@@ -279,6 +281,8 @@ const getStatusClass = (status) => {
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
 const openCreateModal = async () => {
+  isEditing.value = false;
+  editingInvoiceId.value = null;
   showCreateModal.value = true;
   createForm.value = {
     customer: '',
@@ -348,9 +352,7 @@ const submitInvoice = async () => {
       return;
     }
 
-    const payload = {
-      customer: createForm.value.customer,
-      invoiceDate: createForm.value.invoiceDate,
+    const common = {
       lineItems: createForm.value.lineItems.map((li, idx) => ({
         lineNumber: idx + 1,
         description: li.description,
@@ -363,13 +365,24 @@ const submitInvoice = async () => {
       adjustments: Number(createForm.value.adjustments) || 0
     };
 
-    const res = await financeService.createInvoice(payload);
-    // Refresh list
+    if (isEditing.value && editingInvoiceId.value) {
+      // Update (only allowed fields on backend)
+      await financeService.updateInvoice(editingInvoiceId.value, common);
+    } else {
+      // Create
+      const payload = {
+        customer: createForm.value.customer,
+        invoiceDate: createForm.value.invoiceDate,
+        ...common
+      };
+      await financeService.createInvoice(payload);
+    }
+
     await fetchInvoices(1);
     closeCreateModal();
   } catch (err) {
     console.error(err);
-    alert(err?.message || 'Failed to create invoice');
+    alert(err?.message || (isEditing.value ? 'Failed to save invoice' : 'Failed to create invoice'));
   }
 };
 
@@ -377,8 +390,33 @@ const viewInvoice = (id) => {
   router.push(`/admin/finance/invoices/${id}`);
 };
 
-const editInvoice = (id) => {
-  console.log('Edit invoice', id);
+const editInvoice = async (id) => {
+  try {
+    isEditing.value = true;
+    editingInvoiceId.value = id;
+    // Load reference data
+    await Promise.all([loadCustomers(), loadRevenueAccounts()]);
+    // Fetch invoice details
+    const data = await financeService.getInvoice(id);
+    // Prefill form
+    createForm.value = {
+      customer: (typeof data.customer === 'string') ? data.customer : (data.customer?._id || data.customer?.id || ''),
+      invoiceDate: (data.invoiceDate || '').slice(0, 10),
+      lineItems: (data.lineItems || []).map((li) => ({
+        description: li.description || '',
+        quantity: Number(li.quantity) || 0,
+        unitPrice: Number(li.unitPrice) || 0,
+        taxRate: Number(li.taxRate) || 0,
+        revenueAccount: (typeof li.revenueAccount === 'string') ? li.revenueAccount : (li.revenueAccount?._id || li.revenueAccount?.id || '')
+      })),
+      shippingCost: Number(data.shippingCost) || 0,
+      adjustments: Number(data.adjustments) || 0
+    };
+    showCreateModal.value = true;
+  } catch (e) {
+    console.error(e);
+    alert(e?.message || 'Failed to load invoice');
+  }
 };
 
 const postInvoice = async (id) => {
