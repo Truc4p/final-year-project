@@ -51,7 +51,7 @@ const createInvoice = async (req, res) => {
       memo,
       tags,
       currency: customerDoc.currency,
-      createdBy: req.user._id,
+      createdBy: (req.user && (req.user._id || req.user.id)),
       status: 'draft'
     });
 

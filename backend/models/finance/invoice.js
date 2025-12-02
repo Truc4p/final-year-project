@@ -463,12 +463,20 @@ InvoiceSchema.statics.generateInvoiceNumber = async function() {
   return `INV-${dateStr}-${sequence}`;
 };
 
+// Ensure required generated fields before validation
+InvoiceSchema.pre('validate', async function(next) {
+  try {
+    if (this.isNew && !this.invoiceNumber) {
+      this.invoiceNumber = await this.constructor.generateInvoiceNumber();
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Pre-save middleware
 InvoiceSchema.pre('save', async function(next) {
-  if (this.isNew && !this.invoiceNumber) {
-    this.invoiceNumber = await this.constructor.generateInvoiceNumber();
-  }
-  
   // Calculate totals
   this.calculateTotals();
   
