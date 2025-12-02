@@ -40,6 +40,7 @@ import CashFlow from '@/pages/admin/finance/CashFlow.vue';
 import HumanResources from '@/pages/admin/hr/HumanResources.vue';
 import FinanceDashboard from '@/pages/admin/finance/FinanceDashboard.vue';
 import InvoicesPage from '@/pages/admin/finance/InvoicesPage.vue';
+import InvoiceDetailPage from '@/pages/admin/finance/InvoiceDetailPage.vue';
 import BillsPage from '@/pages/admin/finance/BillsPage.vue';
 import BillDetailPage from '@/pages/admin/finance/BillDetailPage.vue';
 import BankAccountsPage from '@/pages/admin/finance/BankAccountsPage.vue';
@@ -126,6 +127,7 @@ const routes = [
       // Finance Module Routes
       { path: "finance", component: FinanceDashboard },
       { path: "finance/invoices", component: InvoicesPage },
+      { path: "finance/invoices/:id", component: InvoiceDetailPage },
       { path: "finance/bills", component: BillsPage },
       { path: "finance/bills/:id", component: BillDetailPage },
       { path: "finance/bank-accounts", component: BankAccountsPage },

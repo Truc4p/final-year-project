@@ -210,12 +210,16 @@ const postInvoice = async (req, res) => {
       return res.status(404).json({ message: "Invoice not found" });
     }
 
+    if (invoice.isPosted) {
+      return res.status(400).json({ message: "Invoice already posted to general ledger" });
+    }
+
     if (invoice.status === 'draft') {
       invoice.status = 'sent';
       invoice.sentDate = new Date();
     }
 
-    const journalEntry = await invoice.postToGeneralLedger(req.user._id);
+    const journalEntry = await invoice.postToGeneralLedger((req.user && (req.user._id || req.user.id)));
 
     res.json({
       message: "Invoice posted to general ledger successfully",
@@ -224,7 +228,11 @@ const postInvoice = async (req, res) => {
     });
   } catch (error) {
     console.error("Error posting invoice:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    const msg = (typeof error?.message === 'string') ? error.message : 'Internal server error';
+    if (/already posted/i.test(msg)) {
+      return res.status(400).json({ message: "Invoice already posted to general ledger" });
+    }
+    res.status(500).json({ message: msg });
   }
 };
 

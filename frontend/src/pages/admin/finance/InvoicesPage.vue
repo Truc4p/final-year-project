@@ -158,7 +158,7 @@
             <td class="px-6 py-4 text-sm space-x-2">
               <button @click="viewInvoice(inv._id)" class="text-blue-600 hover:text-blue-800 font-medium">View</button>
               <button v-if="inv.status==='draft'" @click="editInvoice(inv._id)" class="text-green-600 hover:text-green-800 font-medium">Edit</button>
-              <button v-if="inv.status==='draft'" @click="postInvoice(inv._id)" class="text-purple-600 hover:text-purple-800 font-medium">Post</button>
+              <button v-if="inv.status==='draft' && !inv.isPosted" @click="postInvoice(inv._id)" class="text-purple-600 hover:text-purple-800 font-medium">Post</button>
               <button v-if="inv.status==='draft'" @click="deleteInvoiceHandler(inv._id)" class="text-red-600 hover:text-red-800 font-medium">Delete</button>
             </td>
           </tr>
@@ -185,9 +185,11 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import financeService from '@/services/financeService';
 
 const { t } = useI18n();
+const router = useRouter();
 
 const isLoading = ref(false);
 const error = ref(null);
@@ -372,7 +374,7 @@ const submitInvoice = async () => {
 };
 
 const viewInvoice = (id) => {
-  console.log('View invoice', id);
+  router.push(`/admin/finance/invoices/${id}`);
 };
 
 const editInvoice = (id) => {
@@ -385,7 +387,12 @@ const postInvoice = async (id) => {
     await fetchInvoices(pagination.value.currentPage || 1);
   } catch (err) {
     console.error(err);
-    alert(err?.message || 'Failed to post invoice');
+    const msg = err?.message || 'Failed to post invoice';
+    // If it's already posted, refresh list so the UI hides the button
+    if (/already posted/i.test(msg)) {
+      await fetchInvoices(pagination.value.currentPage || 1);
+    }
+    alert(msg);
   }
 };
 
