@@ -6,23 +6,12 @@
         <h1 class="text-3xl font-bold text-gray-900">Bills (Accounts Payable)</h1>
         <p class="text-gray-600 mt-2">Manage vendor bills and payments</p>
       </div>
-      <button @click="openCreateInfo()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+      <button @click="openCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
         + Create Bill
       </button>
     </div>
 
-    <!-- Info alert for creation wiring -->
-    <div v-if="showCreateHint" class="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-6">
-      <div class="flex items-start">
-        <svg class="w-5 h-5 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
-        </svg>
-        <div>
-          <p class="font-semibold">Bill creation requires Vendors and Chart of Accounts.</p>
-          <p class="text-sm mt-1">Your list is now connected to MongoDB. To enable creating bills from the UI, we need a vendor and expense accounts to select. I can wire this next, or you can seed a Vendor and COA, then we’ll enable the form.</p>
-        </div>
-      </div>
-    </div>
+
 
     <!-- Filters -->
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -110,6 +99,8 @@
         <button :disabled="!pagination.hasNext" @click="goPage(pagination.currentPage+1)" class="px-3 py-1 border rounded disabled:opacity-50">Next</button>
       </div>
     </div>
+    <!-- Create Bill Modal -->
+    <CreateBillModal :open="showCreateModal" @close="showCreateModal=false" @created="onBillCreated" />
   </div>
 </template>
 
@@ -117,12 +108,13 @@
 import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted, watch } from 'vue';
 import financeService from '@/services/financeService';
+import CreateBillModal from '@/components/finance/CreateBillModal.vue';
 
 const { t } = useI18n();
 
 const isLoading = ref(false);
 const error = ref(null);
-const showCreateHint = ref(false);
+const showCreateModal = ref(false);
 
 const filters = ref({
   search: '',
@@ -220,6 +212,16 @@ const deleteBillHandler = async (id) => {
 const goPage = async (page) => {
   if (page < 1 || page > pagination.value.totalPages) return;
   await fetchBills(page);
+};
+
+// Create bill modal handlers
+const openCreateModal = () => {
+  showCreateModal.value = true;
+};
+
+const onBillCreated = async (bill) => {
+  // Refresh the list to include newly created bill
+  await fetchBills(1);
 };
 </script>
 

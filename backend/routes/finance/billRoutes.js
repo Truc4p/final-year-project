@@ -12,7 +12,10 @@ const {
   addPayment,
   getAgingReport,
   deleteBill,
-  voidBill
+  voidBill,
+  getVendors,
+  getExpenseAccounts,
+  getVendorDetails
 } = require("../../controllers/finance/billController");
 
 // All routes require authentication and admin role
@@ -23,6 +26,12 @@ router.use(role(["admin"]));
 router.post("/", createBill);
 router.get("/", getBills);
 router.get("/aging-report", getAgingReport);
+
+// Helper routes for bill creation form
+router.get("/form-data/vendors", getVendors);
+router.get("/form-data/expense-accounts", getExpenseAccounts);
+router.get("/form-data/vendor/:vendorId", getVendorDetails);
+
 router.get("/:id", getBill);
 router.put("/:id", updateBill);
 router.post("/:id/approve", approveBill);

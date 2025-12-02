@@ -422,12 +422,20 @@ BillSchema.statics.generateBillNumber = async function() {
   return `BILL-${dateStr}-${sequence}`;
 };
 
+// Ensure required generated fields before validation
+BillSchema.pre('validate', async function(next) {
+  try {
+    if (this.isNew && !this.billNumber) {
+      this.billNumber = await this.constructor.generateBillNumber();
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Pre-save middleware
 BillSchema.pre('save', async function(next) {
-  if (this.isNew && !this.billNumber) {
-    this.billNumber = await this.constructor.generateBillNumber();
-  }
-  
   this.calculateTotals();
   
   // Update status based on due date

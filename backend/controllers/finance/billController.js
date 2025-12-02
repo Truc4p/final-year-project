@@ -48,7 +48,7 @@ const createBill = async (req, res) => {
       memo,
       tags,
       currency: vendorDoc.currency,
-      createdBy: req.user._id,
+      createdBy: (req.user && (req.user._id || req.user.id)),
       status: 'draft'
     });
 
@@ -391,6 +391,70 @@ const voidBill = async (req, res) => {
   }
 };
 
+// Get all vendors for bill creation dropdown
+const getVendors = async (req, res) => {
+  try {
+    const { status = 'active', search } = req.query;
+
+    const filter = {};
+    if (status) filter.status = status;
+    
+    if (search) {
+      filter.$or = [
+        { companyName: { $regex: search, $options: 'i' } },
+        { 'contactPerson.email': { $regex: search, $options: 'i' } },
+        { vendorNumber: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const vendors = await Vendor.find(filter)
+      .select('_id vendorNumber companyName contactPerson paymentTerms currency expenseAccount accountsPayableAccount')
+      .populate('expenseAccount', 'accountCode accountName')
+      .populate('accountsPayableAccount', 'accountCode accountName')
+      .sort({ companyName: 1 });
+
+    res.json(vendors);
+  } catch (error) {
+    console.error("Error getting vendors:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Get expense accounts for bill line items
+const getExpenseAccounts = async (req, res) => {
+  try {
+    const expenseAccounts = await ChartOfAccounts.find({
+      accountType: 'expense',
+      isActive: true
+    })
+      .select('_id accountCode accountName accountSubType')
+      .sort({ accountCode: 1 });
+
+    res.json(expenseAccounts);
+  } catch (error) {
+    console.error("Error getting expense accounts:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Get vendor details including default accounts
+const getVendorDetails = async (req, res) => {
+  try {
+    const vendor = await Vendor.findById(req.params.vendorId)
+      .populate('expenseAccount', 'accountCode accountName')
+      .populate('accountsPayableAccount', 'accountCode accountName');
+
+    if (!vendor) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+
+    res.json(vendor);
+  } catch (error) {
+    console.error("Error getting vendor details:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   createBill,
   getBills,
@@ -401,5 +465,8 @@ module.exports = {
   addPayment,
   getAgingReport,
   deleteBill,
-  voidBill
+  voidBill,
+  getVendors,
+  getExpenseAccounts,
+  getVendorDetails
 };

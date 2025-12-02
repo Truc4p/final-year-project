@@ -116,6 +116,14 @@ export const financeService = {
     method: 'DELETE'
   }),
 
+  // Bill form data helpers
+  getBillVendors: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/bills/form-data/vendors${queryString ? '?' + queryString : ''}`);
+  },
+  getBillExpenseAccounts: () => apiCall('/bills/form-data/expense-accounts'),
+  getVendorDetails: (vendorId) => apiCall(`/bills/form-data/vendor/${vendorId}`),
+
   // ==================== BANK ACCOUNTS ====================
 
   // Get all bank accounts
