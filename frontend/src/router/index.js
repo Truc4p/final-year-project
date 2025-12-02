@@ -41,6 +41,7 @@ import HumanResources from '@/pages/admin/hr/HumanResources.vue';
 import FinanceDashboard from '@/pages/admin/finance/FinanceDashboard.vue';
 import InvoicesPage from '@/pages/admin/finance/InvoicesPage.vue';
 import BillsPage from '@/pages/admin/finance/BillsPage.vue';
+import BillDetailPage from '@/pages/admin/finance/BillDetailPage.vue';
 import BankAccountsPage from '@/pages/admin/finance/BankAccountsPage.vue';
 import ChartOfAccountsPage from '@/pages/admin/finance/ChartOfAccountsPage.vue';
 import FinancialReportsPage from '@/pages/admin/finance/FinancialReportsPage.vue';
@@ -126,6 +127,7 @@ const routes = [
       { path: "finance", component: FinanceDashboard },
       { path: "finance/invoices", component: InvoicesPage },
       { path: "finance/bills", component: BillsPage },
+      { path: "finance/bills/:id", component: BillDetailPage },
       { path: "finance/bank-accounts", component: BankAccountsPage },
       { path: "finance/chart-of-accounts", component: ChartOfAccountsPage },
       { path: "finance/reports", component: FinancialReportsPage },

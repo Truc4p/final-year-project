@@ -109,10 +109,12 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import financeService from '@/services/financeService';
 import CreateBillModal from '@/components/finance/CreateBillModal.vue';
 
 const { t } = useI18n();
+const router = useRouter();
 
 const isLoading = ref(false);
 const error = ref(null);
@@ -191,8 +193,7 @@ const openCreateInfo = () => {
 };
 
 const viewBill = (id) => {
-  // navigate to bill detail if you add route later
-  console.log('View bill', id);
+  router.push(`/admin/finance/bills/${id}`);
 };
 
 const editBill = (id) => {
