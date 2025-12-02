@@ -168,12 +168,13 @@
       <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Invoices</h2>
         <div class="space-y-3">
-          <div v-for="i in 5" :key="i" class="flex items-center justify-between py-2 border-b border-gray-200 last:border-b-0">
+          <div v-if="recentInvoices.length === 0" class="text-sm text-gray-500">No invoices yet.</div>
+          <div v-for="inv in recentInvoices" :key="inv._id" class="flex items-center justify-between py-2 border-b border-gray-200 last:border-b-0">
             <div>
-              <p class="font-medium text-gray-900">Invoice #{{ 1000 + i }}</p>
-              <p class="text-sm text-gray-600">Customer Name</p>
+              <p class="font-medium text-gray-900">{{ inv.invoiceNumber }}</p>
+              <p class="text-sm text-gray-600">{{ formatCustomer(inv.customer) }}</p>
             </div>
-            <p class="font-semibold text-green-600">${{ (1000 * i).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</p>
+            <p class="font-semibold text-green-600">${{ (inv.totalAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</p>
           </div>
         </div>
         <router-link to="/admin/finance/invoices" class="text-blue-600 hover:text-blue-800 text-sm font-medium mt-4 inline-block">
@@ -185,12 +186,13 @@
       <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Bills</h2>
         <div class="space-y-3">
-          <div v-for="i in 5" :key="i" class="flex items-center justify-between py-2 border-b border-gray-200 last:border-b-0">
+          <div v-if="recentBills.length === 0" class="text-sm text-gray-500">No bills yet.</div>
+          <div v-for="bill in recentBills" :key="bill._id" class="flex items-center justify-between py-2 border-b border-gray-200 last:border-b-0">
             <div>
-              <p class="font-medium text-gray-900">Bill #{{ 2000 + i }}</p>
-              <p class="text-sm text-gray-600">Vendor Name</p>
+              <p class="font-medium text-gray-900">{{ bill.billNumber }}</p>
+              <p class="text-sm text-gray-600">{{ formatVendor(bill.vendor) }}</p>
             </div>
-            <p class="font-semibold text-red-600">${{ (500 * i).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</p>
+            <p class="font-semibold text-red-600">${{ (bill.totalAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</p>
           </div>
         </div>
         <router-link to="/admin/finance/bills" class="text-blue-600 hover:text-blue-800 text-sm font-medium mt-4 inline-block">
@@ -204,6 +206,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { ref, onMounted } from 'vue';
+import financeService from '@/services/financeService';
 
 const { t } = useI18n();
 
@@ -213,9 +216,40 @@ const totalExpenses = ref(45000);
 const netIncome = ref(80000);
 const cashBalance = ref(55000);
 
-onMounted(() => {
-  // Fetch financial data from API
-  // Example: fetchFinancialData();
+// Recent invoices from API
+const recentInvoices = ref([]);
+const recentBills = ref([]);
+const formatCustomer = (customer) => {
+  if (!customer) return '';
+  if (typeof customer === 'string') return customer;
+  return customer.displayName || customer.companyName || customer.customerNumber || '';
+};
+const formatVendor = (vendor) => {
+  if (!vendor) return '';
+  if (typeof vendor === 'string') return vendor;
+  return vendor.companyName || vendor.contactPerson || vendor.vendorNumber || '';
+};
+
+onMounted(async () => {
+  // Fetch financial data from API (todo)
+
+  // Fetch recent invoices (latest 5)
+  try {
+    const invData = await financeService.getInvoices({ page: 1, limit: 5 });
+    recentInvoices.value = invData?.invoices || [];
+  } catch (e) {
+    console.error('Failed to load recent invoices', e);
+    recentInvoices.value = [];
+  }
+
+  // Fetch recent bills (latest 5)
+  try {
+    const billData = await financeService.getBills({ page: 1, limit: 5 });
+    recentBills.value = billData?.bills || [];
+  } catch (e) {
+    console.error('Failed to load recent bills', e);
+    recentBills.value = [];
+  }
 });
 </script>
 
