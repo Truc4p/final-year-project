@@ -49,7 +49,7 @@ const apiCall = async (endpoint, options = {}) => {
 
     if (response.status === 204) return null;
     if (contentType.includes('application/json')) {
-      return await response.json();
+    return await response.json();
     }
     return await response.text();
   } catch (error) {

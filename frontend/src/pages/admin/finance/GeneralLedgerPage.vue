@@ -69,7 +69,7 @@
             <th class="px-6 py-3 text-right text-sm font-semibold text-gray-900">Debit</th>
             <th class="px-6 py-3 text-right text-sm font-semibold text-gray-900">Credit</th>
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
-            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
+
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
@@ -89,11 +89,7 @@
                 {{ entry.status }}
               </span>
             </td>
-            <td class="px-6 py-4 text-sm space-x-2">
-              <button @click="viewEntry(entry.id)" class="text-blue-600 hover:text-blue-800 font-medium">View</button>
-              <button v-if="entry.status === 'draft'" @click="editEntry(entry.id)" class="text-green-600 hover:text-green-800 font-medium">Edit</button>
-              <button v-if="entry.status === 'draft'" @click="deleteEntry(entry.id)" class="text-red-600 hover:text-red-800 font-medium">Delete</button>
-            </td>
+
           </tr>
         </tbody>
       </table>
