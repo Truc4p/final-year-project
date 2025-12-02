@@ -20,11 +20,13 @@ const {
   getBankAccountSummary
 } = require('../../controllers/finance/bankAccountController');
 
-// Middleware for authentication (adjust based on your auth setup)
-const { protect } = require('../../middleware/auth');
+// Middleware for authentication and authorization (consistent with other finance routes)
+const auth = require("../../middleware/auth");
+const role = require("../../middleware/role");
 
-// Apply authentication middleware to all routes
-router.use(protect);
+// Apply authentication + admin role to all routes
+router.use(auth);
+router.use(role(["admin"]));
 
 // Bank Account CRUD Operations
 router.post('/', createBankAccount);

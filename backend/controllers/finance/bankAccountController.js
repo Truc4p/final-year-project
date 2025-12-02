@@ -86,7 +86,7 @@ exports.createBankAccount = async (req, res) => {
       description,
       tags: tags || [],
       notes,
-      createdBy: req.user._id
+      createdBy: (req.user && (req.user._id || req.user.id))
     });
 
     await bankAccount.save();
