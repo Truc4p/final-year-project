@@ -6,9 +6,22 @@
         <h1 class="text-3xl font-bold text-gray-900">Invoices (Accounts Receivable)</h1>
         <p class="text-gray-600 mt-2">Manage customer invoices and payments</p>
       </div>
-      <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+      <button @click="openCreateInfo()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
         + Create Invoice
       </button>
+    </div>
+
+    <!-- Info alert for creation wiring -->
+    <div v-if="showCreateHint" class="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-6">
+      <div class="flex items-start">
+        <svg class="w-5 h-5 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
+        </svg>
+        <div>
+          <p class="font-semibold">Invoice creation requires Customers and Revenue accounts.</p>
+          <p class="text-sm mt-1">Your list is now connected to MongoDB. To enable creating invoices from the UI, we need a customer to select and revenue accounts from your Chart of Accounts. I can wire this next, or you can seed a Customer and revenue COA, then we’ll enable the form.</p>
+        </div>
+      </div>
     </div>
 
     <!-- Filters -->
@@ -27,8 +40,10 @@
           <option value="">All Status</option>
           <option value="draft">Draft</option>
           <option value="sent">Sent</option>
+          <option value="partial">Partial</option>
           <option value="paid">Paid</option>
           <option value="overdue">Overdue</option>
+          <option value="void">Void</option>
         </select>
         <input 
           v-model="filters.dateFrom" 
@@ -42,6 +57,10 @@
         >
       </div>
     </div>
+
+    <!-- Loading / Error -->
+    <div v-if="isLoading" class="bg-white rounded-lg shadow p-6 mb-6 text-gray-600">Loading invoices...</div>
+    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">{{ error }}</div>
 
     <!-- Invoices Table -->
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -57,60 +76,37 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
-          <tr v-for="invoice in filteredInvoices" :key="invoice.id" class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ invoice.invoiceNumber }}</td>
-            <td class="px-6 py-4 text-sm text-gray-600">{{ invoice.customer }}</td>
-            <td class="px-6 py-4 text-sm font-semibold text-gray-900">${{ invoice.amount.toLocaleString('en-US', {minimumFractionDigits: 2}) }}</td>
-            <td class="px-6 py-4 text-sm text-gray-600">{{ formatDate(invoice.dueDate) }}</td>
+          <tr v-for="inv in filteredInvoices" :key="inv._id" class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ inv.invoiceNumber }}</td>
+            <td class="px-6 py-4 text-sm text-gray-600">{{ formatCustomer(inv.customer) }}</td>
+            <td class="px-6 py-4 text-sm font-semibold text-gray-900">${{ (inv.totalAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</td>
+            <td class="px-6 py-4 text-sm text-gray-600">{{ formatDate(inv.dueDate) }}</td>
             <td class="px-6 py-4 text-sm">
-              <span :class="getStatusClass(invoice.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
-                {{ invoice.status }}
+              <span :class="getStatusClass(inv.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
+                {{ inv.status }}
               </span>
             </td>
             <td class="px-6 py-4 text-sm space-x-2">
-              <button @click="viewInvoice(invoice.id)" class="text-blue-600 hover:text-blue-800 font-medium">View</button>
-              <button @click="editInvoice(invoice.id)" class="text-green-600 hover:text-green-800 font-medium">Edit</button>
-              <button @click="deleteInvoice(invoice.id)" class="text-red-600 hover:text-red-800 font-medium">Delete</button>
+              <button @click="viewInvoice(inv._id)" class="text-blue-600 hover:text-blue-800 font-medium">View</button>
+              <button v-if="inv.status==='draft'" @click="editInvoice(inv._id)" class="text-green-600 hover:text-green-800 font-medium">Edit</button>
+              <button v-if="inv.status==='draft'" @click="deleteInvoiceHandler(inv._id)" class="text-red-600 hover:text-red-800 font-medium">Delete</button>
             </td>
+          </tr>
+          <tr v-if="!isLoading && invoices.length===0">
+            <td colspan="6" class="px-6 py-8 text-center text-gray-500">No invoices found.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Create Invoice</h2>
-        <form @submit.prevent="submitInvoice" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-              <input v-model="formData.customer" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Date</label>
-              <input v-model="formData.invoiceDate" type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-              <input v-model="formData.dueDate" type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-              <input v-model.number="formData.amount" type="number" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea v-model="formData.description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
-          </div>
-          <div class="flex justify-end space-x-3 pt-4">
-            <button @click="showCreateModal = false" type="button" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-            <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Create Invoice</button>
-          </div>
-        </form>
+    <!-- Pagination summary -->
+    <div v-if="pagination.total" class="mt-4 flex items-center justify-between text-sm text-gray-600">
+      <div>
+        Total: <span class="font-semibold">{{ pagination.total }}</span> | Page {{ pagination.currentPage }} of {{ pagination.totalPages }}
+      </div>
+      <div class="space-x-2">
+        <button :disabled="!pagination.hasPrev" @click="goPage(pagination.currentPage-1)" class="px-3 py-1 border rounded disabled:opacity-50">Prev</button>
+        <button :disabled="!pagination.hasNext" @click="goPage(pagination.currentPage+1)" class="px-3 py-1 border rounded disabled:opacity-50">Next</button>
       </div>
     </div>
   </div>
@@ -118,11 +114,15 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import financeService from '@/services/financeService';
 
 const { t } = useI18n();
 
-const showCreateModal = ref(false);
+const isLoading = ref(false);
+const error = ref(null);
+const showCreateHint = ref(false);
+
 const filters = ref({
   search: '',
   status: '',
@@ -130,33 +130,51 @@ const filters = ref({
   dateTo: ''
 });
 
-const formData = ref({
-  customer: '',
-  invoiceDate: new Date().toISOString().split('T')[0],
-  dueDate: '',
-  amount: 0,
-  description: ''
+const invoices = ref([]);
+const pagination = ref({ currentPage: 1, totalPages: 1, total: 0, hasNext: false, hasPrev: false });
+
+const fetchInvoices = async (page = 1) => {
+  isLoading.value = true;
+  error.value = null;
+  try {
+    const params = { page, limit: 20 };
+    if (filters.value.status) params.status = filters.value.status;
+    if (filters.value.dateFrom) params.startDate = filters.value.dateFrom;
+    if (filters.value.dateTo) params.endDate = filters.value.dateTo;
+
+    const data = await financeService.getInvoices(params);
+    invoices.value = data.invoices || [];
+    pagination.value = data.pagination || pagination.value;
+  } catch (err) {
+    error.value = err?.message || 'Failed to fetch invoices';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(async () => {
+  await fetchInvoices(1);
 });
 
-// Sample data
-const invoices = ref([
-  { id: 1, invoiceNumber: 'INV-001', customer: 'ABC Corp', amount: 5000, dueDate: '2024-02-15', status: 'paid' },
-  { id: 2, invoiceNumber: 'INV-002', customer: 'XYZ Inc', amount: 3500, dueDate: '2024-02-20', status: 'sent' },
-  { id: 3, invoiceNumber: 'INV-003', customer: 'Tech Solutions', amount: 7200, dueDate: '2024-02-10', status: 'overdue' },
-  { id: 4, invoiceNumber: 'INV-004', customer: 'Global Trade', amount: 4100, dueDate: '2024-03-01', status: 'draft' },
-  { id: 5, invoiceNumber: 'INV-005', customer: 'Local Services', amount: 2800, dueDate: '2024-02-28', status: 'sent' },
-]);
+watch(() => [filters.value.status, filters.value.dateFrom, filters.value.dateTo], () => fetchInvoices(1));
 
 const filteredInvoices = computed(() => {
-  return invoices.value.filter(invoice => {
-    const matchesSearch = invoice.invoiceNumber.toLowerCase().includes(filters.value.search.toLowerCase()) ||
-                         invoice.customer.toLowerCase().includes(filters.value.search.toLowerCase());
-    const matchesStatus = !filters.value.status || invoice.status === filters.value.status;
-    return matchesSearch && matchesStatus;
+  const q = (filters.value.search || '').toLowerCase();
+  return invoices.value.filter(inv => {
+    const cust = formatCustomer(inv.customer).toLowerCase();
+    const matchesSearch = inv.invoiceNumber?.toLowerCase().includes(q) || cust.includes(q);
+    return matchesSearch;
   });
 });
 
+const formatCustomer = (customer) => {
+  if (!customer) return '';
+  if (typeof customer === 'string') return customer;
+  return customer.displayName || customer.companyName || customer.contactPerson || customer.customerNumber || '';
+};
+
 const formatDate = (date) => {
+  if (!date) return '';
   return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
@@ -164,42 +182,40 @@ const getStatusClass = (status) => {
   const classes = {
     'draft': 'bg-gray-100 text-gray-800',
     'sent': 'bg-blue-100 text-blue-800',
+    'partial': 'bg-purple-100 text-purple-800',
     'paid': 'bg-green-100 text-green-800',
-    'overdue': 'bg-red-100 text-red-800'
+    'overdue': 'bg-red-100 text-red-800',
+    'void': 'bg-gray-200 text-gray-700'
   };
   return classes[status] || 'bg-gray-100 text-gray-800';
 };
 
+const openCreateInfo = () => {
+  showCreateHint.value = true;
+};
+
 const viewInvoice = (id) => {
-  console.log('View invoice:', id);
+  console.log('View invoice', id);
 };
 
 const editInvoice = (id) => {
-  console.log('Edit invoice:', id);
+  console.log('Edit invoice', id);
 };
 
-const deleteInvoice = (id) => {
-  invoices.value = invoices.value.filter(inv => inv.id !== id);
+const deleteInvoiceHandler = async (id) => {
+  if (!confirm('Delete this draft invoice?')) return;
+  try {
+    await financeService.deleteInvoice(id);
+    invoices.value = invoices.value.filter(i => i._id !== id);
+    if (pagination.value.total > 0) pagination.value.total -= 1;
+  } catch (err) {
+    alert(err?.message || 'Failed to delete invoice');
+  }
 };
 
-const submitInvoice = () => {
-  const newInvoice = {
-    id: invoices.value.length + 1,
-    invoiceNumber: `INV-${String(invoices.value.length + 1).padStart(3, '0')}`,
-    customer: formData.value.customer,
-    amount: formData.value.amount,
-    dueDate: formData.value.dueDate,
-    status: 'draft'
-  };
-  invoices.value.push(newInvoice);
-  showCreateModal.value = false;
-  formData.value = {
-    customer: '',
-    invoiceDate: new Date().toISOString().split('T')[0],
-    dueDate: '',
-    amount: 0,
-    description: ''
-  };
+const goPage = async (page) => {
+  if (page < 1 || page > pagination.value.totalPages) return;
+  await fetchInvoices(page);
 };
 </script>
 
@@ -208,4 +224,3 @@ const submitInvoice = () => {
   padding: 2rem;
 }
 </style>
-

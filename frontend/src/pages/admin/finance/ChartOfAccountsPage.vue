@@ -57,16 +57,16 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
-          <tr v-for="account in filteredAccounts" :key="account.id" class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 text-sm font-mono font-semibold text-gray-900">{{ account.code }}</td>
-            <td class="px-6 py-4 text-sm text-gray-900">{{ account.name }}</td>
+          <tr v-for="account in filteredAccounts" :key="account._id || account.accountCode" class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 text-sm font-mono font-semibold text-gray-900">{{ account.accountCode }}</td>
+            <td class="px-6 py-4 text-sm text-gray-900">{{ account.accountName }}</td>
             <td class="px-6 py-4 text-sm">
-              <span :class="getTypeClass(account.type)" class="px-2 py-1 rounded text-xs font-semibold">
-                {{ account.type }}
+              <span :class="getTypeClass(account.accountType)" class="px-2 py-1 rounded text-xs font-semibold">
+                {{ account.accountType }}
               </span>
             </td>
-            <td class="px-6 py-4 text-sm text-gray-600">{{ account.subType }}</td>
-            <td class="px-6 py-4 text-sm font-semibold text-gray-900">${{ account.balance.toLocaleString('en-US', {minimumFractionDigits: 2}) }}</td>
+            <td class="px-6 py-4 text-sm text-gray-600">{{ account.accountSubType }}</td>
+            <td class="px-6 py-4 text-sm font-semibold text-gray-900">${{ formatCurrency(account.currentBalance) }}</td>
             <td class="px-6 py-4 text-sm">
               <span :class="account.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'" class="px-3 py-1 rounded-full text-xs font-semibold">
                 {{ account.isActive ? 'Active' : 'Inactive' }}
@@ -89,17 +89,17 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Account Code</label>
-              <input v-model="formData.code" type="text" placeholder="e.g., 1000" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+              <input v-model="formData.accountCode" type="text" placeholder="e.g., 1000" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
-              <input v-model="formData.name" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+              <input v-model="formData.accountName" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
-              <select v-model="formData.type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+              <select v-model="formData.accountType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                 <option value="asset">Asset</option>
                 <option value="liability">Liability</option>
                 <option value="equity">Equity</option>
@@ -109,7 +109,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Sub Type</label>
-              <select v-model="formData.subType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+              <select v-model="formData.accountSubType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                 <option value="current_asset">Current Asset</option>
                 <option value="fixed_asset">Fixed Asset</option>
                 <option value="current_liability">Current Liability</option>
@@ -119,17 +119,11 @@
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Opening Balance</label>
-              <input v-model.number="formData.balance" type="number" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            </div>
-            <div class="flex items-end">
-              <label class="flex items-center space-x-2">
-                <input v-model="formData.isActive" type="checkbox" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-                <span class="text-sm font-medium text-gray-700">Active</span>
-              </label>
-            </div>
+          <div class="flex items-end">
+            <label class="flex items-center space-x-2">
+              <input v-model="formData.isActive" type="checkbox" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+              <span class="text-sm font-medium text-gray-700">Active</span>
+            </label>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -147,11 +141,15 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import financeService from '@/services/financeService';
 
 const { t } = useI18n();
 
 const showCreateModal = ref(false);
+const isLoading = ref(false);
+const error = ref(null);
+
 const filters = ref({
   search: '',
   accountType: '',
@@ -159,36 +157,53 @@ const filters = ref({
 });
 
 const formData = ref({
-  code: '',
-  name: '',
-  type: 'asset',
-  subType: 'current_asset',
-  balance: 0,
+  accountCode: '',
+  accountName: '',
+  accountType: 'asset',
+  accountSubType: 'current_asset',
   isActive: true,
   description: ''
 });
 
-// Sample data
-const accounts = ref([
-  { id: 1, code: '1000', name: 'Cash', type: 'asset', subType: 'current_asset', balance: 55000, isActive: true },
-  { id: 2, code: '1100', name: 'Accounts Receivable', type: 'asset', subType: 'current_asset', balance: 25000, isActive: true },
-  { id: 3, code: '1200', name: 'Inventory', type: 'asset', subType: 'current_asset', balance: 45000, isActive: true },
-  { id: 4, code: '2000', name: 'Accounts Payable', type: 'liability', subType: 'current_liability', balance: 15000, isActive: true },
-  { id: 5, code: '3000', name: 'Owner Capital', type: 'equity', subType: 'owner_equity', balance: 100000, isActive: true },
-  { id: 6, code: '4000', name: 'Sales Revenue', type: 'revenue', subType: 'operating_revenue', balance: 125000, isActive: true },
-  { id: 7, code: '5000', name: 'Cost of Goods Sold', type: 'expense', subType: 'cost_of_goods_sold', balance: 45000, isActive: true },
-  { id: 8, code: '5100', name: 'Salaries Expense', type: 'expense', subType: 'operating_expense', balance: 35000, isActive: true },
-]);
+const accounts = ref([]);
+const pagination = ref({ currentPage: 1, totalPages: 1, total: 0, hasNext: false, hasPrev: false });
+
+const fetchAccounts = async (page = 1) => {
+  isLoading.value = true;
+  error.value = null;
+  try {
+    const params = { page, limit: 200 };
+    if (filters.value.accountType) params.accountType = filters.value.accountType;
+    if (filters.value.status) params.isActive = filters.value.status === 'active' ? true : (filters.value.status === 'inactive' ? false : undefined);
+    if (filters.value.search) params.search = filters.value.search;
+
+    const data = await financeService.getChartOfAccounts(params);
+    accounts.value = data.accounts || data || [];
+    pagination.value = data.pagination || pagination.value;
+  } catch (err) {
+    error.value = err?.message || 'Failed to load accounts';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(fetchAccounts);
+watch(() => [filters.value.accountType, filters.value.status, filters.value.search], () => fetchAccounts(1));
 
 const filteredAccounts = computed(() => {
-  return accounts.value.filter(account => {
-    const matchesSearch = account.code.includes(filters.value.search) ||
-                         account.name.toLowerCase().includes(filters.value.search.toLowerCase());
-    const matchesType = !filters.value.accountType || account.type === filters.value.accountType;
-    const matchesStatus = !filters.value.status || (filters.value.status === 'active' ? account.isActive : !account.isActive);
-    return matchesSearch && matchesType && matchesStatus;
+  // Server-side filtering already applied; perform light search client-side for UX
+  const q = (filters.value.search || '').toLowerCase();
+  return accounts.value.filter(acc => {
+    const code = (acc.accountCode || '').toLowerCase();
+    const name = (acc.accountName || '').toLowerCase();
+    return !q || code.includes(q) || name.includes(q);
   });
 });
+
+const formatCurrency = (value) => {
+  if (value === null || value === undefined) return '0.00';
+  return parseFloat(value).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
 
 const getTypeClass = (type) => {
   const classes = {
@@ -205,31 +220,47 @@ const editAccount = (id) => {
   console.log('Edit account:', id);
 };
 
-const deleteAccount = (id) => {
-  accounts.value = accounts.value.filter(acc => acc.id !== id);
+const deleteAccount = async (id) => {
+  if (!confirm('Delete this account?')) return;
+  try {
+    await financeService.deleteAccount(id);
+    accounts.value = accounts.value.filter(acc => acc._id !== id);
+  } catch (err) {
+    alert(err?.message || 'Failed to delete account');
+  }
 };
 
-const submitAccount = () => {
-  const newAccount = {
-    id: accounts.value.length + 1,
-    code: formData.value.code,
-    name: formData.value.name,
-    type: formData.value.type,
-    subType: formData.value.subType,
-    balance: formData.value.balance,
-    isActive: formData.value.isActive
-  };
-  accounts.value.push(newAccount);
-  showCreateModal.value = false;
-  formData.value = {
-    code: '',
-    name: '',
-    type: 'asset',
-    subType: 'current_asset',
-    balance: 0,
-    isActive: true,
-    description: ''
-  };
+const submitAccount = async () => {
+  try {
+    const payload = {
+      accountCode: formData.value.accountCode,
+      accountName: formData.value.accountName,
+      accountType: formData.value.accountType,
+      accountSubType: formData.value.accountSubType,
+      description: formData.value.description,
+      isActive: formData.value.isActive
+    };
+
+    const res = await financeService.createAccount(payload);
+    if (res?.account) {
+      accounts.value.unshift(res.account);
+    } else {
+      // Fallback: refetch
+      await fetchAccounts(1);
+    }
+
+    showCreateModal.value = false;
+    formData.value = {
+      accountCode: '',
+      accountName: '',
+      accountType: 'asset',
+      accountSubType: 'current_asset',
+      isActive: true,
+      description: ''
+    };
+  } catch (err) {
+    alert(err?.message || 'Failed to create account');
+  }
 };
 </script>
 
