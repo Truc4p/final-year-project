@@ -385,10 +385,16 @@ InvoiceSchema.methods.postToGeneralLedger = async function(userId) {
   
   // Credit: Revenue accounts (increase revenue)
   const revenueByAccount = new Map();
+  const normalizeAccountId = (val) => {
+    if (!val) return null;
+    if (val._id) return val._id; // populated doc
+    return val; // ObjectId or 24-hex string
+  };
   this.lineItems.forEach(item => {
-    const accountId = item.revenueAccount.toString();
-    const current = revenueByAccount.get(accountId) || 0;
-    revenueByAccount.set(accountId, current + (item.subtotal - item.discountAmount));
+    const accountId = normalizeAccountId(item.revenueAccount);
+    if (!accountId) return;
+    const current = revenueByAccount.get(String(accountId)) || 0;
+    revenueByAccount.set(String(accountId), current + (item.subtotal - item.discountAmount));
   });
   
   for (const [accountId, amount] of revenueByAccount.entries()) {
@@ -401,15 +407,24 @@ InvoiceSchema.methods.postToGeneralLedger = async function(userId) {
     });
   }
   
+  const ChartOfAccounts = mongoose.model('ChartOfAccounts');
+  // Credit: Shipping revenue if any
+  if (this.shippingCost > 0) {
+    const shipAccount = await ChartOfAccounts.findOne({ accountCode: '4200' });
+    if (shipAccount) {
+      lines.push({
+        account: shipAccount._id,
+        description: `Shipping on Invoice ${this.invoiceNumber}`,
+        debit: 0,
+        credit: this.shippingCost,
+        lineNumber: lineNumber++
+      });
+    }
+  }
+  
   // Credit: Tax liability account if tax exists
   if (this.totalTax > 0) {
-    // Find tax liability account
-    const ChartOfAccounts = mongoose.model('ChartOfAccounts');
-    const taxAccount = await ChartOfAccounts.findOne({ 
-      accountCode: '2100',
-      accountName: /tax.*payable/i 
-    });
-    
+    const taxAccount = await ChartOfAccounts.findOne({ accountCode: '2100' });
     if (taxAccount) {
       lines.push({
         account: taxAccount._id,
@@ -418,6 +433,33 @@ InvoiceSchema.methods.postToGeneralLedger = async function(userId) {
         credit: this.totalTax,
         lineNumber: lineNumber++
       });
+    }
+  }
+  
+  // Adjustments handling: positive -> credit Other Income (4900); negative -> debit Misc Expense (9100)
+  if (this.adjustments && this.adjustments !== 0) {
+    if (this.adjustments > 0) {
+      const otherIncome = await ChartOfAccounts.findOne({ accountCode: '4900' });
+      if (otherIncome) {
+        lines.push({
+          account: otherIncome._id,
+          description: `Adjustments on Invoice ${this.invoiceNumber}`,
+          debit: 0,
+          credit: this.adjustments,
+          lineNumber: lineNumber++
+        });
+      }
+    } else {
+      const miscExpense = await ChartOfAccounts.findOne({ accountCode: '9100' });
+      if (miscExpense) {
+        lines.push({
+          account: miscExpense._id,
+          description: `Adjustments on Invoice ${this.invoiceNumber}`,
+          debit: Math.abs(this.adjustments),
+          credit: 0,
+          lineNumber: lineNumber++
+        });
+      }
     }
   }
   

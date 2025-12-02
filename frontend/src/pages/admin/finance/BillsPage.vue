@@ -80,7 +80,7 @@
               <button @click="viewBill(bill._id)" class="text-blue-600 hover:text-blue-800 font-medium">View</button>
               <button v-if="bill.status==='draft'" @click="editBill(bill._id)" class="text-green-600 hover:text-green-800 font-medium">Edit</button>
               <button v-if="bill.status==='draft'" @click="approveBillHandler(bill._id)" class="text-purple-600 hover:text-purple-800 font-medium">Approve</button>
-              <button v-if="bill.status==='approved'" @click="postBillHandler(bill._id)" class="text-orange-600 hover:text-orange-800 font-medium">Post</button>
+              <button v-if="bill.status==='approved' && !bill.isPosted" @click="postBillHandler(bill._id)" class="text-orange-600 hover:text-orange-800 font-medium">Post</button>
               <button v-if="bill.status==='draft'" @click="deleteBillHandler(bill._id)" class="text-red-600 hover:text-red-800 font-medium">Delete</button>
             </td>
           </tr>

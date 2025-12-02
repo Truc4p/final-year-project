@@ -235,6 +235,10 @@ const postBill = async (req, res) => {
       return res.status(404).json({ message: "Bill not found" });
     }
 
+    if (bill.isPosted) {
+      return res.status(400).json({ message: "Bill already posted to general ledger" });
+    }
+
     if (bill.status === 'draft') {
       return res.status(400).json({ message: "Bill must be approved before posting" });
     }
@@ -248,7 +252,11 @@ const postBill = async (req, res) => {
     });
   } catch (error) {
     console.error("Error posting bill:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    const msg = (typeof error?.message === 'string') ? error.message : 'Internal server error';
+    if (/already posted/i.test(msg)) {
+      return res.status(400).json({ message: "Bill already posted to general ledger" });
+    }
+    res.status(500).json({ message: msg });
   }
 };
 

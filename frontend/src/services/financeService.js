@@ -26,11 +26,32 @@ const apiCall = async (endpoint, options = {}) => {
       headers
     });
 
+    const contentType = response.headers.get('content-type') || '';
+
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      // Try to extract useful error message from JSON or text body
+      let message = `Request failed (${response.status})`;
+      try {
+        if (contentType.includes('application/json')) {
+          const errJson = await response.json();
+          if (errJson && (errJson.message || errJson.error)) {
+            message = errJson.message || errJson.error;
+          }
+        } else {
+          const errText = await response.text();
+          if (errText) message = errText;
+        }
+      } catch (_) {
+        // ignore parse errors, use default message
+      }
+      throw new Error(message);
     }
 
-    return await response.json();
+    if (response.status === 204) return null;
+    if (contentType.includes('application/json')) {
+      return await response.json();
+    }
+    return await response.text();
   } catch (error) {
     console.error('API Call Error:', error);
     throw error;
