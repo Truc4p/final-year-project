@@ -59,7 +59,7 @@ const createInvoice = async (req, res) => {
     let attempts = 0;
     while (true) {
       try {
-        await invoice.save();
+    await invoice.save();
         break;
       } catch (err) {
         const dup = err && (err.code === 11000) && (err.keyPattern && err.keyPattern.invoiceNumber);

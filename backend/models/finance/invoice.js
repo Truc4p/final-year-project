@@ -133,7 +133,7 @@ const InvoiceSchema = new Schema({
   },
   // Line items
   lineItems: [InvoiceLineItemSchema],
-
+  
   // Totals
   subtotal: { type: Number, required: true, default: 0 },
   totalDiscount: { type: Number, default: 0 },
@@ -143,17 +143,17 @@ const InvoiceSchema = new Schema({
   totalAmount: { type: Number, required: true, default: 0 },
   amountPaid: { type: Number, default: 0, min: 0 },
   amountDue: { type: Number, default: 0 },
-
+  
   // Status
   status: {
     type: String,
     enum: ['draft', 'sent', 'viewed', 'partial', 'paid', 'overdue', 'cancelled', 'void'],
     default: 'draft'
   },
-
+  
   // Payments
   payments: [InvoicePaymentSchema],
-
+  
   // Accounting integration
   accountsReceivableAccount: {
     type: mongoose.Schema.Types.ObjectId,
@@ -166,26 +166,26 @@ const InvoiceSchema = new Schema({
   },
   isPosted: { type: Boolean, default: false },
   postedDate: { type: Date },
-
+  
   // References
   purchaseOrder: { type: String, trim: true },
   order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
-
+  
   // Additional
   notes: { type: String, trim: true },
   terms: { type: String, trim: true },
   memo: { type: String, trim: true },
-
+  
   currency: { type: String, default: 'USD', trim: true },
   tags: [String],
   attachments: [{ fileName: String, fileUrl: String, uploadDate: { type: Date, default: Date.now } }],
-
+  
   // Tracking
   sentDate: { type: Date },
   viewedDate: { type: Date },
   lastReminderDate: { type: Date },
   reminderCount: { type: Number, default: 0 },
-
+  
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   lastModifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
@@ -233,7 +233,7 @@ InvoiceSchema.methods.calculateTotals = function() {
     item.taxAmount = (afterDiscount * item.taxRate) / 100;
     item.total = afterDiscount + item.taxAmount;
   });
-
+  
   this.subtotal = this.lineItems.reduce((sum, i) => sum + i.subtotal, 0);
   this.totalDiscount = this.lineItems.reduce((sum, i) => sum + i.discountAmount, 0);
   this.totalTax = this.lineItems.reduce((sum, i) => sum + i.taxAmount, 0);
@@ -257,10 +257,10 @@ InvoiceSchema.methods.postToGeneralLedger = async function(userId) {
   if (this.isPosted) throw new Error('Invoice already posted to general ledger');
   const JournalEntry = mongoose.model('JournalEntry');
   const ChartOfAccounts = mongoose.model('ChartOfAccounts');
-
+  
   const lines = [];
   let lineNumber = 1;
-
+  
   // Debit AR
   lines.push({
     account: this.accountsReceivableAccount,
@@ -269,7 +269,7 @@ InvoiceSchema.methods.postToGeneralLedger = async function(userId) {
     credit: 0,
     lineNumber: lineNumber++
   });
-
+  
   // Credit revenue per account
   const revenueByAccount = new Map();
   const normalizeAccountId = (val) => (val && val._id) ? val._id : val;
@@ -282,7 +282,7 @@ InvoiceSchema.methods.postToGeneralLedger = async function(userId) {
   for (const [accountId, amount] of revenueByAccount.entries()) {
     lines.push({ account: accountId, description: `Revenue from Invoice ${this.invoiceNumber}`, debit: 0, credit: amount, lineNumber: lineNumber++ });
   }
-
+  
   // Shipping revenue
   if (this.shippingCost > 0) {
     const shipAccount = await ChartOfAccounts.findOne({ accountCode: '4200' });
@@ -318,16 +318,16 @@ InvoiceSchema.methods.postToGeneralLedger = async function(userId) {
     createdBy: userId,
     status: 'draft'
   });
-
+  
   journalEntry.calculateTotals();
   await journalEntry.save();
   await journalEntry.post(userId);
-
+  
   this.journalEntry = journalEntry._id;
   this.isPosted = true;
   this.postedDate = new Date();
   await this.save();
-
+  
   return journalEntry;
 };
 

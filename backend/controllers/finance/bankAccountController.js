@@ -29,7 +29,9 @@ exports.createBankAccount = async (req, res) => {
       overdraftFee,
       description,
       tags,
-      notes
+      notes,
+      openingBalance,
+      openingBalanceDate
     } = req.body;
 
     // Validate required fields
@@ -91,10 +93,29 @@ exports.createBankAccount = async (req, res) => {
 
     await bankAccount.save();
 
+    // Handle optional opening balance by creating an initial transaction
+    const opening = Number(openingBalance);
+    if (!Number.isNaN(opening) && opening !== 0) {
+      const txnType = opening > 0 ? 'deposit' : 'withdrawal';
+      const txnDate = openingBalanceDate ? new Date(openingBalanceDate) : new Date();
+      await bankAccount.addTransaction({
+        transactionDate: txnDate,
+        description: 'Opening balance',
+        amount: Math.abs(opening),
+        transactionType: txnType,
+        reference: 'OPENING',
+        category: 'opening_balance'
+      }, (req.user && (req.user._id || req.user.id)));
+    }
+
+    // Reload updated account to return latest balance
+    const fresh = await BankAccount.findById(bankAccount._id)
+      .populate('chartOfAccountsEntry', 'accountCode accountName');
+
     res.status(201).json({
       success: true,
       message: 'Bank account created successfully',
-      data: bankAccount
+      data: fresh
     });
   } catch (error) {
     console.error('Error creating bank account:', error);

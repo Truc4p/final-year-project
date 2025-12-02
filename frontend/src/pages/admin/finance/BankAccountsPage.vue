@@ -115,8 +115,12 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Current Balance</label>
-              <input v-model.number="formData.currentBalance" type="number" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Opening balance (optional)</label>
+              <input v-model.number="formData.openingBalance" type="number" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Opening balance date</label>
+              <input v-model="formData.openingBalanceDate" type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="flex items-end">
               <label class="flex items-center space-x-2">
@@ -240,16 +244,16 @@ const submitAccount = async () => {
       return;
     }
     const payload = {
-      accountName: formData.value.accountName,
-      bankName: formData.value.bankName,
-      accountNumber: formData.value.accountNumber,
-      accountType: formData.value.accountType,
+    accountName: formData.value.accountName,
+    bankName: formData.value.bankName,
+    accountNumber: formData.value.accountNumber,
+    accountType: formData.value.accountType,
       currentBalance: Number(formData.value.currentBalance) || 0,
       isPrimary: !!formData.value.isPrimary,
       chartOfAccountsEntry: formData.value.chartOfAccountsEntry
-    };
+  };
     await financeService.createBankAccount(payload);
-    showCreateModal.value = false;
+  showCreateModal.value = false;
     formData.value = { accountName: '', bankName: '', accountNumber: '', accountType: 'checking', currentBalance: 0, isPrimary: false, chartOfAccountsEntry: '' };
     await fetchAccounts();
   } catch (e) {
