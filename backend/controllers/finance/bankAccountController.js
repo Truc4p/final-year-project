@@ -270,14 +270,8 @@ exports.deleteBankAccount = async (req, res) => {
       });
     }
 
-    // Check if account has transactions
-    if (account.transactions.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot delete bank account with existing transactions. Mark as inactive instead.'
-      });
-    }
-
+    // Allow deleting even if there are existing embedded transactions
+    // Note: This will remove the account and its embedded transactions.
     await BankAccount.findByIdAndDelete(id);
 
     res.status(200).json({
