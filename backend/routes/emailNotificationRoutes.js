@@ -6,8 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const EmailNotificationService = require('../services/emailNotificationService');
-const BankAccount = require('../models/BankAccount');
-const Transaction = require('../models/Transaction');
+const BankAccount = require('../models/finance/bankAccount');
 const EmailConnection = require('../models/EmailConnection');
 const auth = require('../middleware/auth');
 
@@ -19,7 +18,7 @@ router.post('/test', auth, async (req, res) => {
   try {
     const { provider, email, password, imapServer, imapPort } = req.body;
 
-    if (!provider || !email || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         error: 'Missing required fields: provider, email, password'
       });
@@ -36,7 +35,12 @@ router.post('/test', auth, async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('Email test error:', error);
-    res.status(400).json({ error: error.message });
+    const detail = error?.message || '';
+    let friendly = detail;
+    if (/not authenticated|invalid credentials|login failed/i.test(detail)) {
+      friendly = 'IMAP authentication failed. Please verify your email and password/app password. For Gmail, enable IMAP in settings and use a 16‑character App Password (not your normal password).';
+    }
+    res.status(400).json({ message: friendly });
   }
 });
 
@@ -47,7 +51,6 @@ router.post('/test', auth, async (req, res) => {
 router.post('/connect', auth, async (req, res) => {
   try {
     const {
-      provider,
       bankName,
       email,
       password,
@@ -56,6 +59,7 @@ router.post('/connect', auth, async (req, res) => {
       bankAccountId,
       autoSync
     } = req.body;
+    const provider = 'gmail';
 
     if (!provider || !email || !password || !bankAccountId) {
       return res.status(400).json({
@@ -171,6 +175,7 @@ router.get('/accounts', auth, async (req, res) => {
 router.post('/sync/:bankAccountId', auth, async (req, res) => {
   try {
     const { bankAccountId } = req.params;
+    const { fullHistory, sinceDate, from, subject, limit } = req.query;
 
     // Find email connection
     const emailConnection = await EmailConnection.findOne({
@@ -199,68 +204,81 @@ router.post('/sync/:bankAccountId', auth, async (req, res) => {
       imapPort: emailConnection.imapPort
     };
 
-    const transactions = await EmailNotificationService.fetchBankTransactions(
+    const options = {
+      allHistory: fullHistory === 'true',
+      sinceDate,
+      from,
+      subject
+    };
+    const max = parseInt(limit || '500', 10);
+
+    const parsedTxns = await EmailNotificationService.fetchBankTransactions(
       config,
       emailConnection.bankName,
-      50
+      max,
+      options
     );
 
-    // Save transactions to database
+    // Save transactions to embedded array on BankAccount, avoid duplicates
     let savedCount = 0;
-    for (const txn of transactions) {
-      // Check if transaction already exists (avoid duplicates)
-      const existingTxn = await Transaction.findOne({
-        bankAccountId,
-        amount: txn.amount,
-        date: txn.date,
-        type: txn.type,
-        source: 'email'
+    const dayStr = (d) => {
+      const dt = new Date(d);
+      return isNaN(dt.getTime()) ? null : dt.toISOString().slice(0,10);
+    };
+
+    for (const txn of parsedTxns) {
+      const txnDateStr = dayStr(txn.date);
+      const txnTypeStr = txn.type === 'deposit' ? 'deposit' : 'withdrawal';
+      const txnDesc = (txn.description || '').toLowerCase();
+      const txnAmt = Number(Math.abs(txn.amount));
+
+      const exists = bankAccount.transactions.some(t => {
+        const tDateStr = dayStr(t.transactionDate);
+        const dateMatch = txnDateStr && tDateStr ? (tDateStr === txnDateStr) : false;
+        const amountMatch = Number(t.amount) === txnAmt;
+        const typeMatch = t.transactionType === txnTypeStr;
+        const descMatch = (t.description || '').toLowerCase() === txnDesc;
+        // Consider duplicate if (date+amount+type) match OR (amount+type+desc) match
+        return (dateMatch && amountMatch && typeMatch) || (amountMatch && typeMatch && descMatch);
       });
+      if (exists) continue;
 
-      if (!existingTxn) {
-        const transaction = new Transaction({
-          bankAccountId,
-          amount: txn.amount,
-          date: txn.date,
-          type: txn.type,
-          description: txn.description,
-          status: txn.status,
-          source: txn.source,
-          accountNumber: txn.accountNumber,
-          rawData: txn.rawEmail
-        });
+      const safeDate = txnDateStr ? new Date(txn.date) : new Date();
+      const transactionData = {
+        transactionDate: safeDate,
+        description: txn.description || `${emailConnection.bankName} Transaction`,
+        amount: txnAmt,
+        transactionType: txnTypeStr,
+        reference: txn.rawEmail?.subject
+      };
 
-        await transaction.save();
-        savedCount++;
-
-        // Update bank account balance
-        if (txn.type === 'deposit') {
-          bankAccount.currentBalance += txn.amount;
-        } else {
-          bankAccount.currentBalance -= txn.amount;
-        }
-      }
+      await bankAccount.addTransaction(transactionData, req.user.id);
+      savedCount++;
     }
 
     // Update last sync date
     emailConnection.lastSyncDate = new Date();
     await emailConnection.save();
 
-    // Save updated balance
-    await bankAccount.save();
-
     res.json({
       success: true,
       message: `Synced ${savedCount} new transactions`,
       transactionsSynced: savedCount,
-      totalTransactionsFound: transactions.length,
+      totalTransactionsFound: parsedTxns.length,
       newBalance: bankAccount.currentBalance
     });
   } catch (error) {
     console.error('Sync error:', error);
+    const detail = error?.message || '';
+    let friendly = detail;
+    if (/not authenticated|invalid credentials|login failed/i.test(detail)) {
+      friendly = 'IMAP authentication failed. Please verify your email and password/app password. For Gmail, enable IMAP in settings and use a 16‑character App Password (not your normal password).';
+    } else if (/ENOTFOUND|getaddrinfo|ECONNREFUSED|timed out/i.test(detail)) {
+      friendly = 'Unable to connect to the IMAP server. Please check IMAP server/port, TLS, and network connectivity.';
+    }
     res.status(400).json({
-      error: error.message,
-      message: 'Sync completed with errors. Check logs for details.'
+      message: friendly,
+      detail: 'Sync completed with errors. Check logs for details.'
     });
   }
 });

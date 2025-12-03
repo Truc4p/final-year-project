@@ -10,9 +10,9 @@
         <button @click="showConnectEmailModal = true" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
           📧 Connect Email
         </button>
-        <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
-          + Add Bank Account
-        </button>
+      <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+        + Add Bank Account
+      </button>
       </div>
     </div>
 
@@ -37,6 +37,7 @@
         <div class="flex space-x-2">
           <button @click="viewAccount(account.id)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded transition-colors">View</button>
           <button @click="syncAccountTransactions(account.id)" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-600 font-medium py-2 px-4 rounded transition-colors">Sync</button>
+          <button v-if="isTimo(account)" @click="syncTimoHistory(account.id)" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-medium py-2 px-4 rounded transition-colors">Sync Timo history</button>
           <button @click="editAccount(account.id)" class="flex-1 bg-green-50 hover:bg-green-100 text-green-600 font-medium py-2 px-4 rounded transition-colors">Edit</button>
           <button @click="deleteAccount(account.id)" class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded transition-colors">Delete</button>
         </div>
@@ -90,13 +91,8 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Email Provider</label>
-              <select v-model="emailFormData.provider" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required>
-                <option value="">Select provider...</option>
-                <option value="gmail">Gmail</option>
-                <option value="outlook">Outlook/Hotmail</option>
-                <option value="yahoo">Yahoo Mail</option>
-                <option value="imap">Other (IMAP)</option>
-              </select>
+              <div class="w-full px-4 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-700">Gmail</div>
+              <p class="text-xs text-gray-500 mt-1">Use a Gmail App Password (16 characters).</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
@@ -111,20 +107,11 @@
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Password / App Password</label>
-            <p class="text-xs text-gray-500 mb-2">For Gmail: Use an App Password. For Outlook: Use your account password.</p>
+            <p class="text-xs text-gray-500 mb-2">For Gmail: Use a 16-character App Password (not your normal password). Ensure IMAP is enabled in Gmail settings.</p>
             <input v-model="emailFormData.password" type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required>
           </div>
 
-          <div v-if="emailFormData.provider === 'imap'" class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">IMAP Server</label>
-              <input v-model="emailFormData.imapServer" type="text" placeholder="e.g., imap.gmail.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">IMAP Port</label>
-              <input v-model.number="emailFormData.imapPort" type="number" placeholder="993" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-            </div>
-          </div>
+
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Linked Bank Account</label>
@@ -240,7 +227,7 @@ const formData = ref({
 });
 
 const emailFormData = ref({
-  provider: '',
+  provider: 'gmail',
   bankName: '',
   email: '',
   password: '',
@@ -393,11 +380,9 @@ const testEmailConnection = async () => {
   try {
     isLoading.value = true;
     const testData = {
-      provider: emailFormData.value.provider,
+      provider: 'gmail',
       email: emailFormData.value.email,
-      password: emailFormData.value.password,
-      imapServer: emailFormData.value.imapServer,
-      imapPort: emailFormData.value.imapPort
+      password: emailFormData.value.password
     };
     await financeService.testEmailConnection(testData);
     alert('✅ Email connection successful!');
@@ -427,12 +412,15 @@ const submitEmailConnection = async () => {
       autoSync: emailFormData.value.autoSync
     };
 
+    // Keep selected account id before reset
+    const linkedBankAccountId = emailFormData.value.bankAccountId;
+
     await financeService.connectEmailAccount(payload);
     
     alert('✅ Email account connected successfully!');
     showConnectEmailModal.value = false;
     emailFormData.value = {
-      provider: '',
+      provider: 'gmail',
       bankName: '',
       email: '',
       password: '',
@@ -443,7 +431,7 @@ const submitEmailConnection = async () => {
     };
 
     // Sync transactions immediately
-    await syncAccountTransactions(emailFormData.value.bankAccountId);
+    await syncAccountTransactions(linkedBankAccountId);
   } catch (e) {
     alert('❌ Failed to connect email: ' + (e?.message || 'Unknown error'));
   } finally {
@@ -454,11 +442,50 @@ const submitEmailConnection = async () => {
 const syncAccountTransactions = async (accountId) => {
   try {
     isLoading.value = true;
-    await financeService.syncEmailTransactions(accountId);
-    
+    const res = await financeService.syncEmailTransactions(accountId);
+
     // Refresh transactions
     await fetchTransactions(accountId);
-    alert('✅ Transactions synced successfully!');
+
+    const synced = Number(res?.transactionsSynced || 0);
+    const found = Number(res?.totalTransactionsFound || 0);
+
+    if (synced === 0) {
+      alert(`ℹ️ No new transactions found in email. Scanned ${found} message(s).`);
+    } else {
+      alert(`✅ Synced ${synced} new transaction(s) from ${found} email(s).`);
+    }
+  } catch (e) {
+    console.error('Sync failed:', e);
+    alert('⚠️ Sync completed with status: ' + (e?.message || 'Check console for details'));
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const isTimo = (account) => /timo|bvbank/i.test(account?.bankName || '');
+
+const syncTimoHistory = async (accountId) => {
+  try {
+    isLoading.value = true;
+    const params = {
+      fullHistory: 'true',
+      from: 'support@timo.vn',
+      subject: 'Thông báo thay đổi số dư tài khoản',
+      limit: '1000'
+    };
+    const res = await financeService.syncEmailTransactions(accountId, params);
+
+    await fetchTransactions(accountId);
+
+    const synced = Number(res?.transactionsSynced || 0);
+    const found = Number(res?.totalTransactionsFound || 0);
+
+    if (synced === 0) {
+      alert(`ℹ️ No new transactions found from Timo. Scanned ${found} message(s).`);
+    } else {
+      alert(`✅ Synced ${synced} Timo transaction(s) from ${found} email(s).`);
+    }
   } catch (e) {
     console.error('Sync failed:', e);
     alert('⚠️ Sync completed with status: ' + (e?.message || 'Check console for details'));

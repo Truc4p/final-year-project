@@ -32,12 +32,14 @@ class EmailNotificationService {
   static async testGmailConnection(config) {
     // For production, you'd use OAuth2
     // This is a simplified version
+    const allowSelfSigned = process.env.EMAIL_ALLOW_SELF_SIGNED === 'true' || process.env.NODE_ENV !== 'production';
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: config.email,
         pass: config.password // Should be App Password for Gmail
-      }
+      },
+      tls: allowSelfSigned ? { rejectUnauthorized: false } : undefined
     });
 
     await transporter.verify();
@@ -73,96 +75,130 @@ class EmailNotificationService {
         tls: true
       });
 
-      imap.openBox('INBOX', false, (err, box) => {
-        if (err) {
+      imap.once('ready', () => {
+        imap.openBox('INBOX', true, (err, box) => {
+          if (err) {
+            imap.end();
+            return reject(err);
+          }
           imap.end();
-          reject(err);
-        } else {
-          imap.end();
-          resolve({ success: true, message: 'IMAP connection successful' });
-        }
+          return resolve({ success: true, message: 'IMAP connection successful' });
+        });
       });
 
-      imap.openBox('INBOX', false, (err) => {
-        if (err) reject(err);
+      imap.once('error', (err) => {
+        reject(err);
       });
+
+      imap.connect();
     });
   }
 
   /**
    * Fetch and parse bank transaction emails
    */
-  static async fetchBankTransactions(config, bankName, limit = 50) {
+  static async fetchBankTransactions(config, bankName, limit = 50, options = {}) {
     try {
       const imap = this.createImapConnection(config);
       const transactions = [];
 
       return new Promise((resolve, reject) => {
-        imap.openBox('INBOX', false, (err, box) => {
-          if (err) {
-            imap.end();
-            reject(err);
-            return;
-          }
-
-          // Search for emails from bank
-          const searchCriteria = [
-            ['FROM', bankName],
-            ['SINCE', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)] // Last 90 days
-          ];
-
-          imap.search(searchCriteria, (err, results) => {
+        imap.once('ready', () => {
+          imap.openBox('INBOX', true, (err, box) => {
             if (err) {
               imap.end();
-              reject(err);
-              return;
+              return reject(err);
             }
 
-            if (!results || results.length === 0) {
-              imap.end();
-              resolve([]);
-              return;
+            // Build search criteria
+            const searchCriteria = [];
+            if (!(options && options.allHistory)) {
+              const sinceDate = options && options.sinceDate ? new Date(options.sinceDate) : new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+              searchCriteria.push(['SINCE', sinceDate]);
             }
 
-            const f = imap.fetch(results.slice(0, limit), { bodies: '' });
+            // Prefer Gmail's X-GM-RAW when using Gmail to better handle diacritics and robust searching
+            const useGmRaw = (config.provider === 'gmail') && (options?.from || options?.subject || options?.rawQuery);
+            const gmRaw = options?.rawQuery || [
+              options?.from ? `from:"${options.from}"` : null,
+              options?.subject ? `subject:"${options.subject}"` : null,
+              !(options && options.allHistory) && (options?.sinceDate ? `after:${new Date(options.sinceDate).toISOString().slice(0,10)}` : null)
+            ].filter(Boolean).join(' ');
 
-            f.on('message', (msg, seqno) => {
-              simpleParser(msg, async (err, parsed) => {
-                if (err) {
-                  console.error('Parse error:', err);
-                  return;
-                }
+            // Apply targeted filters if provided (fallback for non-Gmail)
+            if (!useGmRaw) {
+              if (options?.from) {
+                searchCriteria.push(['HEADER', 'From', options.from]);
+              }
+              if (options?.subject) {
+                searchCriteria.push(['HEADER', 'Subject', options.subject]);
+              }
+            }
 
-                try {
-                  const transaction = this.parseTransactionFromEmail(
-                    parsed,
-                    bankName
-                  );
-                  if (transaction) {
-                    transactions.push(transaction);
-                  }
-                } catch (parseErr) {
-                  console.error('Transaction parse error:', parseErr);
+            const doSearch = (criteria, cb) => imap.search(criteria, cb);
+
+            if (useGmRaw && gmRaw) {
+              doSearch([['X-GM-RAW', gmRaw], ...searchCriteria], (err, results) => {
+                if (err || !results || results.length === 0) {
+                  // Fallback to HEADER search if GM-RAW returns nothing
+                  return doSearch(searchCriteria, (err2, results2) => handleSearchResult(err2, results2));
                 }
+                return handleSearchResult(null, results);
               });
-            });
+            } else {
+              doSearch(searchCriteria, (err, results) => handleSearchResult(err, results));
+            }
 
-            f.on('error', (err) => {
-              imap.end();
-              reject(err);
-            });
+            function handleSearchResult(err, results) {
+              if (err) {
+                imap.end();
+                return reject(err);
+              }
 
-            f.on('end', () => {
-              imap.end();
-              resolve(transactions);
-            });
+              if (!results || results.length === 0) {
+                imap.end();
+                return resolve([]);
+              }
+
+              const fetchIds = results.slice(0, limit);
+              const f = imap.fetch(fetchIds, { bodies: '' });
+
+              f.on('message', (msg, seqno) => {
+                let buffer = '';
+                msg.on('body', (stream) => {
+                  stream.on('data', (chunk) => {
+                    buffer += chunk.toString('utf8');
+                  });
+                });
+                msg.once('end', async () => {
+                  try {
+                    const parsed = await simpleParser(buffer);
+                    // Use bank-specific parser with fallback to generic
+                    let txn = EmailNotificationService.parseTransactionForBank(parsed, bankName);
+                    if (!txn) txn = EmailNotificationService.parseTransactionFromEmail(parsed, bankName);
+                    if (txn) transactions.push(txn);
+                  } catch (parseErr) {
+                    console.error('Transaction parse error:', parseErr);
+                  }
+                });
+              });
+
+              f.once('error', (err) => {
+                imap.end();
+                return reject(err);
+              });
+
+              f.once('end', () => {
+                imap.end();
+                return resolve(transactions);
+              });
+            }
           });
         });
 
-        imap.on('error', reject);
-        imap.on('end', () => {
-          // Connection closed
-        });
+        imap.once('error', (err) => reject(err));
+        imap.once('end', () => {/* connection closed */});
+        imap.connect();
       });
     } catch (error) {
       throw new Error(`Failed to fetch bank transactions: ${error.message}`);
@@ -173,10 +209,12 @@ class EmailNotificationService {
    * Create IMAP connection based on provider
    */
   static createImapConnection(config) {
+    const allowSelfSigned = process.env.EMAIL_ALLOW_SELF_SIGNED === 'true' || process.env.NODE_ENV !== 'production';
     let imapConfig = {
       user: config.email,
       password: config.password,
-      tls: true
+      tls: true,
+      tlsOptions: allowSelfSigned ? { rejectUnauthorized: false } : undefined
     };
 
     if (config.provider === 'gmail') {
@@ -304,33 +342,66 @@ class EmailNotificationService {
    * Example: "Your account ****1234 has been credited with 500,000 VND"
    */
   static parseTimoTransaction(emailData) {
-    const text = emailData.text || '';
+    const text = (emailData.text || '').replace(/\r/g, '');
     const subject = emailData.subject || '';
 
-    // Timo patterns
-    const amountPattern = /(?:credited|debited|transferred)[\s]*(?:with|of)?[\s]*([0-9,]+)[\s]*(?:VND|đ)?/i;
-    const datePattern = /(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})/;
+    // Vietnamese patterns
+    // Example: "Tài khoản ... vừa tăng 2.000.000 VND vào 02/12/2025 07:24. Số dư hiện tại: ...\nMô tả: ..."
+    const vnChangePattern = /vừa\s+(tăng|giảm)\s+([0-9\.,]+)\s*VND/i;
+    const vnDatePattern = /vào\s+(\d{2}\/\d{2}\/\d{4})\s+(\d{2}:\d{2})/i;
+    const vnDescPattern = /Mô tả:\s*(.+)/i;
+
+    const enTypePattern = /(credited|debited|transferred)/i;
+    const enAmountPattern = /(?:credited|debited|transferred)[\s]*(?:with|of)?[\s]*([0-9,\.]+)[\s]*(?:VND|đ)?/i;
     const accountPattern = /\*{4}(\d{4})/;
-    const typePattern = /(credited|debited|transferred)/i;
 
-    const amountMatch = amountPattern.exec(text);
-    const dateMatch = datePattern.exec(text);
+    let type = 'transfer';
+    let amount = null;
+    let date = null;
+    let description = null;
+
+    // Vietnamese detection first
+    const changeMatch = vnChangePattern.exec(text);
+    if (changeMatch) {
+      const dir = changeMatch[1].toLowerCase();
+      type = dir === 'tăng' ? 'deposit' : 'withdrawal';
+      amount = Number(changeMatch[2].replace(/[\.,]/g, ''));
+    }
+
+    const dateMatch = vnDatePattern.exec(text);
+    if (dateMatch) {
+      // dd/MM/yyyy HH:mm local time
+      const [_, d, t] = dateMatch;
+      const [dd, mm, yyyy] = d.split('/').map(Number);
+      const [HH, MM] = t.split(':').map(Number);
+      const iso = new Date(yyyy, mm - 1, dd, HH, MM);
+      if (!isNaN(iso.getTime())) date = iso;
+    }
+
+    const descMatch = vnDescPattern.exec(text);
+    if (descMatch) {
+      description = (descMatch[1] || '').trim();
+    }
+
+    // English fallback if Vietnamese not found
+    if (amount == null) {
+      const enAmt = enAmountPattern.exec(text);
+      if (enAmt) amount = Number(enAmt[1].replace(/[\.,]/g, ''));
+    }
+    if (type === 'transfer') {
+      const enType = enTypePattern.exec(text);
+      if (enType) type = enType[1].toLowerCase() === 'credited' ? 'deposit' : 'withdrawal';
+    }
+
     const accountMatch = accountPattern.exec(text);
-    const typeMatch = typePattern.exec(text);
 
-    if (!amountMatch) return null;
-
-    const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
+    if (amount == null) return null;
 
     return {
-      date: dateMatch ? new Date(dateMatch[1]) : new Date(),
-      amount: amount,
-      type: typeMatch
-        ? typeMatch[1].toLowerCase() === 'credited'
-          ? 'deposit'
-          : 'withdrawal'
-        : 'transfer',
-      description: subject || 'Timo Transaction',
+      date: date || new Date(),
+      amount: Math.abs(amount),
+      type,
+      description: description || subject || 'Timo Transaction',
       status: 'pending',
       source: 'email',
       accountNumber: accountMatch ? accountMatch[1] : null,
