@@ -295,7 +295,7 @@ EmailConnection Collection
 ├─ _id: ObjectId
 ├─ userId: ObjectId (ref: User)
 ├─ bankAccountId: ObjectId (ref: BankAccount)
-├─ provider: String (gmail|outlook|yahoo|imap)
+├─ provider: String (gmail)
 ├─ bankName: String
 ├─ email: String
 ├─ password: String (base64 encoded)

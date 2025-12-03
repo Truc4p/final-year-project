@@ -18,7 +18,7 @@ const {
   getAccountsNeedingReconciliation,
   getPrimaryAccount,
   getBankAccountSummary,
-  cleanupTransactions
+  deleteTransaction
 } = require('../../controllers/finance/bankAccountController');
 
 // Middleware for authentication and authorization (consistent with other finance routes)
@@ -45,12 +45,10 @@ router.get('/:id/transactions', getTransactions);
 router.get('/:id/unreconciled', getUnreconciledTransactions);
 router.put('/:id/transactions/:transactionId/reconcile', reconcileTransaction);
 router.post('/:id/transactions/:transactionId/post', postTransactionToGeneralLedger);
+router.delete('/:id/transactions/:transactionId', deleteTransaction);
 
 // Balance Queries
 router.get('/:id/balance-at-date', getBalanceAtDate);
-
-// Maintenance / Cleanup
-router.delete('/:id/transactions/cleanup', cleanupTransactions);
 
 // Reconciliation Management
 router.post('/:id/reconciliations', createReconciliation);

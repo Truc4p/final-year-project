@@ -185,6 +185,12 @@ export const financeService = {
     return apiCall(`/api/finance/bank-accounts/${id}/transactions${queryString ? '?' + queryString : ''}`);
   },
 
+  // Delete a specific bank transaction
+  deleteBankTransaction: (accountId, transactionId) =>
+    apiCall(`/api/finance/bank-accounts/${accountId}/transactions/${transactionId}`, {
+      method: 'DELETE'
+    }),
+
   // Add bank transaction
   addBankTransaction: (id, data) => apiCall(`/api/finance/bank-accounts/${id}/transactions`, {
     method: 'POST',
@@ -194,11 +200,7 @@ export const financeService = {
   // Get bank account summary
   getBankAccountSummary: (id) => apiCall(`/api/finance/bank-accounts/${id}/summary`),
 
-  // Cleanup transactions on a bank account
-  cleanupBankTransactions: (id, filters = {}) => apiCall(`/api/finance/bank-accounts/${id}/transactions/cleanup`, {
-    method: 'DELETE',
-    body: JSON.stringify(filters)
-  }),
+
 
   // ==================== CHART OF ACCOUNTS ====================
 

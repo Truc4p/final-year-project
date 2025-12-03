@@ -38,7 +38,6 @@
           <button @click="viewAccount(account.id)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded transition-colors">View</button>
           <button @click="syncAccountTransactions(account.id)" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-600 font-medium py-2 px-4 rounded transition-colors">Sync</button>
           <button v-if="isTimo(account)" @click="syncTimoHistory(account.id)" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-medium py-2 px-4 rounded transition-colors">Sync Timo history</button>
-          <button @click="clearPlaceholders(account.id)" class="flex-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 font-medium py-2 px-4 rounded transition-colors">Clear placeholders</button>
           <button @click="editAccount(account.id)" class="flex-1 bg-green-50 hover:bg-green-100 text-green-600 font-medium py-2 px-4 rounded transition-colors">Edit</button>
           <button @click="deleteAccount(account.id)" class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded transition-colors">Delete</button>
         </div>
@@ -57,12 +56,13 @@
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Type</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Amount</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
             <tr v-for="txn in recentTransactions" :key="txn.id" class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 text-sm text-gray-600">{{ formatDate(txn.date) }}</td>
-              <td class="px-6 py-4 text-sm text-gray-900">{{ sanitizeDesc(txn.description) }}</td>
+              <td class="px-6 py-4 text-sm text-gray-900">{{ txn.description }}</td>
               <td class="px-6 py-4 text-sm">
                 <span :class="txn.type === 'deposit' ? 'text-green-600' : 'text-red-600'" class="font-medium">
                   {{ txn.type }}
@@ -75,6 +75,9 @@
                 <span :class="getStatusClass(txn.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
                   {{ txn.status }}
                 </span>
+              </td>
+              <td class="px-6 py-4 text-sm">
+                <button @click="deleteTxn(txn.id)" class="text-red-600 hover:text-red-800">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -300,24 +303,6 @@ const formatVND = (value) => {
   return `${n.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} VND`;
 };
 
-const sanitizeDesc = (input) => {
-  if (!input) return '';
-  let s = String(input);
-  // Remove leading label
-  s = s.replace(/^Mô tả:\s*/i, '');
-  // Cut off common footer/signature phrases and everything after them
-  const cutters = [
-    /Cảm ơn Quý khách[\s\S]*$/i,
-    /Trân trọng[\s\S]*$/i,
-    /Timo\s+Digital\s+Bank\s+by\s+BVBank[\s\S]*$/i,
-    /Timo\s+Support[\s\S]*$/i
-  ];
-  for (const c of cutters) s = s.replace(c, '');
-  // Collapse spaces
-  s = s.replace(/\s+/g, ' ').trim();
-  return s.slice(0, 160);
-};
-
 const getStatusClass = (status) => ({
   reconciled: 'bg-green-100 text-green-800',
   pending: 'bg-yellow-100 text-yellow-800',
@@ -519,21 +504,23 @@ const syncTimoHistory = async (accountId) => {
   }
 };
 
-const clearPlaceholders = async (accountId) => {
-  if (!confirm('Remove placeholder transactions (e.g., default description or zero/tiny amounts)?')) return;
+
+const deleteTxn = async (txnId) => {
   try {
+    if (!selectedAccountId.value) {
+      alert('No account selected');
+      return;
+    }
+    if (!confirm('Delete this transaction? This will adjust the account balance.')) return;
     isLoading.value = true;
-    // Remove transactions that look like placeholders: default description contains 'Transaction' and tiny amounts
-    const filters = {
-      descriptionContains: 'Transaction',
-      maxAmount: 10 // remove amounts <= 10 (e.g., $0.00, $2.00 placeholders)
-    };
-    const res = await financeService.cleanupBankTransactions(accountId, filters);
-    await fetchTransactions(accountId);
-    alert(`✅ ${res?.removed || 0} placeholder transaction(s) removed. New balance: ${res?.newBalance ?? 'n/a'}`);
+    await financeService.deleteBankTransaction(selectedAccountId.value, txnId);
+    // Refresh accounts to update balances and transactions for selected account
+    await fetchAccounts();
+    if (selectedAccountId.value) await fetchTransactions(selectedAccountId.value);
+    alert('Transaction deleted.');
   } catch (e) {
-    console.error('Cleanup failed:', e);
-    alert('❌ Cleanup failed: ' + (e?.message || 'Check console for details'));
+    console.error('Delete transaction failed:', e);
+    alert('Failed to delete transaction: ' + (e?.message || 'Unknown error'));
   } finally {
     isLoading.value = false;
   }

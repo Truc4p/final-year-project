@@ -19,7 +19,7 @@ const emailConnectionSchema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ['gmail', 'outlook', 'yahoo', 'imap'],
+      enum: ['gmail'],
       required: true
     },
     bankName: {

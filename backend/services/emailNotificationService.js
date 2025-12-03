@@ -15,10 +15,6 @@ class EmailNotificationService {
     try {
       if (config.provider === 'gmail') {
         return await this.testGmailConnection(config);
-      } else if (config.provider === 'outlook') {
-        return await this.testOutlookConnection(config);
-      } else if (config.provider === 'imap') {
-        return await this.testImapConnection(config);
       }
       throw new Error('Unsupported email provider');
     } catch (error) {
@@ -46,53 +42,7 @@ class EmailNotificationService {
     return { success: true, message: 'Gmail connection successful' };
   }
 
-  /**
-   * Test Outlook connection
-   */
-  static async testOutlookConnection(config) {
-    const transporter = nodemailer.createTransport({
-      service: 'outlook',
-      auth: {
-        user: config.email,
-        pass: config.password
-      }
-    });
 
-    await transporter.verify();
-    return { success: true, message: 'Outlook connection successful' };
-  }
-
-  /**
-   * Test IMAP connection
-   */
-  static async testImapConnection(config) {
-    return new Promise((resolve, reject) => {
-      const imap = new Imap({
-        user: config.email,
-        password: config.password,
-        host: config.imapServer,
-        port: config.imapPort,
-        tls: true
-      });
-
-      imap.once('ready', () => {
-        imap.openBox('INBOX', true, (err, box) => {
-          if (err) {
-            imap.end();
-            return reject(err);
-          }
-          imap.end();
-          return resolve({ success: true, message: 'IMAP connection successful' });
-        });
-      });
-
-      imap.once('error', (err) => {
-        reject(err);
-      });
-
-      imap.connect();
-    });
-  }
 
   /**
    * Fetch and parse bank transaction emails
@@ -252,15 +202,6 @@ class EmailNotificationService {
     if (config.provider === 'gmail') {
       imapConfig.host = 'imap.gmail.com';
       imapConfig.port = 993;
-    } else if (config.provider === 'outlook') {
-      imapConfig.host = 'imap-mail.outlook.com';
-      imapConfig.port = 993;
-    } else if (config.provider === 'yahoo') {
-      imapConfig.host = 'imap.mail.yahoo.com';
-      imapConfig.port = 993;
-    } else if (config.provider === 'imap') {
-      imapConfig.host = config.imapServer;
-      imapConfig.port = config.imapPort;
     }
 
     return new Imap(imapConfig);
