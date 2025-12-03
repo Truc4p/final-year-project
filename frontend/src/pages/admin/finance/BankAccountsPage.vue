@@ -36,7 +36,6 @@
         </div>
         <div class="flex space-x-2">
           <button @click="viewAccount(account.id)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded transition-colors">View</button>
-          <button @click="syncAccountTransactions(account.id)" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-600 font-medium py-2 px-4 rounded transition-colors">Sync</button>
           <button v-if="isTimo(account)" @click="syncTimoHistory(account.id)" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-medium py-2 px-4 rounded transition-colors">Sync Timo history</button>
           <button @click="editAccount(account.id)" class="flex-1 bg-green-50 hover:bg-green-100 text-green-600 font-medium py-2 px-4 rounded transition-colors">Edit</button>
           <button @click="deleteAccount(account.id)" class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded transition-colors">Delete</button>
@@ -440,8 +439,8 @@ const submitEmailConnection = async () => {
       autoSync: false
     };
 
-    // Sync transactions immediately
-    await syncAccountTransactions(linkedBankAccountId);
+    // Sync Timo history immediately
+    await syncTimoHistory(linkedBankAccountId);
   } catch (e) {
     alert('❌ Failed to connect email: ' + (e?.message || 'Unknown error'));
   } finally {
@@ -449,29 +448,6 @@ const submitEmailConnection = async () => {
   }
 };
 
-const syncAccountTransactions = async (accountId) => {
-  try {
-    isLoading.value = true;
-    const res = await financeService.syncEmailTransactions(accountId);
-
-    // Refresh transactions
-    await fetchTransactions(accountId);
-
-    const synced = Number(res?.transactionsSynced || 0);
-    const found = Number(res?.totalTransactionsFound || 0);
-
-    if (synced === 0) {
-      alert(`ℹ️ No new transactions found in email. Scanned ${found} message(s).`);
-    } else {
-      alert(`✅ Synced ${synced} new transaction(s) from ${found} email(s).`);
-    }
-  } catch (e) {
-    console.error('Sync failed:', e);
-    alert('⚠️ Sync completed with status: ' + (e?.message || 'Check console for details'));
-  } finally {
-    isLoading.value = false;
-  }
-};
 
 const isTimo = (account) => /timo|bvbank/i.test(account?.bankName || '');
 
