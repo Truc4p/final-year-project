@@ -8,7 +8,7 @@
       </div>
       <div class="flex gap-3">
         <button @click="showConnectEmailModal = true" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
-          📧 Connect Email
+          Connect Email
         </button>
       <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
         + Add Bank Account
@@ -32,7 +32,7 @@
         </div>
         <div class="mb-4">
           <p class="text-sm text-gray-600">Current Balance</p>
-          <p class="text-2xl font-bold text-gray-900">${{ account.currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2}) }}</p>
+          <p class="text-2xl font-bold text-gray-900">{{ formatVND(account.currentBalance) }}</p>
         </div>
         <div class="flex space-x-2">
           <button @click="viewAccount(account.id)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded transition-colors">View</button>
@@ -62,14 +62,14 @@
           <tbody class="divide-y divide-gray-200">
             <tr v-for="txn in recentTransactions" :key="txn.id" class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 text-sm text-gray-600">{{ formatDate(txn.date) }}</td>
-              <td class="px-6 py-4 text-sm text-gray-900">{{ txn.description }}</td>
+              <td class="px-6 py-4 text-sm text-gray-900">{{ sanitizeDesc(txn.description) }}</td>
               <td class="px-6 py-4 text-sm">
                 <span :class="txn.type === 'deposit' ? 'text-green-600' : 'text-red-600'" class="font-medium">
                   {{ txn.type }}
                 </span>
               </td>
               <td class="px-6 py-4 text-sm font-semibold" :class="txn.type === 'deposit' ? 'text-green-600' : 'text-red-600'">
-                {{ txn.type === 'deposit' ? '+' : '-' }}${{ txn.amount.toLocaleString('en-US', {minimumFractionDigits: 2}) }}
+                {{ txn.type === 'deposit' ? '+' : '-' }}{{ formatVND(txn.amount) }}
               </td>
               <td class="px-6 py-4 text-sm">
                 <span :class="getStatusClass(txn.status)" class="px-3 py-1 rounded-full text-xs font-semibold">
@@ -293,6 +293,30 @@ const fetchTransactions = async (accountId) => {
 };
 
 const formatDate = (date) => new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+// Format numbers as Vietnamese Dong, e.g., 2.000.000 VND
+const formatVND = (value) => {
+  const n = Number(value || 0);
+  return `${n.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} VND`;
+};
+
+const sanitizeDesc = (input) => {
+  if (!input) return '';
+  let s = String(input);
+  // Remove leading label
+  s = s.replace(/^Mô tả:\s*/i, '');
+  // Cut off common footer/signature phrases and everything after them
+  const cutters = [
+    /Cảm ơn Quý khách[\s\S]*$/i,
+    /Trân trọng[\s\S]*$/i,
+    /Timo\s+Digital\s+Bank\s+by\s+BVBank[\s\S]*$/i,
+    /Timo\s+Support[\s\S]*$/i
+  ];
+  for (const c of cutters) s = s.replace(c, '');
+  // Collapse spaces
+  s = s.replace(/\s+/g, ' ').trim();
+  return s.slice(0, 160);
+};
 
 const getStatusClass = (status) => ({
   reconciled: 'bg-green-100 text-green-800',

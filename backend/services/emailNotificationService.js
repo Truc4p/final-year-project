@@ -294,6 +294,30 @@ class EmailNotificationService {
   }
 
   /**
+   * Sanitize/shorten a description, remove signatures/footers
+   */
+  static sanitizeDescription(desc, bankName='') {
+    if (!desc) return '';
+    let s = String(desc).trim();
+    // Remove header labels
+    s = s.replace(/^Mô tả:\s*/i, '');
+    // Remove common footer/signature phrases and everything after them
+    const cutters = [
+      /Cảm ơn Quý khách[\s\S]*$/i,
+      /Trân trọng[\s\S]*$/i,
+      /Timo\s+Digital\s+Bank\s+by\s+BVBank[\s\S]*$/i,
+      /Timo\s+Support[\s\S]*$/i
+    ];
+    for (const c of cutters) s = s.replace(c, '');
+    // Collapse spaces
+    s = s.replace(/\s+/g, ' ').trim();
+    // If still empty, use bank name Transaction label
+    if (!s) s = bankName ? `${bankName} Transaction` : 'Bank Transaction';
+    // Cap length to keep UI tidy
+    return s.slice(0, 160);
+  }
+
+  /**
    * Parse transaction from email content
    * Supports common bank email formats
    */
@@ -351,10 +375,12 @@ class EmailNotificationService {
             ? 'deposit'
             : 'withdrawal'
           : 'transfer',
-        description:
-          descriptionMatch && descriptionMatch[1]
-            ? descriptionMatch[1].trim().substring(0, 100)
-            : `${bankName} Transaction`,
+        description: EmailNotificationService.sanitizeDescription(
+          (descriptionMatch && descriptionMatch[1]
+            ? descriptionMatch[1].trim()
+            : `${bankName} Transaction`),
+          bankName
+        ),
         status: 'pending',
         source: 'email',
         accountNumber: accountMatch ? accountMatch[1] : null,
