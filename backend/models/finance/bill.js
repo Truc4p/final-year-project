@@ -248,8 +248,7 @@ const BillSchema = new Schema({
   timestamps: true
 });
 
-// Indexes
-BillSchema.index({ billNumber: 1 });
+// Indexes (note: billNumber has unique: true which creates an index automatically)
 BillSchema.index({ vendor: 1, billDate: -1 });
 BillSchema.index({ status: 1, dueDate: 1 });
 BillSchema.index({ billDate: -1 });

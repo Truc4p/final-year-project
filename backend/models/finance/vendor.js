@@ -142,8 +142,7 @@ const VendorSchema = new Schema({
   timestamps: true
 });
 
-// Indexes
-VendorSchema.index({ vendorNumber: 1 });
+// Indexes (note: vendorNumber has unique: true which creates an index automatically)
 VendorSchema.index({ companyName: 1 });
 VendorSchema.index({ 'contactPerson.email': 1 });
 VendorSchema.index({ status: 1 });

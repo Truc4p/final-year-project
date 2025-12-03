@@ -1,6 +1,7 @@
 const Order = require("../../models/ecommerce/order");
 const Product = require("../../models/ecommerce/product");
 const User = require("../../models/auth/user");
+const emailService = require("../../services/emailService");
 
 // Admin Operation: Get all Orders
 exports.getAllOrders = async (req, res) => {
@@ -135,6 +136,45 @@ exports.createOrder = async (req, res) => {
     console.log("✅ Order saved successfully!");
     console.log("   Order ID:", order._id);
     console.log("   Order details:", JSON.stringify(order, null, 2));
+    
+    // Send order confirmation email
+    console.log('\n--- Sending order confirmation email ---');
+    try {
+      const userDetails = await User.findById(userId).select('email username');
+      if (userDetails && userDetails.email) {
+        // Populate product details for email
+        const populatedOrder = await Order.findById(order._id).populate('products.productId');
+        const productsForEmail = populatedOrder.products.map(item => ({
+          name: item.productId.name,
+          quantity: item.quantity,
+          price: item.price
+        }));
+
+        const emailResult = await emailService.sendOrderConfirmation({
+          userEmail: userDetails.email,
+          userName: userDetails.username,
+          orderId: order._id.toString(),
+          orderDate: order.orderDate,
+          products: productsForEmail,
+          subtotal: enrichedProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+          tax: req.body.tax || 0,
+          shippingFee: req.body.shippingFee || 0,
+          totalPrice: order.totalPrice,
+          paymentMethod: order.paymentMethod
+        });
+
+        if (emailResult.success) {
+          console.log('✅ Order confirmation email sent successfully');
+        } else {
+          console.warn('⚠️ Failed to send order confirmation email, but order was created successfully');
+        }
+      } else {
+        console.warn('⚠️ User email not found, skipping order confirmation email');
+      }
+    } catch (emailError) {
+      console.error('❌ Error sending order confirmation email:', emailError.message);
+      console.warn('⚠️ Order was created successfully, but email failed to send');
+    }
     
     console.log('\n========== CREATE ORDER SUCCESS ==========\n');
     res.status(201).send(order);

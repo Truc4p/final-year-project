@@ -190,8 +190,7 @@ const InvoiceSchema = new Schema({
   lastModifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
-// Indexes
-InvoiceSchema.index({ invoiceNumber: 1 });
+// Indexes (note: invoiceNumber has unique: true which creates an index automatically)
 InvoiceSchema.index({ customer: 1, invoiceDate: -1 });
 InvoiceSchema.index({ status: 1, dueDate: 1 });
 InvoiceSchema.index({ invoiceDate: -1 });

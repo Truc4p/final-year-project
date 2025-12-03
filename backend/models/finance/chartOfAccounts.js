@@ -129,8 +129,7 @@ const ChartOfAccountsSchema = new Schema({
   timestamps: true
 });
 
-// Indexes for better query performance
-ChartOfAccountsSchema.index({ accountCode: 1 });
+// Indexes for better query performance (note: accountCode has unique: true which creates an index automatically)
 ChartOfAccountsSchema.index({ accountType: 1, accountSubType: 1 });
 ChartOfAccountsSchema.index({ isActive: 1 });
 ChartOfAccountsSchema.index({ parentAccount: 1 });

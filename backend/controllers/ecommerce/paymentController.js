@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const querystring = require('qs');
 const Order = require('../../models/ecommerce/order');
+const User = require('../../models/auth/user');
+const emailService = require('../../services/emailService');
 const { secretManager } = require('../../services/secretInitializer');
 
 /**
@@ -159,6 +161,34 @@ exports.vnpReturn = async (req, res) => {
           paymentStatus: 'paid',
         });
 
+        // Send order confirmation email
+        try {
+          const order = await Order.findById(orderId).populate('products.productId').populate('user');
+          if (order && order.user && order.user.email) {
+            const productsForEmail = order.products.map(item => ({
+              name: item.productId.name,
+              quantity: item.quantity,
+              price: item.price
+            }));
+
+            await emailService.sendOrderConfirmation({
+              userEmail: order.user.email,
+              userName: order.user.username,
+              orderId: order._id.toString(),
+              orderDate: order.orderDate,
+              products: productsForEmail,
+              subtotal: order.subtotal || 0,
+              tax: order.tax || 0,
+              shippingFee: order.shippingFee || 0,
+              totalPrice: order.totalPrice,
+              paymentMethod: order.paymentMethod
+            });
+            console.log('✅ Order confirmation email sent for VNPay payment');
+          }
+        } catch (emailError) {
+          console.error('❌ Error sending order confirmation email:', emailError.message);
+        }
+
         // Redirect to success page
         return res.redirect(`${frontendUrl}/customer/orders/order/${orderId}?payment=success`);
       } else {
@@ -215,6 +245,34 @@ exports.vnpIpn = async (req, res) => {
           status: 'processing',
           paymentStatus: 'paid',
         });
+
+        // Send order confirmation email (IPN is more reliable than return URL)
+        try {
+          const updatedOrder = await Order.findById(orderId).populate('products.productId').populate('user');
+          if (updatedOrder && updatedOrder.user && updatedOrder.user.email) {
+            const productsForEmail = updatedOrder.products.map(item => ({
+              name: item.productId.name,
+              quantity: item.quantity,
+              price: item.price
+            }));
+
+            await emailService.sendOrderConfirmation({
+              userEmail: updatedOrder.user.email,
+              userName: updatedOrder.user.username,
+              orderId: updatedOrder._id.toString(),
+              orderDate: updatedOrder.orderDate,
+              products: productsForEmail,
+              subtotal: updatedOrder.subtotal || 0,
+              tax: updatedOrder.tax || 0,
+              shippingFee: updatedOrder.shippingFee || 0,
+              totalPrice: updatedOrder.totalPrice,
+              paymentMethod: updatedOrder.paymentMethod
+            });
+            console.log('✅ Order confirmation email sent via VNPay IPN');
+          }
+        } catch (emailError) {
+          console.error('❌ Error sending order confirmation email via IPN:', emailError.message);
+        }
 
         return res.status(200).json({ RspCode: '00', Message: 'Success' });
       } else {

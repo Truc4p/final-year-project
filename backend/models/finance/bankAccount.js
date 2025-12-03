@@ -349,8 +349,7 @@ const BankAccountSchema = new Schema({
   timestamps: true
 });
 
-// Indexes for performance
-BankAccountSchema.index({ accountNumber: 1 });
+// Indexes for performance (note: accountNumber has unique: true which creates an index automatically)
 BankAccountSchema.index({ bankName: 1 });
 BankAccountSchema.index({ isActive: 1 });
 BankAccountSchema.index({ isPrimary: 1 });

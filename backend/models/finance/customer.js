@@ -129,8 +129,7 @@ const CustomerSchema = new Schema({
   timestamps: true
 });
 
-// Indexes
-CustomerSchema.index({ customerNumber: 1 });
+// Indexes (note: customerNumber has unique: true which creates an index automatically)
 CustomerSchema.index({ 'contactPerson.email': 1 });
 CustomerSchema.index({ status: 1 });
 CustomerSchema.index({ userId: 1 });

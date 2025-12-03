@@ -162,8 +162,7 @@ const JournalEntrySchema = new Schema({
   timestamps: true
 });
 
-// Indexes for performance
-JournalEntrySchema.index({ entryNumber: 1 });
+// Indexes for performance (note: entryNumber has unique: true which creates an index automatically)
 JournalEntrySchema.index({ entryDate: -1 });
 JournalEntrySchema.index({ status: 1, entryDate: -1 });
 JournalEntrySchema.index({ entryType: 1, entryDate: -1 });
