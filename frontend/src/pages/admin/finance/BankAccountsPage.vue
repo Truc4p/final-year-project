@@ -36,7 +36,7 @@
         </div>
         <div class="flex space-x-2">
           <button @click="viewAccount(account.id)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded transition-colors">View</button>
-          <button v-if="isTimo(account)" @click="syncTimoHistory(account.id)" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-medium py-2 px-4 rounded transition-colors">Sync Timo history</button>
+          <button v-if="isTimo(account)" @click="syncTimoHistory(account.id)" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-medium py-2 px-4 rounded transition-colors">Sync transactions</button>
           <button @click="editAccount(account.id)" class="flex-1 bg-green-50 hover:bg-green-100 text-green-600 font-medium py-2 px-4 rounded transition-colors">Edit</button>
           <button @click="deleteAccount(account.id)" class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded transition-colors">Delete</button>
         </div>

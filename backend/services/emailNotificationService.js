@@ -339,7 +339,6 @@ class EmailNotificationService {
 
   /**
    * Advanced parsing for specific banks
-   * Add bank-specific patterns here
    */
   static parseTransactionForBank(emailData, bankName) {
     const bankNameLower = bankName.toLowerCase();
@@ -347,16 +346,6 @@ class EmailNotificationService {
     // Timo Digital Bank (BVBank) specific parsing
     if (bankNameLower.includes('timo') || bankNameLower.includes('bvbank')) {
       return this.parseTimoTransaction(emailData);
-    }
-
-    // Vietcombank specific parsing
-    if (bankNameLower.includes('vietcombank')) {
-      return this.parseVietcombankTransaction(emailData);
-    }
-
-    // Techcombank specific parsing
-    if (bankNameLower.includes('techcombank')) {
-      return this.parseTechcombankTransaction(emailData);
     }
 
     // Default parsing
@@ -427,7 +416,10 @@ class EmailNotificationService {
       date: date || new Date(),
       amount: Math.abs(amount),
       type,
-      description: description || subject || 'Timo Transaction',
+      description: EmailNotificationService.sanitizeDescription(
+        description || subject || 'Timo Transaction',
+        'Timo'
+      ),
       status: 'pending',
       source: 'email',
       accountNumber: accountMatch ? accountMatch[1] : null,
@@ -439,66 +431,7 @@ class EmailNotificationService {
     };
   }
 
-  /**
-   * Parse Vietcombank transaction
-   */
-  static parseVietcombankTransaction(emailData) {
-    const text = emailData.text || '';
-    const amountPattern = /(?:Số tiền|Amount)[\s:]*([0-9,]+)/i;
-    const typePattern = /(Ghi nợ|Ghi có|Debit|Credit)/i;
 
-    const amountMatch = amountPattern.exec(text);
-    const typeMatch = typePattern.exec(text);
-
-    if (!amountMatch) return null;
-
-    const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-
-    return {
-      date: new Date(),
-      amount: amount,
-      type:
-        typeMatch && typeMatch[1].toLowerCase().includes('credit')
-          ? 'deposit'
-          : 'withdrawal',
-      description: 'Vietcombank Transaction',
-      status: 'pending',
-      source: 'email',
-      rawEmail: {
-        subject: emailData.subject || '',
-        from: emailData.from?.text || '',
-        date: emailData.date
-      }
-    };
-  }
-
-  /**
-   * Parse Techcombank transaction
-   */
-  static parseTechcombankTransaction(emailData) {
-    const text = emailData.text || '';
-    const amountPattern = /(?:Số tiền|Amount)[\s:]*([0-9,]+)/i;
-
-    const amountMatch = amountPattern.exec(text);
-
-    if (!amountMatch) return null;
-
-    const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-
-    return {
-      date: new Date(),
-      amount: amount,
-      type: 'transfer',
-      description: 'Techcombank Transaction',
-      status: 'pending',
-      source: 'email',
-      rawEmail: {
-        subject: emailData.subject || '',
-        from: emailData.from?.text || '',
-        date: emailData.date
-      }
-    };
-  }
 }
 
 module.exports = EmailNotificationService;

@@ -62,8 +62,6 @@
 │  ├─ parseTransactionFromEmail()                                 │
 │  ├─ parseTransactionForBank()                                   │
 │  ├─ parseTimoTransaction()                                      │
-│  ├─ parseVietcombankTransaction()                               │
-│  └─ parseTechcombankTransaction()                               │
 │                                                                 │
 └────────────────────────┬────────────────────────────────────────┘
                          │
