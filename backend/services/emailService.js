@@ -56,8 +56,16 @@ class EmailService {
 
   async sendEmail(to, subject, htmlContent, textContent = null) {
     try {
+      const gmailUser = await secretManager.getSecret('GMAIL_USER');
+      let companyName = 'Your Company';
+      try {
+        companyName = await secretManager.getSecret('COMPANY_NAME');
+      } catch (error) {
+        console.warn('⚠️ Using default company name');
+      }
+
       const mailOptions = {
-        from: `"${process.env.COMPANY_NAME || 'Your Company'}" <${process.env.GMAIL_USER}>`,
+        from: `"${companyName}" <${gmailUser}>`,
         to: to,
         subject: subject,
         html: htmlContent,
@@ -89,8 +97,8 @@ class EmailService {
       const batch = recipients.slice(i, i + batchSize);
       const batchPromises = batch.map(async (recipient) => {
         // Replace variables in content for each recipient
-        const personalizedHtml = this.replaceVariables(htmlContent, recipient);
-        const personalizedText = textContent ? this.replaceVariables(textContent, recipient) : null;
+        const personalizedHtml = await this.replaceVariables(htmlContent, recipient);
+        const personalizedText = textContent ? await this.replaceVariables(textContent, recipient) : null;
         
         const result = await this.sendEmail(
           recipient.email, 
@@ -117,18 +125,34 @@ class EmailService {
     return results;
   }
 
-  replaceVariables(content, recipient) {
+  async replaceVariables(content, recipient) {
     let personalizedContent = content;
+    
+    // Get secrets with fallbacks
+    let companyName = 'Your Company';
+    let frontendUrl = 'http://localhost:5173';
+    
+    try {
+      companyName = await secretManager.getSecret('COMPANY_NAME');
+    } catch (error) {
+      console.warn('⚠️ Using default company name');
+    }
+    
+    try {
+      frontendUrl = await secretManager.getSecret('FRONTEND_URL');
+    } catch (error) {
+      console.warn('⚠️ Using default frontend URL');
+    }
     
     // Replace common variables
     const variables = {
       '{{subscriber_name}}': recipient.name || recipient.email.split('@')[0],
       '{{subscriber_email}}': recipient.email,
-      '{{company_name}}': process.env.COMPANY_NAME || 'Your Company',
+      '{{company_name}}': companyName,
       '{{current_date}}': new Date().toLocaleDateString(),
       '{{unsubscribe_url}}': recipient.unsubscribeToken 
-        ? `${process.env.FRONTEND_URL || 'http://localhost:5173'}/unsubscribe/${recipient.unsubscribeToken}`
-        : `${process.env.FRONTEND_URL || 'http://localhost:5173'}/unsubscribe?email=${encodeURIComponent(recipient.email)}`
+        ? `${frontendUrl}/unsubscribe/${recipient.unsubscribeToken}`
+        : `${frontendUrl}/unsubscribe?email=${encodeURIComponent(recipient.email)}`
     };
     
     Object.entries(variables).forEach(([variable, value]) => {

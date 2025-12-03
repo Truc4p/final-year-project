@@ -14,3 +14,19 @@ $4
 PXAT
 $13
 1765102942010
+*2
+$6
+SELECT
+$1
+0
+*5
+$3
+SET
+$85
+ai_dermatology:English:bXkgc2tpbiBnZXRzIG9pbHkgYnkgbm9vbg==:my skin gets oily by noon
+$234
+{"question":"My skin gets oily by noon","response":"For oily skin that becomes oily by noon, I recommend...","sources":["dermatology_textbook.pdf"],"images":[],"timestamp":"2025-12-03T01:45:57.751Z","language":"English","cached":true}
+$4
+PXAT
+$13
+1764812757757

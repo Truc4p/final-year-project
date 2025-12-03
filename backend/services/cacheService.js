@@ -6,7 +6,19 @@ class CacheService {
         this.client = null;
         this.isConnected = false;
         this.isInitializing = false;
+        this.vectorService = null; // Will be injected to avoid circular dependency
+        this.semanticCacheEnabled = true; // Enable semantic similarity matching
+        this.similarityThreshold = 0.85; // 85% similarity threshold (adjustable: 0.80-0.95)
         // Don't initialize immediately - wait for lazy initialization
+    }
+
+    /**
+     * Set vector service for semantic similarity (dependency injection)
+     * @param {Object} vectorService - The vector service instance
+     */
+    setVectorService(vectorService) {
+        this.vectorService = vectorService;
+        console.log('✅ CacheService: Vector service injected for semantic matching');
     }
 
     async ensureInitialized() {
@@ -85,7 +97,7 @@ class CacheService {
     }
 
     /**
-     * Get cached AI dermatology response
+     * Get cached AI dermatology response with semantic similarity matching
      * @param {string} question - The user question
      * @param {string} language - Detected language
      * @returns {Object|null} Cached response or null
@@ -99,16 +111,44 @@ class CacheService {
         }
 
         try {
-            const key = this.generateAIDermatologyKey(question, language);
-            console.log(`🔍 Looking for cached response: ${key}`);
+            // Step 1: Try exact match first (fastest)
+            const exactKey = this.generateAIDermatologyKey(question, language);
+            console.log(`🔍 Step 1: Looking for exact match: ${exactKey.slice(0, 80)}...`);
             
-            const cached = await this.client.get(key);
-            if (cached) {
-                console.log('✅ Found cached AI dermatology response');
-                return JSON.parse(cached);
+            const exactCached = await this.client.get(exactKey);
+            if (exactCached) {
+                console.log('✅ Found exact cached response (exact string match)');
+                const parsed = JSON.parse(exactCached);
+                parsed._cacheType = 'exact';
+                return parsed;
             }
             
-            console.log('❌ No cached response found');
+            console.log('❌ No exact match found');
+            
+            // Step 2: Try semantic similarity matching (if enabled and vectorService available)
+            if (this.semanticCacheEnabled && this.vectorService) {
+                console.log(`🧠 Step 2: Trying semantic similarity matching (threshold: ${this.similarityThreshold})...`);
+                const semanticMatch = await this.findSemanticallySimilarCache(question, language);
+                
+                if (semanticMatch) {
+                    console.log(`✅ Found semantically similar cached response (similarity: ${semanticMatch.similarity.toFixed(3)})`);
+                    console.log(`📝 Original question: "${semanticMatch.originalQuestion}"`);
+                    console.log(`📝 Current question: "${question}"`);
+                    semanticMatch.response._cacheType = 'semantic';
+                    semanticMatch.response._similarity = semanticMatch.similarity;
+                    semanticMatch.response._originalQuestion = semanticMatch.originalQuestion;
+                    return semanticMatch.response;
+                }
+                
+                console.log('❌ No semantically similar cached response found');
+            } else {
+                if (!this.semanticCacheEnabled) {
+                    console.log('ℹ️ Semantic cache disabled, skipping similarity matching');
+                } else {
+                    console.log('⚠️ Vector service not available, skipping semantic matching');
+                }
+            }
+            
             return null;
         } catch (error) {
             console.error('❌ Error getting cached AI response:', error);
@@ -117,13 +157,120 @@ class CacheService {
     }
 
     /**
+     * Find semantically similar cached questions using embeddings
+     * @param {string} question - The user question
+     * @param {string} language - Detected language
+     * @returns {Object|null} {response, similarity, originalQuestion} or null
+     */
+    async findSemanticallySimilarCache(question, language = 'en') {
+        try {
+            if (!this.vectorService || !this.vectorService.isInitialized) {
+                return null;
+            }
+
+            const startTime = Date.now();
+            
+            // Get all cached question keys for this language
+            const pattern = `ai_dermatology:${language}:*`;
+            const keys = await this.client.keys(pattern);
+            
+            if (keys.length === 0) {
+                console.log('ℹ️ No cached questions found for semantic comparison');
+                return null;
+            }
+
+            console.log(`🔍 Scanning ${keys.length} cached questions for semantic similarity...`);
+
+            // Generate embedding for the current question
+            const currentEmbedding = await this.vectorService.embeddings.embedQuery(question);
+
+            let bestMatch = null;
+            let highestSimilarity = 0;
+
+            // Compare with each cached question
+            for (const key of keys) {
+                try {
+                    const cached = await this.client.get(key);
+                    if (!cached) continue;
+
+                    const parsedCache = JSON.parse(cached);
+                    const cachedQuestion = parsedCache.question;
+
+                    // Generate embedding for cached question
+                    const cachedEmbedding = await this.vectorService.embeddings.embedQuery(cachedQuestion);
+
+                    // Calculate cosine similarity
+                    const similarity = this.cosineSimilarity(currentEmbedding, cachedEmbedding);
+
+                    // Track best match
+                    if (similarity > highestSimilarity && similarity >= this.similarityThreshold) {
+                        highestSimilarity = similarity;
+                        bestMatch = {
+                            response: parsedCache,
+                            similarity: similarity,
+                            originalQuestion: cachedQuestion,
+                            cacheKey: key
+                        };
+                    }
+                } catch (err) {
+                    console.warn(`⚠️ Error processing cached key ${key}:`, err.message);
+                    continue;
+                }
+            }
+
+            const duration = Date.now() - startTime;
+            console.log(`⏱️ Semantic search completed in ${duration}ms`);
+
+            if (bestMatch) {
+                console.log(`🎯 Best match found with similarity: ${highestSimilarity.toFixed(3)}`);
+            }
+
+            return bestMatch;
+        } catch (error) {
+            console.error('❌ Error in semantic similarity search:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Calculate cosine similarity between two vectors
+     * @param {Array<number>} vecA - First vector
+     * @param {Array<number>} vecB - Second vector
+     * @returns {number} Similarity score (0-1)
+     */
+    cosineSimilarity(vecA, vecB) {
+        if (vecA.length !== vecB.length) {
+            throw new Error('Vectors must have the same length');
+        }
+
+        let dotProduct = 0;
+        let normA = 0;
+        let normB = 0;
+
+        for (let i = 0; i < vecA.length; i++) {
+            dotProduct += vecA[i] * vecB[i];
+            normA += vecA[i] * vecA[i];
+            normB += vecB[i] * vecB[i];
+        }
+
+        normA = Math.sqrt(normA);
+        normB = Math.sqrt(normB);
+
+        if (normA === 0 || normB === 0) {
+            return 0;
+        }
+
+        return dotProduct / (normA * normB);
+    }
+
+    /**
      * Cache AI dermatology response
      * @param {string} question - The user question
      * @param {Object} response - The AI response to cache
      * @param {string} language - Detected language
-     * @param {number} ttl - Time to live in seconds (default: 7 days)
+     * @param {number} ttl - Time to live in seconds (default: 6 months for sample questions, 1 month for regular)
      */
-    async setAIDermatologyResponse(question, response, language = 'en', ttl = 604800) {
+    async setAIDermatologyResponse(question, response, language = 'en', ttl = 15552000) {
         await this.ensureInitialized();
         
         if (!this.isConnected || !this.client) {
@@ -320,6 +467,40 @@ class CacheService {
             console.error('❌ Error clearing cache:', error);
             return 0;
         }
+    }
+
+    /**
+     * Configure semantic cache settings
+     * @param {Object} options - Configuration options
+     * @param {boolean} options.enabled - Enable/disable semantic matching
+     * @param {number} options.threshold - Similarity threshold (0.0-1.0)
+     */
+    configureSemanticCache(options = {}) {
+        if (typeof options.enabled === 'boolean') {
+            this.semanticCacheEnabled = options.enabled;
+            console.log(`🔧 Semantic cache ${options.enabled ? 'enabled' : 'disabled'}`);
+        }
+        
+        if (typeof options.threshold === 'number') {
+            if (options.threshold >= 0 && options.threshold <= 1) {
+                this.similarityThreshold = options.threshold;
+                console.log(`🔧 Similarity threshold set to ${(options.threshold * 100).toFixed(0)}%`);
+            } else {
+                console.warn('⚠️ Invalid threshold value. Must be between 0 and 1');
+            }
+        }
+    }
+
+    /**
+     * Get semantic cache configuration
+     * @returns {Object} Current configuration
+     */
+    getSemanticCacheConfig() {
+        return {
+            enabled: this.semanticCacheEnabled,
+            threshold: this.similarityThreshold,
+            thresholdPercentage: `${(this.similarityThreshold * 100).toFixed(0)}%`
+        };
     }
 
     /**

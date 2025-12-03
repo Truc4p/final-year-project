@@ -8,13 +8,13 @@ This implementation adds Redis caching specifically for AI Dermatology Expert re
 - **Sample Question Detection**: Automatically detects and caches responses for predefined sample questions
 - **Multi-language Support**: Caches responses by language (English, Vietnamese, etc.)
 - **Smart Cache Keys**: Generates unique keys based on normalized questions and language
-- **TTL Configuration**: Different cache durations (7 days for sample questions, 1 day for others)
+- **TTL Configuration**: Different cache durations (6 months for sample questions, 1 month for others)
 - **Graceful Fallback**: Works without Redis - automatically bypasses cache if Redis is unavailable
 - **Cache Management**: Development endpoints for cache statistics and clearing
 
 ### 📊 Cache Strategy
-- **Sample Questions**: Cached for 7 days (high confidence, stable answers)
-- **New Chat Questions**: Cached for 1 day (no conversation history)
+- **Sample Questions**: Cached for 6 months (high confidence, stable dermatology knowledge)
+- **New Chat Questions**: Cached for 1 month (no conversation history, general advice remains valid)
 - **Conversation Questions**: Not cached (context-dependent)
 
 ## 🚀 Getting Started
@@ -174,8 +174,8 @@ services:
 ```
 
 ### Cache Settings
-- **Sample Questions TTL**: 7 days (604800 seconds)
-- **Regular Questions TTL**: 1 day (86400 seconds)
+- **Sample Questions TTL**: 6 months / 180 days (15552000 seconds)
+- **Regular Questions TTL**: 1 month / 30 days (2592000 seconds)
 - **Connection Timeout**: 5 seconds
 - **Reconnect Strategy**: Exponential backoff (max 10 retries)
 

@@ -6,6 +6,9 @@ const fs = require('fs').promises;
 const path = require('path');
 const performanceMonitor = require('../../utils/performanceMonitor');
 
+// Inject vector service into cache service for semantic matching
+cacheService.setVectorService(vectorService);
+
 /**
  * @desc    Send a message to the AI Dermatology Expert
  * @route   POST /api/ai-dermatology-expert/chat
@@ -44,13 +47,24 @@ exports.chat = async (req, res) => {
         }
 
         if (cachedResponse) {
-            console.log('⚡ Returning cached response');
+            const cacheType = cachedResponse._cacheType || 'exact';
+            const similarity = cachedResponse._similarity;
+            const originalQuestion = cachedResponse._originalQuestion;
+            
+            console.log(`⚡ Returning cached response (${cacheType} match)`);
+            if (cacheType === 'semantic') {
+                console.log(`🎯 Semantic similarity: ${(similarity * 100).toFixed(1)}%`);
+            }
+            
             const totalTime = performanceMonitor.endTimer(totalStart);
             
             // Add performance info to cached response
             cachedResponse._performance = process.env.NODE_ENV === 'development' ? {
                 totalTime,
                 cached: true,
+                cacheType: cacheType,
+                similarity: cacheType === 'semantic' ? similarity : 1.0,
+                originalQuestion: cacheType === 'semantic' ? originalQuestion : message,
                 detectedLanguage: translationResult.languageName,
                 translatedQuery: translationResult.isEnglish ? null : queryForRAG
             } : undefined;
@@ -104,7 +118,7 @@ exports.chat = async (req, res) => {
                 message,
                 result,
                 translationResult.languageName || 'English',
-                isSampleQuestion ? 604800 : 86400 // Sample questions: 7 days, others: 1 day
+                isSampleQuestion ? 15552000 : 2592000 // Sample questions: 6 months (180 days), others: 1 month (30 days)
             );
         }
 
