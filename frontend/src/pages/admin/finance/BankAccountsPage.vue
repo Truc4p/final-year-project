@@ -233,8 +233,33 @@ const editAccount = (id) => {
 };
 
 const deleteAccount = async (id) => {
-  // Future: call delete API; for now, optimistic remove
-  bankAccounts.value = bankAccounts.value.filter(acc => acc.id !== id);
+  if (!confirm('Are you sure you want to delete this bank account?')) {
+    return;
+  }
+
+  try {
+    isLoading.value = true;
+    await financeService.deleteBankAccount(id);
+    
+    // Remove from local state after successful deletion
+    bankAccounts.value = bankAccounts.value.filter(acc => acc.id !== id);
+    
+    // If the deleted account was selected, select another one
+    if (selectedAccountId.value === id) {
+      selectedAccountId.value = bankAccounts.value[0]?.id || null;
+      if (selectedAccountId.value) {
+        await fetchTransactions(selectedAccountId.value);
+      } else {
+        recentTransactions.value = [];
+      }
+    }
+  } catch (e) {
+    alert(e?.message || 'Failed to delete bank account');
+    // Refresh the list to ensure we have the latest data
+    await fetchAccounts();
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const submitAccount = async () => {
