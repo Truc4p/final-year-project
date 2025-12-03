@@ -3,9 +3,9 @@
 
 require('dotenv').config();
 const mongoose = require('mongoose');
-const NewsletterSubscription = require('./models/marketing/newsletterSubscription');
-const EmailCampaign = require('./models/marketing/emailCampaign');
-const emailService = require('./services/emailService');
+const NewsletterSubscription = require('../models/marketing/newsletterSubscription');
+const EmailCampaign = require('../models/marketing/emailCampaign');
+const emailService = require('../services/emailService');
 
 async function testEmailSetup() {
   try {

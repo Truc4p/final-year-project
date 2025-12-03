@@ -9,6 +9,11 @@ const newsletterSubscriptionSchema = new mongoose.Schema({
     trim: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email address']
   },
+  name: {
+    type: String,
+    default: null,
+    trim: true
+  },
   subscriptionDate: {
     type: Date,
     default: Date.now

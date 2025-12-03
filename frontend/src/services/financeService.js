@@ -274,7 +274,46 @@ export const financeService = {
   getTrialBalance: (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     return apiCall(`/api/finance/general-ledger/trial-balance${queryString ? '?' + queryString : ''}`);
-  }
+  },
+
+  // ==================== EMAIL BANK NOTIFICATIONS ====================
+
+  // Connect email account for bank notifications
+  connectEmailAccount: (data) => apiCall('/api/finance/email-notifications/connect', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Disconnect email account
+  disconnectEmailAccount: (accountId) => apiCall(`/api/finance/email-notifications/disconnect/${accountId}`, {
+    method: 'POST'
+  }),
+
+  // Get connected email accounts
+  getEmailAccounts: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/email-notifications/accounts${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Sync transactions from email notifications
+  syncEmailTransactions: (bankAccountId, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/email-notifications/sync/${bankAccountId}${queryString ? '?' + queryString : ''}`, {
+      method: 'POST'
+    });
+  },
+
+  // Get parsed transactions from emails
+  getParsedEmailTransactions: (bankAccountId, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/email-notifications/transactions/${bankAccountId}${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Test email connection
+  testEmailConnection: (data) => apiCall('/api/finance/email-notifications/test', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  })
 };
 
 export default financeService;

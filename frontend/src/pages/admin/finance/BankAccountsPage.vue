@@ -6,9 +6,14 @@
         <h1 class="text-3xl font-bold text-gray-900">Bank Accounts</h1>
         <p class="text-gray-600 mt-2">Manage your bank accounts and transactions</p>
       </div>
-      <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
-        + Add Bank Account
-      </button>
+      <div class="flex gap-3">
+        <button @click="showConnectEmailModal = true" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+          📧 Connect Email
+        </button>
+        <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+          + Add Bank Account
+        </button>
+      </div>
     </div>
 
     <!-- Bank Accounts Grid -->
@@ -31,6 +36,7 @@
         </div>
         <div class="flex space-x-2">
           <button @click="viewAccount(account.id)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded transition-colors">View</button>
+          <button @click="syncAccountTransactions(account.id)" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-600 font-medium py-2 px-4 rounded transition-colors">Sync</button>
           <button @click="editAccount(account.id)" class="flex-1 bg-green-50 hover:bg-green-100 text-green-600 font-medium py-2 px-4 rounded transition-colors">Edit</button>
           <button @click="deleteAccount(account.id)" class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded transition-colors">Delete</button>
         </div>
@@ -71,6 +77,78 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Connect Email Modal -->
+    <div v-if="showConnectEmailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Connect Email for Bank Notifications</h2>
+        <p class="text-gray-600 mb-6">Connect your email account to automatically parse bank transaction notifications and sync them to your accounts.</p>
+        
+        <form @submit.prevent="submitEmailConnection" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email Provider</label>
+              <select v-model="emailFormData.provider" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                <option value="">Select provider...</option>
+                <option value="gmail">Gmail</option>
+                <option value="outlook">Outlook/Hotmail</option>
+                <option value="yahoo">Yahoo Mail</option>
+                <option value="imap">Other (IMAP)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+              <input v-model="emailFormData.bankName" type="text" placeholder="e.g., Timo Digital Bank" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <input v-model="emailFormData.email" type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Password / App Password</label>
+            <p class="text-xs text-gray-500 mb-2">For Gmail: Use an App Password. For Outlook: Use your account password.</p>
+            <input v-model="emailFormData.password" type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required>
+          </div>
+
+          <div v-if="emailFormData.provider === 'imap'" class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">IMAP Server</label>
+              <input v-model="emailFormData.imapServer" type="text" placeholder="e.g., imap.gmail.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">IMAP Port</label>
+              <input v-model.number="emailFormData.imapPort" type="number" placeholder="993" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Linked Bank Account</label>
+            <select v-model="emailFormData.bankAccountId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required>
+              <option value="">Select a bank account...</option>
+              <option v-for="account in bankAccounts" :key="account.id" :value="account.id">
+                {{ account.accountName }} ({{ account.bankName }})
+              </option>
+            </select>
+          </div>
+
+          <div class="flex items-center space-x-2 bg-blue-50 p-3 rounded-lg">
+            <input v-model="emailFormData.autoSync" type="checkbox" id="autoSync" class="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-500">
+            <label for="autoSync" class="text-sm font-medium text-gray-700">Auto-sync transactions daily</label>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-4">
+            <button @click="showConnectEmailModal = false" type="button" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
+            <button type="button" @click="testEmailConnection" class="px-6 py-2 border border-green-300 text-green-700 hover:bg-green-50 rounded-lg transition-colors">Test Connection</button>
+            <button type="submit" :disabled="isLoading" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50">
+              {{ isLoading ? 'Connecting...' : 'Connect Email' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -147,6 +225,7 @@ import financeService from '@/services/financeService';
 const { t } = useI18n();
 
 const showCreateModal = ref(false);
+const showConnectEmailModal = ref(false);
 const isLoading = ref(false);
 const error = ref(null);
 
@@ -158,6 +237,17 @@ const formData = ref({
   currentBalance: 0,
   isPrimary: false,
   chartOfAccountsEntry: ''
+});
+
+const emailFormData = ref({
+  provider: '',
+  bankName: '',
+  email: '',
+  password: '',
+  imapServer: '',
+  imapPort: 993,
+  bankAccountId: '',
+  autoSync: false
 });
 
 const bankAccounts = ref([]);
@@ -296,6 +386,84 @@ const fetchCoaAccounts = async () => {
   } catch (e) {
     console.error('Failed to load chart of accounts', e);
     coaAccounts.value = [];
+  }
+};
+
+const testEmailConnection = async () => {
+  try {
+    isLoading.value = true;
+    const testData = {
+      provider: emailFormData.value.provider,
+      email: emailFormData.value.email,
+      password: emailFormData.value.password,
+      imapServer: emailFormData.value.imapServer,
+      imapPort: emailFormData.value.imapPort
+    };
+    await financeService.testEmailConnection(testData);
+    alert('✅ Email connection successful!');
+  } catch (e) {
+    alert('❌ Connection failed: ' + (e?.message || 'Unknown error'));
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const submitEmailConnection = async () => {
+  try {
+    if (!emailFormData.value.bankAccountId) {
+      alert('Please select a linked bank account');
+      return;
+    }
+
+    isLoading.value = true;
+    const payload = {
+      provider: emailFormData.value.provider,
+      bankName: emailFormData.value.bankName,
+      email: emailFormData.value.email,
+      password: emailFormData.value.password,
+      imapServer: emailFormData.value.imapServer,
+      imapPort: emailFormData.value.imapPort,
+      bankAccountId: emailFormData.value.bankAccountId,
+      autoSync: emailFormData.value.autoSync
+    };
+
+    await financeService.connectEmailAccount(payload);
+    
+    alert('✅ Email account connected successfully!');
+    showConnectEmailModal.value = false;
+    emailFormData.value = {
+      provider: '',
+      bankName: '',
+      email: '',
+      password: '',
+      imapServer: '',
+      imapPort: 993,
+      bankAccountId: '',
+      autoSync: false
+    };
+
+    // Sync transactions immediately
+    await syncAccountTransactions(emailFormData.value.bankAccountId);
+  } catch (e) {
+    alert('❌ Failed to connect email: ' + (e?.message || 'Unknown error'));
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const syncAccountTransactions = async (accountId) => {
+  try {
+    isLoading.value = true;
+    await financeService.syncEmailTransactions(accountId);
+    
+    // Refresh transactions
+    await fetchTransactions(accountId);
+    alert('✅ Transactions synced successfully!');
+  } catch (e) {
+    console.error('Sync failed:', e);
+    alert('⚠️ Sync completed with status: ' + (e?.message || 'Check console for details'));
+  } finally {
+    isLoading.value = false;
   }
 };
 

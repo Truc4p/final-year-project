@@ -1,6 +1,6 @@
 // Test script for semantic cache functionality
-const cacheService = require('./services/cacheService');
-const vectorService = require('./services/vectorService');
+const cacheService = require('../services/cacheService');
+const vectorService = require('../services/vectorService');
 
 async function testSemanticCache() {
     console.log('🧪 Testing Semantic Cache System\n');

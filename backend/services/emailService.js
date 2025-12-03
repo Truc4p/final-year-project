@@ -56,6 +56,8 @@ class EmailService {
 
   async sendEmail(to, subject, htmlContent, textContent = null) {
     try {
+      await this.ensureInitialized();
+      
       const gmailUser = await secretManager.getSecret('GMAIL_USER');
       let companyName = 'Your Company';
       try {
@@ -250,8 +252,8 @@ class EmailService {
           <title>Order Confirmation</title>
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">✅ Order Confirmed!</h1>
+          <div style="background: radial-gradient(circle at 20% 80%, rgba(243, 176, 250, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(230, 120, 249, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(252, 248, 252, 0.1) 0%, transparent 50%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: #8C3154; margin: 0; font-size: 28px;">Order Confirmed!</h1>
           </div>
           
           <div style="background-color: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
@@ -262,14 +264,14 @@ class EmailService {
             </p>
             
             <div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <h2 style="color: #667eea; margin-top: 0; font-size: 20px;">Order Details</h2>
+              <h2 style="color: #8C3154; margin-top: 0; font-size: 20px;">Order Details</h2>
               <p style="margin: 5px 0;"><strong>Order ID:</strong> ${orderId}</p>
               <p style="margin: 5px 0;"><strong>Order Date:</strong> ${new Date(orderDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               <p style="margin: 5px 0;"><strong>Payment Method:</strong> ${paymentMethod === 'cashOnDelivery' ? 'Cash on Delivery' : 'Online Payment'}</p>
             </div>
             
             <div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <h2 style="color: #667eea; margin-top: 0; font-size: 20px;">Order Items</h2>
+              <h2 style="color: #8C3154; margin-top: 0; font-size: 20px;">Order Items</h2>
               <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                   <tr style="background-color: #f3f4f6;">
@@ -286,7 +288,7 @@ class EmailService {
             </div>
             
             <div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <h2 style="color: #667eea; margin-top: 0; font-size: 20px;">Order Summary</h2>
+              <h2 style="color: #8C3154; margin-top: 0; font-size: 20px;">Order Summary</h2>
               <table style="width: 100%;">
                 <tr>
                   <td style="padding: 8px 0;">Subtotal:</td>
@@ -302,13 +304,13 @@ class EmailService {
                 </tr>
                 <tr style="border-top: 2px solid #e5e7eb; font-weight: bold; font-size: 18px;">
                   <td style="padding: 12px 0;">Total:</td>
-                  <td style="padding: 12px 0; text-align: right; color: #667eea;">$${totalPrice.toFixed(2)}</td>
+                  <td style="padding: 12px 0; text-align: right; color: #8C3154;">$${totalPrice.toFixed(2)}</td>
                 </tr>
               </table>
             </div>
             
             <div style="text-align: center; margin-top: 30px;">
-              <a href="${frontendUrl}/customer/orders/order/${orderId}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px;">View Order Details</a>
+              <a href="${frontendUrl}/customer/orders/order/${orderId}" style="display: inline-block; background: linear-gradient(135deg, #FCF0FD 0%, #FADDFD 100%); color: #8C3154; padding: 14px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px;">View Order Details</a>
             </div>
             
             <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">

@@ -544,11 +544,4 @@ onMounted(async () => {
 .form-select {
   @apply block w-full px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2;
 }
-
-.gradient-text {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
 </style>

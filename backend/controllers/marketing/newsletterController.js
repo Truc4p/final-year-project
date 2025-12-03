@@ -3,7 +3,7 @@ const NewsletterSubscription = require('../../models/marketing/newsletterSubscri
 // Subscribe to newsletter
 const subscribe = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, name } = req.body;
 
     if (!email) {
       return res.status(400).json({
@@ -26,6 +26,9 @@ const subscribe = async (req, res) => {
         existingSubscription.isActive = true;
         existingSubscription.subscriptionDate = new Date();
         existingSubscription.unsubscribedDate = null;
+        if (name) {
+          existingSubscription.name = name;
+        }
         await existingSubscription.save();
         
         return res.status(200).json({
@@ -33,6 +36,7 @@ const subscribe = async (req, res) => {
           message: 'Successfully resubscribed to newsletter!',
           data: {
             email: existingSubscription.email,
+            name: existingSubscription.name,
             subscriptionDate: existingSubscription.subscriptionDate
           }
         });
@@ -42,6 +46,7 @@ const subscribe = async (req, res) => {
     // Create new subscription
     const subscriptionData = {
       email,
+      name: name || null,
       source: 'public_page',
       ipAddress: req.ip || req.connection.remoteAddress,
       userAgent: req.get('User-Agent')

@@ -53,7 +53,7 @@ const defaultTemplates = [
             
             <div class="divider"></div>
             
-            <a href="https://example.com" class="button">Read More</a>
+            <a href="https://example.com" class="button" style="color: white !important; text-decoration: none;">Read More</a>
             
             <p style="margin-top: 30px;">Best regards,<br><strong style="color: #8C3154;">The WrenCos Team</strong></p>
         </div>
@@ -139,7 +139,7 @@ Unsubscribe: {{unsubscribe_url}}
                 <div class="promo-code-text">SAVE30</div>
             </div>
             
-            <a href="https://example.com/shop" class="big-button">Shop Now</a>
+            <a href="https://example.com/shop" class="big-button" style="color: white !important; text-decoration: none;">Shop Now</a>
             
             <div class="terms">
                 <p style="margin: 0 0 8px;"><strong>Terms & Conditions:</strong></p>
@@ -265,7 +265,7 @@ Don't want promotional emails? Unsubscribe: {{unsubscribe_url}}
             <div class="cta-section">
                 <p style="font-size: 18px; font-weight: 600; color: #8C3154;">Ready to get started?</p>
                 <p>Explore our amazing collection and discover what makes us special</p>
-                <a href="https://example.com/products" class="button">Explore Our Products</a>
+                <a href="https://example.com/products" class="button" style="color: white !important; text-decoration: none;">Explore Our Products</a>
             </div>
             
             <p style="color: #475569; line-height: 1.7;">If you have any questions, feel free to reply to this email or contact our friendly support team. We're here to help!</p>
