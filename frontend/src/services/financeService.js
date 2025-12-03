@@ -194,6 +194,12 @@ export const financeService = {
   // Get bank account summary
   getBankAccountSummary: (id) => apiCall(`/api/finance/bank-accounts/${id}/summary`),
 
+  // Cleanup transactions on a bank account
+  cleanupBankTransactions: (id, filters = {}) => apiCall(`/api/finance/bank-accounts/${id}/transactions/cleanup`, {
+    method: 'DELETE',
+    body: JSON.stringify(filters)
+  }),
+
   // ==================== CHART OF ACCOUNTS ====================
 
   // Get all chart of accounts

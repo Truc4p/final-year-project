@@ -440,6 +440,100 @@ exports.getUnreconciledTransactions = async (req, res) => {
   }
 };
 
+// @desc    Cleanup transactions by ids or filters and adjust balance
+// @route   DELETE /api/finance/bank-accounts/:id/transactions/cleanup
+// @access  Private (admin)
+exports.cleanupTransactions = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      transactionIds = [],
+      descriptionContains,
+      minAmount,
+      maxAmount,
+      type, // 'deposit' | 'withdrawal'
+      createdBefore,
+      createdAfter
+    } = req.body || {};
+
+    const account = await BankAccount.findById(id);
+    if (!account) {
+      return res.status(404).json({ success: false, message: 'Bank account not found' });
+    }
+
+    const idsSet = new Set((transactionIds || []).map(String));
+    const filtersActive = idsSet.size > 0 || descriptionContains || minAmount !== undefined || maxAmount !== undefined || type || createdBefore || createdAfter;
+
+    if (!filtersActive) {
+      return res.status(400).json({ success: false, message: 'Provide transactionIds or at least one filter' });
+    }
+
+    const toKeep = [];
+    const removed = [];
+
+    const before = createdBefore ? new Date(createdBefore) : null;
+    const after = createdAfter ? new Date(createdAfter) : null;
+
+    for (const t of account.transactions) {
+      const idStr = String(t._id);
+      let match = false;
+
+      if (idsSet.size > 0 && idsSet.has(idStr)) match = true;
+
+      if (!match && descriptionContains) {
+        match = (t.description || '').toLowerCase().includes(String(descriptionContains).toLowerCase());
+      }
+
+      if (!match && (minAmount !== undefined || maxAmount !== undefined)) {
+        const amt = Number(t.amount);
+        if ((minAmount === undefined || amt >= Number(minAmount)) && (maxAmount === undefined || amt <= Number(maxAmount))) {
+          match = true;
+        }
+      }
+
+      if (!match && type) {
+        match = (t.transactionType === type);
+      }
+
+      if (!match && (before || after)) {
+        const ct = new Date(t.createdAt || t.transactionDate || 0);
+        if ((!after || ct >= after) && (!before || ct <= before)) {
+          match = true;
+        }
+      }
+
+      if (match) removed.push(t); else toKeep.push(t);
+    }
+
+    if (removed.length === 0) {
+      return res.status(200).json({ success: true, message: 'No transactions matched filters', removed: 0, newBalance: account.currentBalance });
+    }
+
+    // Adjust balance reversing their effect
+    for (const t of removed) {
+      if (t.transactionType === 'deposit' || t.transactionType === 'interest') {
+        account.currentBalance -= Number(t.amount);
+      } else {
+        account.currentBalance += Number(t.amount);
+      }
+    }
+
+    account.transactions = toKeep;
+    account.lastBalanceUpdate = new Date();
+    await account.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Removed ${removed.length} transaction(s)`,
+      removed: removed.length,
+      newBalance: account.currentBalance
+    });
+  } catch (error) {
+    console.error('Error cleaning up transactions:', error);
+    res.status(500).json({ success: false, message: 'Error cleaning up transactions', error: error.message });
+  }
+};
+
 // @desc    Reconcile a transaction
 // @route   PUT /api/finance/bank-accounts/:id/transactions/:transactionId/reconcile
 // @access  Private
