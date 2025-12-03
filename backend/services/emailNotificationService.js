@@ -137,6 +137,19 @@ class EmailNotificationService {
 
             const doSearch = (criteria, cb) => imap.search(criteria, cb);
 
+            try {
+              console.log('📧 IMAP search criteria', {
+                useGmRaw,
+                gmRaw,
+                since: searchCriteria,
+                provider: config.provider,
+                from: options?.from,
+                subject: options?.subject,
+                allHistory: !!(options && options.allHistory),
+                limit
+              });
+            } catch(_) {}
+
             if (useGmRaw && gmRaw) {
               doSearch([['X-GM-RAW', gmRaw], ...searchCriteria], (err, results) => {
                 if (err || !results || results.length === 0) {
@@ -176,6 +189,25 @@ class EmailNotificationService {
                     // Use bank-specific parser with fallback to generic
                     let txn = EmailNotificationService.parseTransactionForBank(parsed, bankName);
                     if (!txn) txn = EmailNotificationService.parseTransactionFromEmail(parsed, bankName);
+                    try {
+                      const preview = (parsed.text || '').slice(0, 200).replace(/\n/g, ' ');
+                      console.log('📥 Parsed email', {
+                        subject: parsed.subject,
+                        from: parsed.from?.text,
+                        date: parsed.date,
+                        preview
+                      });
+                      if (txn) {
+                        console.log('✅ Parsed transaction', {
+                          amount: txn.amount,
+                          type: txn.type,
+                          date: txn.date,
+                          description: txn.description
+                        });
+                      } else {
+                        console.log('ℹ️ No transaction parsed from this email');
+                      }
+                    } catch (_) {}
                     if (txn) transactions.push(txn);
                   } catch (parseErr) {
                     console.error('Transaction parse error:', parseErr);
@@ -232,6 +264,33 @@ class EmailNotificationService {
     }
 
     return new Imap(imapConfig);
+  }
+
+  /**
+   * Extract plain text content from email (prefers text, falls back to HTML -> text)
+   */
+  static extractPlainText(emailData) {
+    try {
+      if (emailData && emailData.text && emailData.text.trim()) return emailData.text;
+      let html = emailData && emailData.html ? String(emailData.html) : '';
+      if (!html) return '';
+      // Normalize line breaks for common tags
+      html = html.replace(/<br\s*\/?>(?=.)/gi, '\n')
+                 .replace(/<\/(p|div|li)>/gi, '\n');
+      // Strip tags
+      let text = html.replace(/<[^>]+>/g, ' ');
+      // Decode minimal entities
+      text = text.replace(/&nbsp;/g, ' ')
+                 .replace(/&amp;/g, '&')
+                 .replace(/&lt;/g, '<')
+                 .replace(/&gt;/g, '>')
+                 .replace(/&quot;/g, '"')
+                 .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(parseInt(d,10)));
+      // Collapse whitespace
+      return text.replace(/\s+/g, ' ').trim();
+    } catch (e) {
+      return emailData?.text || '';
+    }
   }
 
   /**
@@ -342,7 +401,7 @@ class EmailNotificationService {
    * Example: "Your account ****1234 has been credited with 500,000 VND"
    */
   static parseTimoTransaction(emailData) {
-    const text = (emailData.text || '').replace(/\r/g, '');
+    const text = (EmailNotificationService.extractPlainText(emailData) || '').replace(/\r/g, '');
     const subject = emailData.subject || '';
 
     // Vietnamese patterns
