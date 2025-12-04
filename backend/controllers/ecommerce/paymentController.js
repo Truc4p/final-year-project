@@ -3,7 +3,6 @@ const querystring = require('qs');
 const Order = require('../../models/ecommerce/order');
 const User = require('../../models/auth/user');
 const emailService = require('../../services/emailService');
-const { secretManager } = require('../../services/secretInitializer');
 
 /**
  * Sort object by key
@@ -51,28 +50,18 @@ exports.createVnpayPayment = async (req, res) => {
 
     await order.save();
 
-    // VNPay configuration - Get from Secret Manager (trim to avoid hidden whitespace)
-    const getTrimmed = async (k) => {
-      const v = await secretManager.getSecret(k);
-      return typeof v === 'string' ? v.trim() : v;
-    };
-    const vnpTmnCode = await getTrimmed('VNP_TMN_CODE');
-    const vnpHashSecret = await getTrimmed('VNP_HASH_SECRET');
-    const vnpUrl = await getTrimmed('VNP_URL');
-    const vnpReturnUrl = await getTrimmed('VNP_RETURN_URL');
+    // VNPay configuration - Get from environment variables
+    const vnpTmnCode = process.env.VNP_TMN_CODE;
+    const vnpHashSecret = process.env.VNP_HASH_SECRET;
+    const vnpUrl = process.env.VNP_URL;
+    const vnpReturnUrl = process.env.VNP_RETURN_URL;
 
   const date = new Date();
   const createDate = date.toISOString().replace(/[-:T.]/g, '').slice(0, 14);
   const orderId = order._id.toString();
 
-  // Convert USD totalPrice to VND using secret exchange rate (VND per 1 USD). Default 24000.
-  let exchangeRate = 24000;
-  try {
-    const exchangeRateSecret = await secretManager.getSecret('VNP_EXCHANGE_RATE');
-    exchangeRate = Number(exchangeRateSecret) || 24000;
-  } catch (error) {
-    console.warn('⚠️ Using default exchange rate:', exchangeRate);
-  }
+  // Convert USD totalPrice to VND using exchange rate (VND per 1 USD). Default 24000.
+  const exchangeRate = Number(process.env.VNP_EXCHANGE_RATE) || 24000;
   const amountVnd = Math.round(Number(totalPrice || 0) * exchangeRate);
   // VNPay requires amount in smallest currency unit (multiply VND by 100)
   const amount = amountVnd * 100;
@@ -143,8 +132,8 @@ exports.vnpReturn = async (req, res) => {
 
     vnpParams = sortObject(vnpParams);
 
-    const vnpHashSecret = await secretManager.getSecret('VNP_HASH_SECRET');
-    const frontendUrl = await secretManager.getSecret('FRONTEND_URL');
+    const vnpHashSecret = process.env.VNP_HASH_SECRET;
+    const frontendUrl = process.env.FRONTEND_URL;
     const signData = querystring.stringify(vnpParams, { encode: false });
     const hmac = crypto.createHmac('sha512', vnpHashSecret);
     const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
@@ -206,7 +195,7 @@ exports.vnpReturn = async (req, res) => {
     }
   } catch (error) {
     console.error('Error processing VNPay return:', error);
-    const frontendUrl = await secretManager.getSecret('FRONTEND_URL').catch(() => 'http://localhost:5173');
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     return res.redirect(`${frontendUrl}/checkout?payment=error`);
   }
 };
@@ -224,7 +213,7 @@ exports.vnpIpn = async (req, res) => {
 
     vnpParams = sortObject(vnpParams);
 
-    const vnpHashSecret = await secretManager.getSecret('VNP_HASH_SECRET');
+    const vnpHashSecret = process.env.VNP_HASH_SECRET;
     const signData = querystring.stringify(vnpParams, { encode: false });
     const hmac = crypto.createHmac('sha512', vnpHashSecret);
     const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');

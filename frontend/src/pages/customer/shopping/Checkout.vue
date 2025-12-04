@@ -25,7 +25,7 @@ const user = ref({
 });
 
 const customerDetails = ref({
-    paymentMethod: 'cod', // Default to Cash on Delivery
+    paymentMethod: 'onlinePayment', 
 });
 
 // Computed property to detect shipping location from address
