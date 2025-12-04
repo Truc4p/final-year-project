@@ -378,10 +378,14 @@ exports.uploadDocument = [
         return res.status(404).json({ message: "Employee not found" });
       }
       
+      // Get file extension from original filename
+      const fileExtension = path.extname(req.file.originalname);
+      
       const newDocument = {
         name: documentName || req.file.originalname,
         type: documentType || 'other',
         filePath: req.file.path,
+        fileExtension: fileExtension,
         uploadDate: new Date()
       };
       
@@ -432,6 +436,7 @@ exports.uploadDocument = [
           name: documentWithId.name,
           type: documentWithId.type,
           filePath: documentWithId.filePath,
+          fileExtension: documentWithId.fileExtension,
           uploadDate: documentWithId.uploadDate
         }
       });
@@ -475,9 +480,25 @@ exports.downloadDocument = async (req, res) => {
       return res.status(404).json({ message: "File not found on server" });
     }
     
-    // Set headers for download
-    res.setHeader('Content-Disposition', `attachment; filename="${document.name}"`);
-    res.setHeader('Content-Type', 'application/octet-stream');
+    // Determine MIME type based on file extension
+    const ext = (document.fileExtension || path.extname(document.name)).toLowerCase();
+    const mimeTypes = {
+      '.pdf': 'application/pdf',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png'
+    };
+    
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
+    
+    // Ensure filename has the correct extension
+    const filename = document.name.endsWith(ext) ? document.name : document.name + ext;
+    
+    // Set headers for download with proper MIME type
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', contentType);
     
     // Send file
     res.sendFile(path.resolve(document.filePath));

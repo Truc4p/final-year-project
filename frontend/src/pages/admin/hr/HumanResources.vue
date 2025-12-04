@@ -658,8 +658,9 @@ const downloadDocument = async (documentId, documentName) => {
       }
     );
     
-    // Create a download link
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    // Create a download link with the correct MIME type from server response
+    const blob = new Blob([response.data], { type: response.headers['content-type'] || 'application/octet-stream' });
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', documentName);
