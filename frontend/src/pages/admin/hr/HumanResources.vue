@@ -56,6 +56,10 @@ const editingEmployee = ref(null);
 const currentPage = ref(1);
 const itemsPerPage = ref(20);
 const totalPages = ref(1);
+const uploadingDocument = ref(false);
+const selectedFile = ref(null);
+const documentType = ref('resume');
+const documentName = ref('');
 
 // Form data for new/edit employee
 const employeeForm = ref({
@@ -135,6 +139,14 @@ const payFrequencies = [
   { value: 'hourly', label: 'Hourly' },
   { value: 'monthly', label: 'Monthly' },
   { value: 'yearly', label: 'Yearly' }
+];
+
+const documentTypes = [
+  { value: 'resume', label: 'Resume' },
+  { value: 'contract', label: 'Contract' },
+  { value: 'id', label: 'ID Document' },
+  { value: 'certificate', label: 'Certificate' },
+  { value: 'other', label: 'Other' }
 ];
 
 // Computed properties
@@ -545,6 +557,130 @@ const getYearsOfService = (startDate) => {
   return Math.floor((now - start) / (365.25 * 24 * 60 * 60 * 1000));
 };
 
+// File upload functions
+const handleFileSelect = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    selectedFile.value = file;
+    if (!documentName.value) {
+      documentName.value = file.name;
+    }
+  }
+};
+
+const uploadDocument = async () => {
+  if (!selectedFile.value || !editingEmployee.value) {
+    alert('Please select a file and ensure an employee is selected');
+    return;
+  }
+
+  try {
+    uploadingDocument.value = true;
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append('document', selectedFile.value);
+    formData.append('documentType', documentType.value);
+    formData.append('documentName', documentName.value);
+
+    const response = await axios.post(
+      `${API_URL}/hr/employees/${editingEmployee.value._id}/documents`,
+      formData,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "multipart/form-data"
+        }
+      }
+    );
+
+    alert('Document uploaded successfully!');
+    
+    // Update the employee's documents in the UI
+    if (editingEmployee.value) {
+      if (!editingEmployee.value.documents) {
+        editingEmployee.value.documents = [];
+      }
+      editingEmployee.value.documents.push(response.data.document);
+    }
+    
+    // Reset form
+    selectedFile.value = null;
+    documentName.value = '';
+    documentType.value = 'resume';
+    const fileInput = document.getElementById('documentFileInput');
+    if (fileInput) fileInput.value = '';
+    
+    await fetchEmployees();
+  } catch (err) {
+    console.error("Error uploading document:", err);
+    alert(`Error: ${err.response?.data?.message || 'Failed to upload document'}`);
+  } finally {
+    uploadingDocument.value = false;
+  }
+};
+
+const deleteDocument = async (documentId) => {
+  if (!confirm('Are you sure you want to delete this document?')) return;
+  
+  try {
+    const token = localStorage.getItem("token");
+    await axios.delete(
+      `${API_URL}/hr/employees/${editingEmployee.value._id}/documents/${documentId}`,
+      {
+        headers: { "Authorization": `Bearer ${token}` }
+      }
+    );
+    
+    alert('Document deleted successfully!');
+    
+    // Update the UI
+    if (editingEmployee.value && editingEmployee.value.documents) {
+      editingEmployee.value.documents = editingEmployee.value.documents.filter(
+        doc => doc._id !== documentId
+      );
+    }
+    
+    await fetchEmployees();
+  } catch (err) {
+    console.error("Error deleting document:", err);
+    alert(`Error: ${err.response?.data?.message || 'Failed to delete document'}`);
+  }
+};
+
+const downloadDocument = async (documentId, documentName) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(
+      `${API_URL}/hr/employees/${editingEmployee.value._id}/documents/${documentId}/download`,
+      {
+        headers: { "Authorization": `Bearer ${token}` },
+        responseType: 'blob'
+      }
+    );
+    
+    // Create a download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', documentName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Error downloading document:", err);
+    alert(`Error: ${err.response?.data?.message || 'Failed to download document'}`);
+  }
+};
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+};
+
 // Pagination
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
@@ -609,7 +745,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
           <div class="border-b border-gray-200">
             <nav class="flex space-x-8 px-6" aria-label="Tabs">
               <button v-for="tab in [
-                { id: 'dashboard', name: 'Dashboard & Analytics'},
+                { id: 'dashboard', name: 'Dashboard & Analytics' },
                 { id: 'employees', name: 'Employee Directory' },
                 { id: 'departments', name: 'Departments' },
                 { id: 'payroll', name: 'Payroll' }
@@ -1067,29 +1203,6 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                           </div>
                         </div>
 
-                        <!-- Skills -->
-                        <div class="border border-gray-200 rounded-lg p-4">
-                          <h4 class="text-lg font-semibold text-gray-900 mb-4">Skills</h4>
-                          <div class="flex flex-wrap gap-2 mb-4">
-                            <span v-for="(skill, index) in employeeForm.skills" :key="index"
-                              class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center gap-2">
-                              {{ skill }}
-                              <button @click="removeSkill(index)" type="button"
-                                class="text-blue-600 hover:text-blue-800">
-                                ×
-                              </button>
-                            </span>
-                          </div>
-                          <div class="flex gap-2">
-                            <input id="skillInput" type="text" placeholder="Add a skill..." class="form-input flex-1"
-                              @keyup.enter="addSkill">
-                            <button @click="addSkill" type="button"
-                              class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
-                              Add
-                            </button>
-                          </div>
-                        </div>
-
                         <!-- Leave Balance -->
                         <div class="border border-gray-200 rounded-lg p-4">
                           <h4 class="text-lg font-semibold text-gray-900 mb-4">Leave Balance (Days)</h4>
@@ -1132,6 +1245,126 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                               <input v-model="employeeForm.benefits.lifeInsurance" type="checkbox" class="mr-2">
                               <span class="text-sm text-gray-700">Life Insurance</span>
                             </label>
+                          </div>
+                        </div>
+
+                        <!-- Skills -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                          <h4 class="text-lg font-semibold text-gray-900 mb-4">Skills</h4>
+                          <div class="flex flex-wrap gap-2 mb-4">
+                            <span v-for="(skill, index) in employeeForm.skills" :key="index"
+                              class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center gap-2">
+                              {{ skill }}
+                              <button @click="removeSkill(index)" type="button"
+                                class="text-blue-600 hover:text-blue-800">
+                                ×
+                              </button>
+                            </span>
+                          </div>
+                          <div class="flex gap-2">
+                            <input id="skillInput" type="text" placeholder="Add a skill..." class="form-input flex-1"
+                              @keyup.enter="addSkill">
+                            <button @click="addSkill" type="button"
+                              class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
+                              Add
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- Documents (only show when editing existing employee) -->
+                        <div v-if="editingEmployee" class="border border-gray-200 rounded-lg p-4">
+                          <h4 class="text-lg font-semibold text-gray-900 mb-4">Documents</h4>
+                          
+                          <!-- Upload New Document -->
+                          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                            <h5 class="text-sm font-semibold text-gray-700 mb-3">Upload New Document</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                              <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
+                                <select v-model="documentType" class="form-select w-full">
+                                  <option v-for="type in documentTypes" :key="type.value" :value="type.value">
+                                    {{ type.label }}
+                                  </option>
+                                </select>
+                              </div>
+                              <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Document Name</label>
+                                <input v-model="documentName" type="text" class="form-input w-full" 
+                                  placeholder="Enter document name">
+                              </div>
+                            </div>
+                            <div class="flex gap-2">
+                              <input 
+                                id="documentFileInput"
+                                type="file" 
+                                @change="handleFileSelect"
+                                class="form-input flex-1"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                              >
+                              <button 
+                                @click="uploadDocument" 
+                                type="button"
+                                :disabled="!selectedFile || uploadingDocument"
+                                class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                <svg v-if="uploadingDocument" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                {{ uploadingDocument ? 'Uploading...' : 'Upload' }}
+                              </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Supported formats: PDF, DOC, DOCX, JPG, PNG (Max 10MB)</p>
+                          </div>
+
+                          <!-- Existing Documents List -->
+                          <div v-if="editingEmployee.documents && editingEmployee.documents.length > 0">
+                            <h5 class="text-sm font-semibold text-gray-700 mb-3">Uploaded Documents</h5>
+                            <div class="space-y-2">
+                              <div v-for="doc in editingEmployee.documents" :key="doc._id"
+                                class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <div class="flex items-center gap-3 flex-1">
+                                  <div class="p-2 bg-blue-100 rounded">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                  </div>
+                                  <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ doc.name }}</p>
+                                    <div class="flex items-center gap-2 text-xs text-gray-500">
+                                      <span class="px-2 py-0.5 bg-gray-100 rounded">{{ documentTypes.find(t => t.value === doc.type)?.label || doc.type }}</span>
+                                      <span>{{ formatDate(doc.uploadDate) }}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                  <button 
+                                    @click="downloadDocument(doc._id, doc.name)" 
+                                    type="button"
+                                    class="p-2 text-blue-600 hover:bg-blue-50 rounded">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                    </svg>
+                                  </button>
+                                  <button 
+                                    @click="deleteDocument(doc._id)" 
+                                    type="button"
+                                    class="p-2 text-red-600 hover:bg-red-50 rounded">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div v-else class="text-center py-6 text-gray-500">
+                            <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p class="text-sm">No documents uploaded yet</p>
                           </div>
                         </div>
 
@@ -1180,7 +1413,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                       </form>
                     </div>
                   </div>
-                  
+
                   <!-- Employee Management Header -->
                   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div class="flex flex-col md:flex-row gap-4">
@@ -1258,8 +1491,18 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                                   </div>
                                 </div>
                                 <div class="ml-4">
-                                  <div class="text-sm font-medium text-gray-900">{{ employee.firstName }} {{
-                                    employee.lastName }}</div>
+                                  <div class="flex items-center gap-2">
+                                    <span class="text-sm font-medium text-gray-900">{{ employee.firstName }} {{
+                                      employee.lastName }}</span>
+                                    <span v-if="employee.documents && employee.documents.length > 0" 
+                                      class="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full flex items-center gap-1"
+                                      :title="`${employee.documents.length} document(s) uploaded`">
+                                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                      </svg>
+                                      {{ employee.documents.length }}
+                                    </span>
+                                  </div>
                                   <div class="text-sm text-gray-500">{{ employee.employeeId }}</div>
                                   <div class="text-sm text-gray-500">{{ employee.email }}</div>
                                 </div>
@@ -1286,7 +1529,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                               <div class="text-sm font-semibold text-gray-900">{{ formatCurrency(employee.salary.amount)
-                              }}
+                                }}
                               </div>
                               <div class="text-xs text-gray-500">{{ employee.salary.payFrequency }}</div>
                             </td>
@@ -1405,7 +1648,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                           <div class="flex items-center">
                             <span class="font-medium">{{departments.find(d => d.value === department)?.label ||
                               department
-                            }}</span>
+                              }}</span>
                           </div>
                           <span class="text-lg">{{ formatCurrency(amount) }}</span>
                         </div>

@@ -423,6 +423,64 @@ router.post("/employees/:id/documents", auth, role(["admin"]), hrController.uplo
 
 /**
  * @swagger
+ * /hr/employees/{id}/documents/{documentId}/download:
+ *   get:
+ *     summary: Download employee document
+ *     tags: [HR]
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Employee ID
+ *       - in: path
+ *         name: documentId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Document ID
+ *     responses:
+ *       200:
+ *         description: Document file
+ *       404:
+ *         description: Employee or document not found
+ */
+router.get("/employees/:id/documents/:documentId/download", auth, role(["admin"]), hrController.downloadDocument);
+
+/**
+ * @swagger
+ * /hr/employees/{id}/documents/{documentId}:
+ *   delete:
+ *     summary: Delete employee document
+ *     tags: [HR]
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Employee ID
+ *       - in: path
+ *         name: documentId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Document ID
+ *     responses:
+ *       200:
+ *         description: Document deleted successfully
+ *       404:
+ *         description: Employee or document not found
+ */
+router.delete("/employees/:id/documents/:documentId", auth, role(["admin"]), hrController.deleteDocument);
+
+/**
+ * @swagger
  * /hr/department-stats:
  *   get:
  *     summary: Get department statistics

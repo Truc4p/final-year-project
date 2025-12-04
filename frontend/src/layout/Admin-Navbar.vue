@@ -9,29 +9,50 @@
             <span class="footer-brand-text">WrenCos Admin</span>
           </router-link>
         </div>
-        
+
         <!-- Navigation Links -->
         <div class="hidden md:flex items-center space-x-6">
-          <router-link :to="{ path: '/admin/products' }" exact-active-class="router-link-exact-active" class="navbar-link">
-            {{ t('products') }}
-          </router-link>
-          <router-link :to="{ path: '/admin/categories' }" exact-active-class="router-link-exact-active" class="navbar-link">
-            {{ t('categories') }}
-          </router-link>
-          <router-link :to="{ path: '/admin/orders' }" exact-active-class="router-link-exact-active" class="navbar-link">
-            {{ t('orders') }}
-          </router-link>
-          <router-link :to="{ path: '/admin/users' }" exact-active-class="router-link-exact-active" class="navbar-link">
-            {{ t('users') }}
-          </router-link>
-          <router-link :to="{ path: '/admin/live-stream' }" exact-active-class="router-link-exact-active" class="navbar-link">
+          <!-- Ecommerce Dropdown -->
+          <div class="relative group">
+            <div class="navbar-link flex items-center space-x-1 cursor-pointer">
+              <span>{{ t('ecommerce') || 'Ecommerce' }}</span>
+              <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+
+            <!-- Invisible bridge to prevent gap -->
+            <div class="absolute top-full left-0 w-48 h-2 bg-transparent group-hover:block hidden"></div>
+
+            <div
+              class="absolute top-full left-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2">
+              <router-link :to="{ path: '/admin/analytics' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                {{ t('analytics') }}
+              </router-link>
+              <router-link :to="{ path: '/admin/products' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                {{ t('products') }}
+              </router-link>
+              <router-link :to="{ path: '/admin/categories' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                {{ t('categories') }}
+              </router-link>
+              <router-link :to="{ path: '/admin/orders' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                {{ t('orders') }}
+              </router-link>
+              <router-link :to="{ path: '/admin/users' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                {{ t('users') }}
+              </router-link>
+            </div>
+          </div>
+
+          <router-link :to="{ path: '/admin/live-stream' }" exact-active-class="router-link-exact-active"
+            class="navbar-link">
             {{ t('liveStream') }}
-          </router-link>
-          <router-link :to="{ path: '/admin/analytics' }" exact-active-class="router-link-exact-active" class="navbar-link">
-            {{ t('analytics') }}
-          </router-link>
-          <router-link :to="{ path: '/admin/cashflow' }" exact-active-class="router-link-exact-active" class="navbar-link">
-            {{ t('cashFlow') }}
           </router-link>
           <router-link :to="{ path: '/admin/hr' }" exact-active-class="router-link-exact-active" class="navbar-link">
             {{ t('hr') }}
@@ -41,104 +62,86 @@
           <div class="relative group">
             <div class="navbar-link flex items-center space-x-1 cursor-pointer">
               <span>{{ t('finance') || 'Finance' }}</span>
-              <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>
             </div>
-            
+
             <!-- Invisible bridge to prevent gap -->
             <div class="absolute top-full left-0 w-56 h-2 bg-transparent group-hover:block hidden"></div>
-            
-            <div 
-              class="absolute top-full left-0 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2"
-            >
-              <router-link 
-                :to="{ path: '/admin/finance' }" 
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
+
+            <div
+              class="absolute top-full left-0 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2">
+              <router-link :to="{ path: '/admin/finance' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Dashboard
               </router-link>
-              <router-link 
-                :to="{ path: '/admin/finance/invoices' }" 
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
+              <router-link :to="{ path: '/admin/cashflow' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                {{ t('cashFlow') }}
+              </router-link>
+              <router-link :to="{ path: '/admin/finance/invoices' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Invoices (AR)
               </router-link>
-              <router-link 
-                :to="{ path: '/admin/finance/bills' }" 
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
+              <router-link :to="{ path: '/admin/finance/bills' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Bills (AP)
               </router-link>
-              <router-link 
-                :to="{ path: '/admin/finance/bank-accounts' }" 
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
+              <router-link :to="{ path: '/admin/finance/bank-accounts' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Bank Accounts
               </router-link>
-              <router-link 
-                :to="{ path: '/admin/finance/chart-of-accounts' }" 
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
+              <router-link :to="{ path: '/admin/finance/chart-of-accounts' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Chart of Accounts
               </router-link>
-              <router-link 
-                :to="{ path: '/admin/finance/reports' }" 
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
+              <router-link :to="{ path: '/admin/finance/reports' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Financial Reports
               </router-link>
-              <router-link 
-                :to="{ path: '/admin/finance/general-ledger' }" 
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
+              <router-link :to="{ path: '/admin/finance/general-ledger' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 General Ledger
               </router-link>
             </div>
           </div>
-          
+
           <!-- Email Marketing Dropdown -->
           <div class="relative group">
             <div class="navbar-link flex items-center space-x-1 cursor-pointer">
               <span>{{ t('marketing') }}</span>
-              <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>
             </div>
-            
+
             <!-- Invisible bridge to prevent gap -->
             <div class="absolute top-full left-0 w-48 h-2 bg-transparent group-hover:block hidden"></div>
-            
-            <div 
-              class="absolute top-full left-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2"
-            >
-              <router-link 
-                :to="{ path: '/admin/email-marketing/subscribers' }" 
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
+
+            <div
+              class="absolute top-full left-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2">
+              <router-link :to="{ path: '/admin/email-marketing/subscribers' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Subscribers
               </router-link>
-              <router-link 
-                :to="{ path: '/admin/email-marketing/templates' }" 
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
+              <router-link :to="{ path: '/admin/email-marketing/templates' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Templates
               </router-link>
-              <router-link 
-                :to="{ path: '/admin/email-marketing/campaigns' }" 
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
+              <router-link :to="{ path: '/admin/email-marketing/campaigns' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Campaigns
               </router-link>
-              <router-link 
-                :to="{ path: '/admin/email-marketing/analytics' }" 
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              >
+              <router-link :to="{ path: '/admin/email-marketing/analytics' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Analytics
               </router-link>
             </div>
           </div>
-          
+
           <!-- Language Switcher -->
           <div class="language-selector">
             <select @change="changeLanguage" v-model="currentLocale">
@@ -146,160 +149,151 @@
               <option value="vi">🇻🇳 VI</option>
             </select>
           </div>
-          
+
           <router-link to="/logout" class="navbar-link">
             {{ t('logout') }}
           </router-link>
         </div>
-        
+
         <!-- Mobile Menu Button -->
         <div class="md:hidden">
-          <button @click="toggleMobileMenu" class="p-2 rounded-lg text-secondary-600 hover:text-primary-600 hover:bg-secondary-100 transition-all duration-200 focus:outline-none focus:ring-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path v-if="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          <button @click="toggleMobileMenu"
+            class="p-2 rounded-lg text-secondary-600 hover:text-primary-600 hover:bg-secondary-100 transition-all duration-200 focus:outline-none focus:ring-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path v-if="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16" />
               <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
       </div>
-      
+
       <!-- Mobile Menu -->
-      <div v-if="mobileMenuOpen" class="md:hidden mt-4 pb-4 space-y-3 border-t border-secondary-200 pt-4 animate-slide-up">
-        <router-link :to="{ path: '/admin/products' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-          {{ t('products') }}
+      <div v-if="mobileMenuOpen"
+        class="md:hidden mt-4 pb-4 space-y-3 border-t border-secondary-200 pt-4 animate-slide-up">
+        <!-- Ecommerce Mobile Menu -->
+        <div class="py-2">
+          <button @click="ecommerceMobileDropdownOpen = !ecommerceMobileDropdownOpen"
+            class="w-full text-left navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 flex items-center justify-between">
+            <span>{{ t('ecommerce') || 'Ecommerce' }}</span>
+            <svg :class="{ 'rotate-180': ecommerceMobileDropdownOpen }" class="w-4 h-4 transition-transform" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+
+          <div v-if="ecommerceMobileDropdownOpen" class="ml-4 mt-2 space-y-1">
+            <router-link :to="{ path: '/admin/analytics' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              {{ t('analytics') }}
+            </router-link>
+            <router-link :to="{ path: '/admin/products' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              {{ t('products') }}
+            </router-link>
+            <router-link :to="{ path: '/admin/categories' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              {{ t('categories') }}
+            </router-link>
+            <router-link :to="{ path: '/admin/orders' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              {{ t('orders') }}
+            </router-link>
+            <router-link :to="{ path: '/admin/users' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              {{ t('users') }}
+            </router-link>
+          </div>
+        </div>
+
+        <router-link :to="{ path: '/admin/hr' }" exact-active-class="router-link-exact-active"
+          class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
+          {{ t('hr') }}
         </router-link>
-        <router-link :to="{ path: '/admin/categories' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-          {{ t('categories') }}
-        </router-link>
-        <router-link :to="{ path: '/admin/orders' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-          {{ t('orders') }}
-        </router-link>
-        <router-link :to="{ path: '/admin/users' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-          {{ t('users') }}
-        </router-link>
-        <router-link :to="{ path: '/admin/analytics' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-          Analytics
-        </router-link>
-        <router-link :to="{ path: '/admin/cashflow' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-          Cash Flow
-        </router-link>
-        <router-link :to="{ path: '/admin/hr' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-          Human Resources
-        </router-link>
-        <router-link :to="{ path: '/admin/live-stream' }" exact-active-class="router-link-exact-active" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
+        <router-link :to="{ path: '/admin/live-stream' }" exact-active-class="router-link-exact-active"
+          class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
           {{ t('liveStream') }}
         </router-link>
 
         <!-- Finance Mobile Menu -->
         <div class="py-2">
-          <button 
-            @click="financeMobileDropdownOpen = !financeMobileDropdownOpen"
-            class="w-full text-left navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 flex items-center justify-between"
-          >
+          <button @click="financeMobileDropdownOpen = !financeMobileDropdownOpen"
+            class="w-full text-left navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 flex items-center justify-between">
             <span>{{ t('finance') || 'Finance' }}</span>
-            <svg 
-              :class="{ 'rotate-180': financeMobileDropdownOpen }"
-              class="w-4 h-4 transition-transform"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
+            <svg :class="{ 'rotate-180': financeMobileDropdownOpen }" class="w-4 h-4 transition-transform" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </button>
-          
+
           <div v-if="financeMobileDropdownOpen" class="ml-4 mt-2 space-y-1">
-            <router-link 
-              :to="{ path: '/admin/finance' }" 
-              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
-            >
+            <router-link :to="{ path: '/admin/finance' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
               Dashboard
             </router-link>
-            <router-link 
-              :to="{ path: '/admin/finance/invoices' }" 
-              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
-            >
+            <router-link :to="{ path: '/admin/cashflow' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              {{ t('cashFlow') }}
+            </router-link>
+            <router-link :to="{ path: '/admin/finance/invoices' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
               Invoices (AR)
             </router-link>
-            <router-link 
-              :to="{ path: '/admin/finance/bills' }" 
-              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
-            >
+            <router-link :to="{ path: '/admin/finance/bills' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
               Bills (AP)
             </router-link>
-            <router-link 
-              :to="{ path: '/admin/finance/bank-accounts' }" 
-              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
-            >
+            <router-link :to="{ path: '/admin/finance/bank-accounts' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
               Bank Accounts
             </router-link>
-            <router-link 
-              :to="{ path: '/admin/finance/chart-of-accounts' }" 
-              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
-            >
+            <router-link :to="{ path: '/admin/finance/chart-of-accounts' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
               Chart of Accounts
             </router-link>
-            <router-link 
-              :to="{ path: '/admin/finance/reports' }" 
-              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
-            >
+            <router-link :to="{ path: '/admin/finance/reports' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
               Financial Reports
             </router-link>
-            <router-link 
-              :to="{ path: '/admin/finance/general-ledger' }" 
-              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
-            >
+            <router-link :to="{ path: '/admin/finance/general-ledger' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
               General Ledger
             </router-link>
           </div>
         </div>
-        
+
         <!-- Email Marketing Mobile Menu -->
         <div class="py-2">
-          <button 
-            @click="emailMobileDropdownOpen = !emailMobileDropdownOpen"
-            class="w-full text-left navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 flex items-center justify-between"
-          >
+          <button @click="emailMobileDropdownOpen = !emailMobileDropdownOpen"
+            class="w-full text-left navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 flex items-center justify-between">
             <span>Email Marketing</span>
-            <svg 
-              :class="{ 'rotate-180': emailMobileDropdownOpen }"
-              class="w-4 h-4 transition-transform"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
+            <svg :class="{ 'rotate-180': emailMobileDropdownOpen }" class="w-4 h-4 transition-transform" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </button>
-          
+
           <div v-if="emailMobileDropdownOpen" class="ml-4 mt-2 space-y-1">
-            <router-link 
-              :to="{ path: '/admin/email-marketing/subscribers' }" 
-              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
-            >
+            <router-link :to="{ path: '/admin/email-marketing/subscribers' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
               Subscribers
             </router-link>
-            <router-link 
-              :to="{ path: '/admin/email-marketing/templates' }" 
-              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
-            >
+            <router-link :to="{ path: '/admin/email-marketing/templates' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
               Templates
             </router-link>
-            <router-link 
-              :to="{ path: '/admin/email-marketing/campaigns' }" 
-              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
-            >
+            <router-link :to="{ path: '/admin/email-marketing/campaigns' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
               Campaigns
             </router-link>
-            <router-link 
-              :to="{ path: '/admin/email-marketing/analytics' }" 
-              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm"
-            >
+            <router-link :to="{ path: '/admin/email-marketing/analytics' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
               Analytics
             </router-link>
           </div>
         </div>
-        
+
         <!-- Mobile Language Switcher -->
         <div class="pt-3 border-t border-secondary-200">
           <label class="block text-sm font-medium text-secondary-700 mb-2">{{ t('language') || 'Language' }}</label>
@@ -310,8 +304,9 @@
             </select>
           </div>
         </div>
-        
-        <router-link to="/logout" class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
+
+        <router-link to="/logout"
+          class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
           {{ t('logout') }}
         </router-link>
       </div>
@@ -326,6 +321,7 @@ import { ref } from 'vue';
 const { locale, t } = useI18n();
 const currentLocale = ref(locale.value);
 const mobileMenuOpen = ref(false);
+const ecommerceMobileDropdownOpen = ref(false);
 const emailMobileDropdownOpen = ref(false);
 const financeMobileDropdownOpen = ref(false);
 

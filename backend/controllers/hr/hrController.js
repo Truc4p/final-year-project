@@ -372,23 +372,49 @@ exports.uploadDocument = [
         return res.status(400).json({ message: "No file uploaded" });
       }
       
-      const employee = await Employee.findById(employeeId);
-      if (!employee) {
+      // Check if employee exists
+      const employeeExists = await Employee.findById(employeeId);
+      if (!employeeExists) {
         return res.status(404).json({ message: "Employee not found" });
       }
       
-      employee.documents.push({
+      const newDocument = {
         name: documentName || req.file.originalname,
         type: documentType || 'other',
         filePath: req.file.path,
         uploadDate: new Date()
-      });
+      };
       
-      await employee.save();
+      console.log('📄 Uploading document:', newDocument);
+      
+      // First ensure documents field is an array, then push the new document
+      // Using MongoDB's native update to bypass Mongoose type checking
+      const mongoose = require('mongoose');
+      await Employee.collection.updateOne(
+        { _id: new mongoose.Types.ObjectId(employeeId) },
+        [
+          {
+            $set: {
+              documents: {
+                $cond: {
+                  if: { $isArray: "$documents" },
+                  then: { $concatArrays: ["$documents", [newDocument]] },
+                  else: [newDocument]
+                }
+              }
+            }
+          }
+        ]
+      );
+      
+      // Fetch the updated employee
+      const updatedEmployee = await Employee.findById(employeeId);
+      
+      console.log('✅ Document uploaded successfully');
       
       res.json({
         message: "Document uploaded successfully",
-        document: employee.documents[employee.documents.length - 1]
+        document: updatedEmployee.documents[updatedEmployee.documents.length - 1]
       });
     } catch (err) {
       console.error("Error uploading document:", err);
@@ -396,6 +422,75 @@ exports.uploadDocument = [
     }
   }
 ];
+
+// Download employee document
+exports.downloadDocument = async (req, res) => {
+  try {
+    const { id, documentId } = req.params;
+    
+    const employee = await Employee.findById(id);
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+    
+    const document = employee.documents.id(documentId);
+    if (!document) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+    
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Check if file exists
+    if (!fs.existsSync(document.filePath)) {
+      return res.status(404).json({ message: "File not found on server" });
+    }
+    
+    // Set headers for download
+    res.setHeader('Content-Disposition', `attachment; filename="${document.name}"`);
+    res.setHeader('Content-Type', 'application/octet-stream');
+    
+    // Send file
+    res.sendFile(path.resolve(document.filePath));
+  } catch (err) {
+    console.error("Error downloading document:", err);
+    res.status(500).json({ message: "Server Error", error: err.message });
+  }
+};
+
+// Delete employee document
+exports.deleteDocument = async (req, res) => {
+  try {
+    const { id, documentId } = req.params;
+    
+    const employee = await Employee.findById(id);
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+    
+    const document = employee.documents.id(documentId);
+    if (!document) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+    
+    // Delete file from filesystem
+    const fs = require('fs');
+    if (fs.existsSync(document.filePath)) {
+      fs.unlinkSync(document.filePath);
+    }
+    
+    // Remove document from array
+    employee.documents.pull(documentId);
+    await employee.save();
+    
+    res.json({
+      message: "Document deleted successfully"
+    });
+  } catch (err) {
+    console.error("Error deleting document:", err);
+    res.status(500).json({ message: "Server Error", error: err.message });
+  }
+};
 
 // Get department statistics
 exports.getDepartmentStats = async (req, res) => {

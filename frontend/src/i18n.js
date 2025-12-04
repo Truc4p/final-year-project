@@ -3,6 +3,7 @@ import { createI18n } from 'vue-i18n';
 
 const messages = {
   en: {
+    ecommerce: 'E-commerce',
     memberSince: 'Member Since',
     accountStats: 'Account Stats',
     accountStatus: 'Account Status',
@@ -241,6 +242,7 @@ const messages = {
     moveDown: 'Move Down'
   },
   vi: {
+    ecommerce: 'Thương mại điện tử',
     memberSince: 'Thành viên từ',
     accountStats: 'Thống kê tài khoản',
     accountStatus: 'Trạng thái tài khoản',
