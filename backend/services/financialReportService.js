@@ -317,7 +317,7 @@ class FinancialReportService {
    */
   static async _calculateOperatingActivities(startDate, endDate, netIncome) {
     const items = [
-      { description: 'Net Income', amount: netIncome }
+      { description: netIncome >= 0 ? 'Net Income' : 'Net Loss', amount: netIncome }
     ];
 
     // Get depreciation and amortization (add back non-cash expenses)

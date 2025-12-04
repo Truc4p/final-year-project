@@ -1167,6 +1167,33 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                           </div>
                         </div>
 
+                        <!-- Address -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                          <h4 class="text-lg font-semibold text-gray-900 mb-4">Address</h4>
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                              <label class="block text-sm font-medium text-gray-700 mb-1">Street</label>
+                              <input v-model="employeeForm.address.street" type="text" class="form-input w-full" placeholder="123 Main St">
+                            </div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                              <input v-model="employeeForm.address.city" type="text" class="form-input w-full" placeholder="City">
+                            </div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-700 mb-1">State/Province</label>
+                              <input v-model="employeeForm.address.state" type="text" class="form-input w-full" placeholder="State">
+                            </div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-700 mb-1">ZIP/Postal Code</label>
+                              <input v-model="employeeForm.address.zipCode" type="text" class="form-input w-full" placeholder="ZIP / Postal Code">
+                            </div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                              <input v-model="employeeForm.address.country" type="text" class="form-input w-full" placeholder="Country">
+                            </div>
+                          </div>
+                        </div>
+
                         <!-- Employment Details -->
                         <div class="border border-gray-200 rounded-lg p-4">
                           <h4 class="text-lg font-semibold text-gray-900 mb-4">Employment Details</h4>
@@ -1481,7 +1508,6 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                           </div>
                         </div>
                         <div class="flex items-center gap-2">
-                          <button @click="() => { closeEmployeeView(); openEmployeeModal(selectedEmployee); }" class="btn btn-primary">Edit</button>
                           <button @click="closeEmployeeView" class="text-gray-500 hover:text-gray-700">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>

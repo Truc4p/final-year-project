@@ -12,14 +12,13 @@
         v-for="report in availableReports" 
         :key="report.id"
         @click="selectReport(report.id)"
-        :class="selectedReport === report.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
-        class="bg-white rounded-lg shadow-md p-6 border-2 cursor-pointer transition-all"
+        :class="[
+          selectedReport === report.id ? report.selectedClass : 'border-gray-200 hover:border-gray-300',
+          'bg-white rounded-lg shadow-md p-6 border-2 cursor-pointer transition-all'
+        ]"
       >
         <div class="flex items-center space-x-3 mb-3">
-          <div :class="report.color" class="rounded-lg p-3">
-            <component :is="report.icon" class="w-6 h-6 text-white"></component>
-          </div>
-          <h3 class="font-semibold text-gray-900">{{ report.name }}</h3>
+          <h3 class="font-semibold" :class="report.colorClass">{{ report.name }}</h3>
         </div>
         <p class="text-sm text-gray-600">{{ report.description }}</p>
       </div>
@@ -105,7 +104,7 @@
     <div ref="reportRef">
     <!-- Income Statement -->
       <div v-if="selectedReport === 'income_statement' && !loading" class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Income Statement</h2>
+      <h2 class="text-2xl font-bold text-blue-600 mb-6">Income Statement</h2>
       <div class="space-y-4">
         <!-- Revenue Section -->
         <div>
@@ -159,7 +158,7 @@
 
     <!-- Balance Sheet -->
       <div v-if="selectedReport === 'balance_sheet' && !loading" class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Balance Sheet</h2>
+      <h2 class="text-2xl font-bold text-green-600 mb-6">Balance Sheet</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Assets -->
         <div>
@@ -213,7 +212,7 @@
 
     <!-- Cash Flow Statement -->
       <div v-if="selectedReport === 'cash_flow' && !loading" class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Cash Flow Statement</h2>
+      <h2 class="text-2xl font-bold text-purple-600 mb-6">Cash Flow Statement</h2>
       <div class="space-y-4">
           <!-- Operating Activities -->
         <div>
@@ -373,22 +372,22 @@ const availableReports = ref([
     id: 'income_statement',
     name: 'Income Statement',
     description: 'Revenue, expenses, and net income',
-    icon: 'svg',
-    color: 'bg-blue-500'
+    colorClass: 'text-blue-600',
+    selectedClass: 'border-blue-500 bg-blue-50'
   },
   {
     id: 'balance_sheet',
     name: 'Balance Sheet',
     description: 'Assets, liabilities, and equity',
-    icon: 'svg',
-    color: 'bg-green-500'
+    colorClass: 'text-green-600',
+    selectedClass: 'border-green-500 bg-green-50'
   },
   {
     id: 'cash_flow',
     name: 'Cash Flow Statement',
     description: 'Operating, investing, and financing activities',
-    icon: 'svg',
-    color: 'bg-purple-500'
+    colorClass: 'text-purple-600',
+    selectedClass: 'border-purple-500 bg-purple-50'
   }
 ]);
 
