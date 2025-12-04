@@ -7,10 +7,10 @@
         <p class="text-gray-600 mt-2">Manage your bank accounts and transactions</p>
       </div>
       <div class="flex gap-3">
-        <button @click="showConnectEmailModal = true" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+        <button @click="showConnectEmailModal = true" class=" bg-green-50 hover:bg-green-100 text-green-600 border border-green-200 font-medium py-2 px-6 rounded-lg transition-colors">
           Connect Email
         </button>
-      <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+      <button @click="openCreateModal" class="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 font-medium py-2 px-6 rounded-lg transition-colors">
         + Add Bank Account
       </button>
       </div>
@@ -18,7 +18,7 @@
 
     <!-- Bank Accounts Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      <div v-for="account in bankAccounts" :key="account.id" class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+      <div v-for="account in bankAccounts" :key="account.id" class="bg-white rounded-lg shadow-md p-6 border-l-4" :class="account.id === selectedAccountId ? 'border-blue-500 ring-1 ring-blue-300' : 'border-gray-200'">
         <div class="flex justify-between items-start mb-4">
           <div>
             <h3 class="text-lg font-semibold text-gray-900">{{ account.accountName }}</h3>
@@ -43,8 +43,16 @@
       </div>
     </div>
 
+    <!-- Balance History Chart -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Balance History</h2>
+      <div class="h-64">
+        <Line v-if="balanceChartData" :data="balanceChartData" :options="balanceChartOptions" />
+      </div>
+    </div>
+
     <!-- Recent Transactions -->
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div ref="transactionsSectionRef" class="bg-white rounded-lg shadow-md p-6">
       <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Transactions</h2>
       <div class="overflow-x-auto">
         <table class="w-full">
@@ -145,7 +153,7 @@
     <!-- Create/Edit Modal -->
     <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Add Bank Account</h2>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ isEditMode ? 'Edit Bank Account' : 'Add Bank Account' }}</h2>
         <form @submit.prevent="submitAccount" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
@@ -160,7 +168,7 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
-              <input v-model="formData.accountNumber" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+              <input v-model="formData.accountNumber" :disabled="isEditMode" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed" required>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
@@ -199,7 +207,7 @@
           </div>
           <div class="flex justify-end space-x-3 pt-4">
             <button @click="showCreateModal = false" type="button" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-            <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Add Account</button>
+            <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">{{ isEditMode ? 'Edit Account' : 'Add Account' }}</button>
           </div>
         </form>
       </div>
@@ -209,15 +217,41 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick, computed } from 'vue';
 import financeService from '@/services/financeService';
+import { Line } from 'vue-chartjs';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
 
 const { t } = useI18n();
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 const showCreateModal = ref(false);
 const showConnectEmailModal = ref(false);
 const isLoading = ref(false);
 const error = ref(null);
+const isEditMode = ref(false);
+const editingAccountId = ref(null);
 
 const formData = ref({
   accountName: '',
@@ -244,6 +278,94 @@ const bankAccounts = ref([]);
 const selectedAccountId = ref(null);
 const recentTransactions = ref([]);
 const coaAccounts = ref([]);
+const transactionsSectionRef = ref(null);
+const selectedAccount = computed(() => bankAccounts.value.find(a => a.id === selectedAccountId.value) || null);
+
+// Balance History Chart
+const balanceChartData = computed(() => {
+  if (!recentTransactions.value.length || !selectedAccount.value) return null;
+
+  // Sort transactions by date (oldest to newest)
+  const sortedTxns = [...recentTransactions.value].sort((a, b) => 
+    new Date(a.date) - new Date(b.date)
+  );
+
+  // Calculate running balance for each transaction
+  const currentBalance = selectedAccount.value.currentBalance;
+  let runningBalance = currentBalance;
+  
+  // Work backwards from current balance
+  const balances = [];
+  for (let i = sortedTxns.length - 1; i >= 0; i--) {
+    balances.unshift(runningBalance);
+    const txn = sortedTxns[i];
+    if (txn.type === 'deposit') {
+      runningBalance -= txn.amount;
+    } else {
+      runningBalance += txn.amount;
+    }
+  }
+
+  return {
+    labels: sortedTxns.map(t => formatDate(t.date)),
+    datasets: [
+      {
+        label: 'Account Balance',
+        data: balances,
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.3,
+        fill: true,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBackgroundColor: 'rgb(59, 130, 246)',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
+      }
+    ]
+  };
+});
+
+const balanceChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: {
+    mode: 'index',
+    intersect: false
+  },
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top'
+    },
+    tooltip: {
+      callbacks: {
+        label: function(context) {
+          const value = context.parsed.y;
+          return `Balance: ${value.toLocaleString('vi-VN')} VND`;
+        }
+      }
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: false,
+      ticks: {
+        callback: function(value) {
+          return value.toLocaleString('vi-VN');
+        }
+      },
+      grid: {
+        color: 'rgba(0, 0, 0, 0.05)'
+      }
+    },
+    x: {
+      grid: {
+        display: false
+      }
+    }
+  }
+};
 
 const maskAccount = (num) => (num ? `****${String(num).slice(-4)}` : '****');
 
@@ -287,7 +409,7 @@ const fetchTransactions = async (accountId) => {
       ),
       type: t.transactionType || t.type || ((t.debit || 0) > 0 ? 'withdrawal' : 'deposit'),
       status: t.status || (t.isReconciled ? 'reconciled' : 'pending')
-    }));
+    })).sort((a, b) => new Date(b.date) - new Date(a.date));
   } catch (e) {
     console.error('Failed to load transactions', e);
     recentTransactions.value = [];
@@ -309,13 +431,51 @@ const getStatusClass = (status) => ({
 }[status] || 'bg-gray-100 text-gray-800');
 
 const viewAccount = async (id) => {
+  const changed = selectedAccountId.value !== id;
   selectedAccountId.value = id;
   await fetchTransactions(id);
+  await nextTick();
+  if (transactionsSectionRef.value) {
+    transactionsSectionRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 };
 
-const editAccount = (id) => {
-  // Future: open edit modal prefilled
-  console.log('Edit account:', id);
+const openCreateModal = () => {
+  isEditMode.value = false;
+  editingAccountId.value = null;
+  formData.value = {
+    accountName: '',
+    bankName: '',
+    accountNumber: '',
+    accountType: 'checking',
+    currentBalance: 0,
+    isPrimary: false,
+    chartOfAccountsEntry: ''
+  };
+  showCreateModal.value = true;
+};
+
+const editAccount = async (id) => {
+  try {
+    isEditMode.value = true;
+    editingAccountId.value = id;
+    // Load full account details to prefill form
+    const res = await financeService.getBankAccount(id);
+    const a = res?.data || res;
+    formData.value = {
+      accountName: a.accountName || '',
+      bankName: a.bankName || '',
+      accountNumber: a.accountNumber || '',
+      accountType: a.accountType || 'checking',
+      currentBalance: Number(a.currentBalance || 0),
+      isPrimary: !!a.isPrimary,
+      chartOfAccountsEntry: (a.chartOfAccountsEntry && (a.chartOfAccountsEntry._id || a.chartOfAccountsEntry.id)) || ''
+    };
+    showCreateModal.value = true;
+  } catch (e) {
+    console.error('Failed to load account for edit', e);
+    alert(e?.message || 'Failed to load account for edit');
+  }
 };
 
 const deleteAccount = async (id) => {
@@ -354,21 +514,35 @@ const submitAccount = async () => {
       alert('Please select a linked GL account');
       return;
     }
+    // Common payload (exclude accountNumber on update as backend ignores it)
     const payload = {
-    accountName: formData.value.accountName,
-    bankName: formData.value.bankName,
-    accountNumber: formData.value.accountNumber,
-    accountType: formData.value.accountType,
+      accountName: formData.value.accountName,
+      bankName: formData.value.bankName,
+      accountType: formData.value.accountType,
       currentBalance: Number(formData.value.currentBalance) || 0,
       isPrimary: !!formData.value.isPrimary,
       chartOfAccountsEntry: formData.value.chartOfAccountsEntry
-  };
-    await financeService.createBankAccount(payload);
-  showCreateModal.value = false;
+    };
+
+    if (isEditMode.value && editingAccountId.value) {
+      await financeService.updateBankAccount(editingAccountId.value, payload);
+      alert('Bank account updated');
+    } else {
+      const createPayload = { ...payload, accountNumber: formData.value.accountNumber };
+      await financeService.createBankAccount(createPayload);
+      alert('Bank account created');
+    }
+
+    showCreateModal.value = false;
+    // Reset form and state
+    isEditMode.value = false;
+    editingAccountId.value = null;
     formData.value = { accountName: '', bankName: '', accountNumber: '', accountType: 'checking', currentBalance: 0, isPrimary: false, chartOfAccountsEntry: '' };
+
     await fetchAccounts();
+    if (selectedAccountId.value) await fetchTransactions(selectedAccountId.value);
   } catch (e) {
-    alert(e?.message || 'Failed to add bank account');
+    alert(e?.message || 'Failed to save bank account');
   }
 };
 
