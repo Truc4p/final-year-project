@@ -18,7 +18,7 @@
 
     <!-- Bank Accounts Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      <div v-for="account in bankAccounts" :key="account.id" class="bg-white rounded-lg shadow-md p-6 border-l-4" :class="account.id === selectedAccountId ? 'border-blue-500 ring-1 ring-blue-300' : 'border-gray-200'">
+      <div v-for="account in bankAccounts" :key="account.id" class="bg-white rounded-lg shadow-md p-6" :class="account.id === selectedAccountId ? 'border-blue-500 ring-1 ring-blue-300' : 'border-gray-200'">
         <div class="flex justify-between items-start mb-4">
           <div>
             <h3 class="text-lg font-semibold text-gray-900">{{ account.accountName }}</h3>
@@ -36,8 +36,8 @@
         </div>
         <div class="flex space-x-2">
           <button @click="viewAccount(account.id)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded transition-colors">View</button>
-          <button v-if="isTimo(account)" @click="syncTimoHistory(account.id)" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-medium py-2 px-4 rounded transition-colors">Sync transactions</button>
           <button @click="editAccount(account.id)" class="flex-1 bg-green-50 hover:bg-green-100 text-green-600 font-medium py-2 px-4 rounded transition-colors">Edit</button>
+          <button v-if="isTimo(account)" @click="syncTimoHistory(account.id)" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-medium py-2 px-4 rounded transition-colors">Sync transactions</button>
           <button @click="deleteAccount(account.id)" class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded transition-colors">Delete</button>
         </div>
       </div>
@@ -336,7 +336,23 @@ const balanceChartOptions = {
   plugins: {
     legend: {
       display: true,
-      position: 'top'
+      position: 'top',
+      labels: {
+        usePointStyle: false,
+        boxWidth: 40,
+        boxHeight: 2,
+        generateLabels: function(chart) {
+          const datasets = chart.data.datasets;
+          return datasets.map((dataset, i) => ({
+            text: dataset.label,
+            fillStyle: dataset.borderColor,
+            strokeStyle: dataset.borderColor,
+            lineWidth: 1,
+            hidden: !chart.isDatasetVisible(i),
+            datasetIndex: i
+          }));
+        }
+      }
     },
     tooltip: {
       callbacks: {
