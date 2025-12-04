@@ -101,26 +101,28 @@
       </button>
     </div>
 
+    <!-- Report Container for Export -->
+    <div ref="reportRef">
     <!-- Income Statement -->
-    <div v-if="selectedReport === 'income_statement' && !loading" class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div v-if="selectedReport === 'income_statement' && !loading" class="bg-white rounded-lg shadow-md p-6 mb-6">
       <h2 class="text-2xl font-bold text-gray-900 mb-6">Income Statement</h2>
       <div class="space-y-4">
         <!-- Revenue Section -->
         <div>
           <h3 class="text-lg font-semibold text-gray-900 mb-3">Revenue</h3>
           <div class="space-y-2 ml-4 mb-4">
-            <div 
-              v-for="item in incomeStatement.revenue" 
-              :key="item.id"
-              class="flex justify-between py-2 border-b border-gray-200"
-            >
-              <span class="text-gray-700">{{ item.name }}</span>
-              <span class="font-semibold text-gray-900">${{ formatCurrency(item.amount) }}</span>
+              <div 
+                v-for="item in incomeStatement.revenue" 
+                :key="item.id"
+                class="flex justify-between py-2 border-b border-gray-200"
+              >
+                <span class="text-gray-700">{{ item.name }}</span>
+                <span class="font-semibold text-gray-900">${{ formatCurrency(item.amount) }}</span>
             </div>
           </div>
           <div class="flex justify-between py-2 bg-blue-50 px-4 rounded font-semibold">
             <span>Total Revenue</span>
-            <span>${{ formatCurrency(incomeStatement.totalRevenue) }}</span>
+              <span>${{ formatCurrency(incomeStatement.totalRevenue) }}</span>
           </div>
         </div>
 
@@ -128,18 +130,18 @@
         <div class="mt-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-3">Expenses</h3>
           <div class="space-y-2 ml-4 mb-4">
-            <div 
-              v-for="item in incomeStatement.expenses" 
-              :key="item.id"
-              class="flex justify-between py-2 border-b border-gray-200"
-            >
-              <span class="text-gray-700">{{ item.name }}</span>
-              <span class="font-semibold text-gray-900">${{ formatCurrency(item.amount) }}</span>
+              <div 
+                v-for="item in incomeStatement.expenses" 
+                :key="item.id"
+                class="flex justify-between py-2 border-b border-gray-200"
+              >
+                <span class="text-gray-700">{{ item.name }}</span>
+                <span class="font-semibold text-gray-900">${{ formatCurrency(item.amount) }}</span>
             </div>
           </div>
           <div class="flex justify-between py-2 bg-orange-50 px-4 rounded font-semibold">
             <span>Total Expenses</span>
-            <span>${{ formatCurrency(incomeStatement.totalExpenses) }}</span>
+              <span>${{ formatCurrency(incomeStatement.totalExpenses) }}</span>
           </div>
         </div>
 
@@ -147,34 +149,34 @@
         <div class="mt-6">
           <div class="flex justify-between py-3 bg-green-50 px-4 rounded-lg font-bold text-lg">
             <span>Net Income</span>
-            <span :class="incomeStatement.netIncome >= 0 ? 'text-green-600' : 'text-red-600'">
-              ${{ formatCurrency(incomeStatement.netIncome) }}
-            </span>
+              <span :class="incomeStatement.netIncome >= 0 ? 'text-green-600' : 'text-red-600'">
+                ${{ formatCurrency(incomeStatement.netIncome) }}
+              </span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Balance Sheet -->
-    <div v-if="selectedReport === 'balance_sheet' && !loading" class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div v-if="selectedReport === 'balance_sheet' && !loading" class="bg-white rounded-lg shadow-md p-6 mb-6">
       <h2 class="text-2xl font-bold text-gray-900 mb-6">Balance Sheet</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Assets -->
         <div>
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Assets</h3>
           <div class="space-y-2 mb-4">
-            <div 
-              v-for="item in balanceSheet.assets" 
-              :key="item.id"
-              class="flex justify-between py-2 border-b border-gray-200"
-            >
-              <span class="text-gray-700">{{ item.name }}</span>
-              <span class="font-semibold text-gray-900">${{ formatCurrency(item.amount) }}</span>
+              <div 
+                v-for="item in balanceSheet.assets" 
+                :key="item.id"
+                class="flex justify-between py-2 border-b border-gray-200"
+              >
+                <span class="text-gray-700">{{ item.name }}</span>
+                <span class="font-semibold text-gray-900">${{ formatCurrency(item.amount) }}</span>
             </div>
           </div>
           <div class="flex justify-between py-2 bg-blue-50 px-4 rounded font-semibold">
             <span>Total Assets</span>
-            <span>${{ formatCurrency(balanceSheet.totalAssets) }}</span>
+              <span>${{ formatCurrency(balanceSheet.totalAssets) }}</span>
           </div>
         </div>
 
@@ -182,113 +184,114 @@
         <div>
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Liabilities & Equity</h3>
           <div class="space-y-2 mb-4">
-            <div 
-              v-for="item in balanceSheet.liabilitiesAndEquity" 
-              :key="item.id"
-              class="flex justify-between py-2 border-b border-gray-200"
-            >
-              <span class="text-gray-700">{{ item.name }}</span>
-              <span class="font-semibold text-gray-900">${{ formatCurrency(item.amount) }}</span>
+              <div 
+                v-for="item in balanceSheet.liabilitiesAndEquity" 
+                :key="item.id"
+                class="flex justify-between py-2 border-b border-gray-200"
+              >
+                <span class="text-gray-700">{{ item.name }}</span>
+                <span class="font-semibold text-gray-900">${{ formatCurrency(item.amount) }}</span>
+            </div>
+            </div>
+            <div class="flex justify-between py-2 bg-blue-50 px-4 rounded font-semibold">
+              <span>Total Liabilities & Equity</span>
+              <span>${{ formatCurrency(balanceSheet.totalLiabilitiesAndEquity) }}</span>
             </div>
           </div>
-          <div class="flex justify-between py-2 bg-blue-50 px-4 rounded font-semibold">
-            <span>Total Liabilities & Equity</span>
-            <span>${{ formatCurrency(balanceSheet.totalLiabilitiesAndEquity) }}</span>
           </div>
-        </div>
-      </div>
-      
-      <!-- Balance Check -->
-      <div class="mt-6 p-4 rounded-lg" :class="balanceSheet.isBalanced ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'">
-        <p :class="balanceSheet.isBalanced ? 'text-green-800' : 'text-red-800'" class="font-semibold">
-          {{ balanceSheet.isBalanced ? '✓ Balance Sheet is Balanced' : '✗ Balance Sheet is NOT Balanced' }}
-        </p>
-        <p :class="balanceSheet.isBalanced ? 'text-green-600' : 'text-red-600'" class="text-sm mt-1">
-          Assets: ${{ formatCurrency(balanceSheet.totalAssets) }} | Liabilities & Equity: ${{ formatCurrency(balanceSheet.totalLiabilitiesAndEquity) }}
-        </p>
+        
+        <!-- Balance Check -->
+        <div class="mt-6 p-4 rounded-lg" :class="balanceSheet.isBalanced ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'">
+          <p :class="balanceSheet.isBalanced ? 'text-green-800' : 'text-red-800'" class="font-semibold">
+            {{ balanceSheet.isBalanced ? '✓ Balance Sheet is Balanced' : '✗ Balance Sheet is NOT Balanced' }}
+          </p>
+          <p :class="balanceSheet.isBalanced ? 'text-green-600' : 'text-red-600'" class="text-sm mt-1">
+            Assets: ${{ formatCurrency(balanceSheet.totalAssets) }} | Liabilities & Equity: ${{ formatCurrency(balanceSheet.totalLiabilitiesAndEquity) }}
+          </p>
       </div>
     </div>
 
     <!-- Cash Flow Statement -->
-    <div v-if="selectedReport === 'cash_flow' && !loading" class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div v-if="selectedReport === 'cash_flow' && !loading" class="bg-white rounded-lg shadow-md p-6 mb-6">
       <h2 class="text-2xl font-bold text-gray-900 mb-6">Cash Flow Statement</h2>
       <div class="space-y-4">
-        <!-- Operating Activities -->
+          <!-- Operating Activities -->
         <div>
           <h3 class="text-lg font-semibold text-gray-900 mb-3">Operating Activities</h3>
           <div class="space-y-2 ml-4 mb-4">
-            <div 
-              v-for="item in cashFlowStatement.operatingActivities" 
-              :key="item.id"
-              class="flex justify-between py-2 border-b border-gray-200"
-            >
-              <span class="text-gray-700">{{ item.name }}</span>
-              <span class="font-semibold text-gray-900" :class="item.amount >= 0 ? 'text-green-600' : 'text-red-600'">
-                ${{ formatCurrency(item.amount) }}
-              </span>
+              <div 
+                v-for="item in cashFlowStatement.operatingActivities" 
+                :key="item.id"
+                class="flex justify-between py-2 border-b border-gray-200"
+              >
+                <span class="text-gray-700">{{ item.name }}</span>
+                <span class="font-semibold text-gray-900" :class="item.amount >= 0 ? 'text-green-600' : 'text-red-600'">
+                  ${{ formatCurrency(item.amount) }}
+                </span>
             </div>
           </div>
           <div class="flex justify-between py-2 bg-blue-50 px-4 rounded font-semibold">
             <span>Net Cash from Operations</span>
-            <span :class="cashFlowStatement.netCashFromOperations >= 0 ? 'text-green-600' : 'text-red-600'">
-              ${{ formatCurrency(cashFlowStatement.netCashFromOperations) }}
-            </span>
+              <span :class="cashFlowStatement.netCashFromOperations >= 0 ? 'text-green-600' : 'text-red-600'">
+                ${{ formatCurrency(cashFlowStatement.netCashFromOperations) }}
+              </span>
           </div>
         </div>
 
-        <!-- Investing Activities -->
+          <!-- Investing Activities -->
         <div class="mt-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-3">Investing Activities</h3>
           <div class="space-y-2 ml-4 mb-4">
-            <div 
-              v-for="item in cashFlowStatement.investingActivities" 
-              :key="item.id"
-              class="flex justify-between py-2 border-b border-gray-200"
-            >
-              <span class="text-gray-700">{{ item.name }}</span>
-              <span class="font-semibold text-gray-900" :class="item.amount >= 0 ? 'text-green-600' : 'text-red-600'">
-                ${{ formatCurrency(item.amount) }}
+              <div 
+                v-for="item in cashFlowStatement.investingActivities" 
+                :key="item.id"
+                class="flex justify-between py-2 border-b border-gray-200"
+              >
+                <span class="text-gray-700">{{ item.name }}</span>
+                <span class="font-semibold text-gray-900" :class="item.amount >= 0 ? 'text-green-600' : 'text-red-600'">
+                  ${{ formatCurrency(item.amount) }}
+                </span>
+              </div>
+            </div>
+            <div class="flex justify-between py-2 bg-blue-50 px-4 rounded font-semibold">
+              <span>Net Cash from Investing</span>
+              <span :class="cashFlowStatement.netCashFromInvesting >= 0 ? 'text-green-600' : 'text-red-600'">
+                ${{ formatCurrency(cashFlowStatement.netCashFromInvesting) }}
               </span>
             </div>
           </div>
-          <div class="flex justify-between py-2 bg-blue-50 px-4 rounded font-semibold">
-            <span>Net Cash from Investing</span>
-            <span :class="cashFlowStatement.netCashFromInvesting >= 0 ? 'text-green-600' : 'text-red-600'">
-              ${{ formatCurrency(cashFlowStatement.netCashFromInvesting) }}
-            </span>
-          </div>
-        </div>
 
-        <!-- Financing Activities -->
-        <div class="mt-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-3">Financing Activities</h3>
-          <div class="space-y-2 ml-4 mb-4">
-            <div 
-              v-for="item in cashFlowStatement.financingActivities" 
-              :key="item.id"
-              class="flex justify-between py-2 border-b border-gray-200"
-            >
-              <span class="text-gray-700">{{ item.name }}</span>
-              <span class="font-semibold text-gray-900" :class="item.amount >= 0 ? 'text-green-600' : 'text-red-600'">
-                ${{ formatCurrency(item.amount) }}
-              </span>
+          <!-- Financing Activities -->
+          <div class="mt-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Financing Activities</h3>
+            <div class="space-y-2 ml-4 mb-4">
+              <div 
+                v-for="item in cashFlowStatement.financingActivities" 
+                :key="item.id"
+                class="flex justify-between py-2 border-b border-gray-200"
+              >
+                <span class="text-gray-700">{{ item.name }}</span>
+                <span class="font-semibold text-gray-900" :class="item.amount >= 0 ? 'text-green-600' : 'text-red-600'">
+                  ${{ formatCurrency(item.amount) }}
+                </span>
             </div>
           </div>
           <div class="flex justify-between py-2 bg-blue-50 px-4 rounded font-semibold">
-            <span>Net Cash from Financing</span>
-            <span :class="cashFlowStatement.netCashFromFinancing >= 0 ? 'text-green-600' : 'text-red-600'">
-              ${{ formatCurrency(cashFlowStatement.netCashFromFinancing) }}
-            </span>
+              <span>Net Cash from Financing</span>
+              <span :class="cashFlowStatement.netCashFromFinancing >= 0 ? 'text-green-600' : 'text-red-600'">
+                ${{ formatCurrency(cashFlowStatement.netCashFromFinancing) }}
+              </span>
           </div>
         </div>
 
-        <!-- Net Change in Cash -->
+          <!-- Net Change in Cash -->
         <div class="mt-6">
           <div class="flex justify-between py-3 bg-green-50 px-4 rounded-lg font-bold text-lg">
             <span>Net Change in Cash</span>
-            <span :class="cashFlowStatement.netChangeInCash >= 0 ? 'text-green-600' : 'text-red-600'">
-              ${{ formatCurrency(cashFlowStatement.netChangeInCash) }}
-            </span>
+              <span :class="cashFlowStatement.netChangeInCash >= 0 ? 'text-green-600' : 'text-red-600'">
+                ${{ formatCurrency(cashFlowStatement.netChangeInCash) }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -298,17 +301,19 @@
     <div v-if="!loading" class="flex justify-end space-x-3">
       <button 
         @click="exportPDF" 
-        :disabled="loading"
+        :disabled="loading || exportingPdf || exportingExcel"
         class="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-medium py-2 px-6 rounded-lg transition-colors"
       >
-        Export as PDF
+        <span v-if="exportingPdf">Exporting…</span>
+        <span v-else>Export as PDF</span>
       </button>
       <button 
         @click="exportExcel" 
-        :disabled="loading"
+        :disabled="loading || exportingPdf || exportingExcel"
         class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium py-2 px-6 rounded-lg transition-colors"
       >
-        Export as Excel
+        <span v-if="exportingExcel">Exporting…</span>
+        <span v-else>Export as Excel</span>
       </button>
     </div>
   </div>
@@ -316,10 +321,13 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import financeService from '@/services/financeService';
 
 const { t } = useI18n();
+
+// DOM ref for report capture/export
+const reportRef = ref(null);
 
 const selectedReport = ref('income_statement');
 const loading = ref(false);
@@ -646,16 +654,149 @@ const formatCurrency = (value) => {
   return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-const exportPDF = () => {
-  console.log('Export as PDF:', selectedReport.value);
-  // TODO: Implement PDF export functionality
-  alert('PDF export coming soon!');
+const exportingPdf = ref(false);
+const exportingExcel = ref(false);
+
+const buildFileName = (ext) => {
+  const { startDate, endDate } = getDateRange();
+  const s = startDate.toISOString().split('T')[0];
+  const e = endDate.toISOString().split('T')[0];
+  const map = {
+    income_statement: 'income-statement',
+    balance_sheet: 'balance-sheet',
+    cash_flow: 'cash-flow'
+  };
+  return `${map[selectedReport.value] || 'report'}_${s}_to_${e}.${ext}`;
 };
 
-const exportExcel = () => {
-  console.log('Export as Excel:', selectedReport.value);
-  // TODO: Implement Excel export functionality
-  alert('Excel export coming soon!');
+const exportPDF = async () => {
+  try {
+    exportingPdf.value = true;
+    await nextTick();
+
+    const el = reportRef.value;
+    if (!el) {
+      alert('Nothing to export. Generate a report first.');
+      return;
+    }
+
+    const [{ jsPDF }, html2canvasModule] = await Promise.all([
+      import('jspdf'),
+      import('html2canvas')
+    ]);
+    const html2canvas = html2canvasModule.default || html2canvasModule;
+
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      backgroundColor: '#ffffff'
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(buildFileName('pdf'));
+  } catch (err) {
+    console.error('PDF export failed:', err);
+    alert('PDF export failed. Please ensure dependencies are installed: npm i jspdf html2canvas');
+  } finally {
+    exportingPdf.value = false;
+  }
+};
+
+const exportExcel = async () => {
+  try {
+    exportingExcel.value = true;
+
+    const xlsxMod = await import('xlsx');
+    const XLSX = xlsxMod.default || xlsxMod;
+
+    const wb = XLSX.utils.book_new();
+
+    const addSheet = (name, rows) => {
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, name);
+    };
+
+    const currency = (v) => `${formatCurrency(v)}`;
+
+    if (selectedReport.value === 'income_statement') {
+      const rows = [];
+      rows.push(['Income Statement']);
+      rows.push([]);
+      rows.push(['Revenue']);
+      rows.push(['Name', 'Amount']);
+      for (const r of incomeStatement.value.revenue) rows.push([r.name, currency(r.amount)]);
+      rows.push(['Total Revenue', currency(incomeStatement.value.totalRevenue)]);
+      rows.push([]);
+      rows.push(['Expenses']);
+      rows.push(['Name', 'Amount']);
+      for (const e of incomeStatement.value.expenses) rows.push([e.name, currency(e.amount)]);
+      rows.push(['Total Expenses', currency(incomeStatement.value.totalExpenses)]);
+      rows.push([]);
+      rows.push(['Net Income', currency(incomeStatement.value.netIncome)]);
+      addSheet('Income Statement', rows);
+    } else if (selectedReport.value === 'balance_sheet') {
+      const rows = [];
+      rows.push(['Balance Sheet']);
+      rows.push([]);
+      rows.push(['Assets']);
+      rows.push(['Name', 'Amount']);
+      for (const a of balanceSheet.value.assets) rows.push([a.name, currency(a.amount)]);
+      rows.push(['Total Assets', currency(balanceSheet.value.totalAssets)]);
+      rows.push([]);
+      rows.push(['Liabilities & Equity']);
+      rows.push(['Name', 'Amount']);
+      for (const le of balanceSheet.value.liabilitiesAndEquity) rows.push([le.name, currency(le.amount)]);
+      rows.push(['Total Liabilities & Equity', currency(balanceSheet.value.totalLiabilitiesAndEquity)]);
+      addSheet('Balance Sheet', rows);
+    } else if (selectedReport.value === 'cash_flow') {
+      const rows = [];
+      rows.push(['Cash Flow Statement']);
+      rows.push([]);
+      rows.push(['Operating Activities']);
+      rows.push(['Name', 'Amount']);
+      for (const o of cashFlowStatement.value.operatingActivities) rows.push([o.name, currency(o.amount)]);
+      rows.push(['Net Cash from Operations', currency(cashFlowStatement.value.netCashFromOperations)]);
+      rows.push([]);
+      rows.push(['Investing Activities']);
+      rows.push(['Name', 'Amount']);
+      for (const i of cashFlowStatement.value.investingActivities) rows.push([i.name, currency(i.amount)]);
+      rows.push(['Net Cash from Investing', currency(cashFlowStatement.value.netCashFromInvesting)]);
+      rows.push([]);
+      rows.push(['Financing Activities']);
+      rows.push(['Name', 'Amount']);
+      for (const f of cashFlowStatement.value.financingActivities) rows.push([f.name, currency(f.amount)]);
+      rows.push(['Net Cash from Financing', currency(cashFlowStatement.value.netCashFromFinancing)]);
+      rows.push([]);
+      rows.push(['Net Change in Cash', currency(cashFlowStatement.value.netChangeInCash)]);
+      addSheet('Cash Flow', rows);
+    }
+
+    XLSX.writeFile(wb, buildFileName('xlsx'));
+  } catch (err) {
+    console.error('Excel export failed:', err);
+    alert('Excel export failed. Please ensure dependency is installed: npm i xlsx');
+  } finally {
+    exportingExcel.value = false;
+  }
 };
 
 // Load initial report on mount

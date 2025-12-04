@@ -387,19 +387,28 @@ exports.uploadDocument = [
       
       console.log('📄 Uploading document:', newDocument);
       
-      // First ensure documents field is an array, then push the new document
-      // Using MongoDB's native update to bypass Mongoose type checking
+      // Using MongoDB's native operations to bypass Mongoose type checking
       const mongoose = require('mongoose');
+      const ObjectId = mongoose.Types.ObjectId;
+      
+      // Generate an _id for the subdocument
+      const documentId = new ObjectId();
+      const documentWithId = {
+        _id: documentId,
+        ...newDocument
+      };
+      
+      // Update using MongoDB native
       await Employee.collection.updateOne(
-        { _id: new mongoose.Types.ObjectId(employeeId) },
+        { _id: new ObjectId(employeeId) },
         [
           {
             $set: {
               documents: {
                 $cond: {
                   if: { $isArray: "$documents" },
-                  then: { $concatArrays: ["$documents", [newDocument]] },
-                  else: [newDocument]
+                  then: { $concatArrays: ["$documents", [documentWithId]] },
+                  else: [documentWithId]
                 }
               }
             }
@@ -407,14 +416,24 @@ exports.uploadDocument = [
         ]
       );
       
-      // Fetch the updated employee
-      const updatedEmployee = await Employee.findById(employeeId);
+      // Fetch using MongoDB native to avoid Mongoose schema issues
+      const updatedEmployee = await Employee.collection.findOne(
+        { _id: new ObjectId(employeeId) }
+      );
       
       console.log('✅ Document uploaded successfully');
+      console.log('📋 Documents in DB:', updatedEmployee.documents);
       
+      // Return the document with its ID
       res.json({
         message: "Document uploaded successfully",
-        document: updatedEmployee.documents[updatedEmployee.documents.length - 1]
+        document: {
+          _id: documentId.toString(),
+          name: documentWithId.name,
+          type: documentWithId.type,
+          filePath: documentWithId.filePath,
+          uploadDate: documentWithId.uploadDate
+        }
       });
     } catch (err) {
       console.error("Error uploading document:", err);
@@ -428,18 +447,28 @@ exports.downloadDocument = async (req, res) => {
   try {
     const { id, documentId } = req.params;
     
-    const employee = await Employee.findById(id);
+    const mongoose = require('mongoose');
+    const ObjectId = mongoose.Types.ObjectId;
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Use MongoDB native query to get employee with documents
+    const employee = await Employee.collection.findOne(
+      { _id: new ObjectId(id) }
+    );
+    
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
     }
     
-    const document = employee.documents.id(documentId);
+    // Find document in the array
+    const document = employee.documents?.find(
+      doc => doc._id.toString() === documentId
+    );
+    
     if (!document) {
       return res.status(404).json({ message: "Document not found" });
     }
-    
-    const fs = require('fs');
-    const path = require('path');
     
     // Check if file exists
     if (!fs.existsSync(document.filePath)) {
@@ -463,25 +492,42 @@ exports.deleteDocument = async (req, res) => {
   try {
     const { id, documentId } = req.params;
     
-    const employee = await Employee.findById(id);
+    const mongoose = require('mongoose');
+    const ObjectId = mongoose.Types.ObjectId;
+    const fs = require('fs');
+    
+    // Use MongoDB native query to get employee with documents
+    const employee = await Employee.collection.findOne(
+      { _id: new ObjectId(id) }
+    );
+    
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
     }
     
-    const document = employee.documents.id(documentId);
+    // Find document in the array
+    const document = employee.documents?.find(
+      doc => doc._id.toString() === documentId
+    );
+    
     if (!document) {
       return res.status(404).json({ message: "Document not found" });
     }
     
     // Delete file from filesystem
-    const fs = require('fs');
     if (fs.existsSync(document.filePath)) {
       fs.unlinkSync(document.filePath);
     }
     
-    // Remove document from array
-    employee.documents.pull(documentId);
-    await employee.save();
+    // Remove document from array using MongoDB native operation
+    await Employee.collection.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $pull: {
+          documents: { _id: new ObjectId(documentId) }
+        }
+      }
+    );
     
     res.json({
       message: "Document deleted successfully"
