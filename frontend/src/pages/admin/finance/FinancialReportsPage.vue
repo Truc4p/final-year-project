@@ -64,7 +64,7 @@
           <button 
             @click="generateReport" 
             :disabled="loading"
-            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+            class="w-auto max-w-xs bg-blue-50 hover:bg-blue-100 disabled:bg-gray-50 text-blue-600 font-medium py-2 px-4 rounded-lg transition-colors"
           >
             {{ loading ? 'Loading...' : 'Generate Report' }}
           </button>
@@ -73,7 +73,7 @@
           <button 
             @click="generateReport" 
             :disabled="loading || !reportFilters.fromDate || !reportFilters.toDate"
-            class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+            class="w-auto max-w-xs bg-blue-50 hover:bg-blue-100 disabled:bg-gray-50 text-blue-600 font-medium py-2 px-4 rounded-lg transition-colors"
           >
             {{ loading ? 'Loading...' : 'Generate Report' }}
           </button>
@@ -518,33 +518,38 @@ function normalizeBalanceSheet(data = {}) {
 }
 
 function normalizeCashFlow(data = {}) {
-  const operatingActivities = normalizeLineItems(data.operatingActivities);
-  const investingActivities = normalizeLineItems(data.investingActivities);
-  const financingActivities = normalizeLineItems(data.financingActivities);
+  // Backend returns: { operatingActivities: { items: [...], total: 0 }, ... }
+  // Convert items array to match frontend format
+  const mapItems = (activities) => {
+    if (!activities || !activities.items) return [];
+    return activities.items.map((item, idx) => ({
+      id: `item-${idx}`,
+      name: item.description || 'Unknown',
+      amount: toNumber(item.amount)
+    }));
+  };
 
-  const netCashFromOperations = (() => {
-    const n = toNumber(data.netCashFromOperations);
-    if (data.netCashFromOperations !== undefined && !isNaN(n)) return n;
-    return operatingActivities.reduce((s, a) => s + toNumber(a.amount), 0);
-  })();
+  const operatingActivities = mapItems(data.operatingActivities);
+  const investingActivities = mapItems(data.investingActivities);
+  const financingActivities = mapItems(data.financingActivities);
 
-  const netCashFromInvesting = (() => {
-    const n = toNumber(data.netCashFromInvesting);
-    if (data.netCashFromInvesting !== undefined && !isNaN(n)) return n;
-    return investingActivities.reduce((s, a) => s + toNumber(a.amount), 0);
-  })();
+  const netCashFromOperations = data.operatingActivities?.total !== undefined 
+    ? toNumber(data.operatingActivities.total)
+    : operatingActivities.reduce((s, a) => s + toNumber(a.amount), 0);
 
-  const netCashFromFinancing = (() => {
-    const n = toNumber(data.netCashFromFinancing);
-    if (data.netCashFromFinancing !== undefined && !isNaN(n)) return n;
-    return financingActivities.reduce((s, a) => s + toNumber(a.amount), 0);
-  })();
+  const netCashFromInvesting = data.investingActivities?.total !== undefined 
+    ? toNumber(data.investingActivities.total)
+    : investingActivities.reduce((s, a) => s + toNumber(a.amount), 0);
 
-  const netChangeInCash = (() => {
-    const n = toNumber(data.netChangeInCash);
-    if (data.netChangeInCash !== undefined && !isNaN(n)) return n;
-    return netCashFromOperations + netCashFromInvesting + netCashFromFinancing;
-  })();
+  const netCashFromFinancing = data.financingActivities?.total !== undefined 
+    ? toNumber(data.financingActivities.total)
+    : financingActivities.reduce((s, a) => s + toNumber(a.amount), 0);
+
+  const netChangeInCash = data.netChange !== undefined 
+    ? toNumber(data.netChange)
+    : (data.netCashFlow !== undefined 
+      ? toNumber(data.netCashFlow)
+      : netCashFromOperations + netCashFromInvesting + netCashFromFinancing);
 
   return {
     operatingActivities,

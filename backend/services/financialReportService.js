@@ -240,7 +240,7 @@ class FinancialReportService {
         netCashFlow,
         beginningCash,
         endingCash,
-        netChange: endingCash - beginningCash
+        netChange: netCashFlow // Use sum of activities instead of balance difference
       };
     } catch (error) {
       console.error("Error generating cash flow statement:", error);
@@ -316,27 +316,109 @@ class FinancialReportService {
    * Helper: Calculate operating activities for cash flow
    */
   static async _calculateOperatingActivities(startDate, endDate, netIncome) {
-    // Simplified version - in production, you'd calculate actual changes
     const items = [
       { description: 'Net Income', amount: netIncome }
     ];
 
-    // Add back non-cash expenses (depreciation, etc.)
-    // Adjust for changes in working capital
-    // This is a simplified version
+    // Get depreciation and amortization (add back non-cash expenses)
+    const depreciationAccounts = await ChartOfAccounts.find({
+      accountType: 'expense',
+      accountName: { $regex: /depreciation|amortization/i },
+      isActive: true
+    });
 
-    return {
-      items,
-      total: netIncome
-    };
+    for (const account of depreciationAccounts) {
+      const entries = await GeneralLedger.find({
+        account: account._id,
+        entryDate: { $gte: startDate, $lte: endDate }
+      });
+      const amount = entries.reduce((sum, entry) => sum + entry.debit - entry.credit, 0);
+      if (Math.abs(amount) > 0.01) {
+        items.push({ 
+          description: `Depreciation and Amortization`, 
+          amount: Math.abs(amount)
+        });
+      }
+    }
+
+    // Calculate changes in current assets (excluding cash)
+    const currentAssets = await ChartOfAccounts.find({
+      accountType: 'asset',
+      accountSubType: { $in: ['accounts_receivable', 'inventory', 'prepaid_expenses'] },
+      isActive: true
+    });
+
+    for (const account of currentAssets) {
+      const startBalance = await this._getAccountBalanceAtDate(account._id, startDate);
+      const endBalance = await this._getAccountBalanceAtDate(account._id, endDate);
+      const change = endBalance - startBalance;
+      
+      if (Math.abs(change) > 0.01) {
+        items.push({ 
+          description: `${change > 0 ? 'Increase' : 'Decrease'} in ${account.accountName}`, 
+          amount: -change // Increase in assets uses cash
+        });
+      }
+    }
+
+    // Calculate changes in current liabilities
+    const currentLiabilities = await ChartOfAccounts.find({
+      accountType: 'liability',
+      accountSubType: { $in: ['accounts_payable', 'accrued_expenses', 'unearned_revenue'] },
+      isActive: true
+    });
+
+    for (const account of currentLiabilities) {
+      const startBalance = await this._getAccountBalanceAtDate(account._id, startDate);
+      const endBalance = await this._getAccountBalanceAtDate(account._id, endDate);
+      const change = endBalance - startBalance;
+      
+      if (Math.abs(change) > 0.01) {
+        items.push({ 
+          description: `${change > 0 ? 'Increase' : 'Decrease'} in ${account.accountName}`, 
+          amount: change // Increase in liabilities provides cash
+        });
+      }
+    }
+
+    const total = items.reduce((sum, item) => sum + item.amount, 0);
+
+    return { items, total };
   }
 
   /**
    * Helper: Calculate investing activities
    */
   static async _calculateInvestingActivities(startDate, endDate) {
-    // Get fixed asset purchases/sales
     const items = [];
+
+    // Get fixed asset accounts
+    const fixedAssetAccounts = await ChartOfAccounts.find({
+      accountType: 'asset',
+      accountSubType: { $in: ['property_plant_equipment', 'intangible_assets', 'long_term_investments'] },
+      isActive: true
+    });
+
+    for (const account of fixedAssetAccounts) {
+      const startBalance = await this._getAccountBalanceAtDate(account._id, startDate);
+      const endBalance = await this._getAccountBalanceAtDate(account._id, endDate);
+      const change = endBalance - startBalance;
+      
+      if (Math.abs(change) > 0.01) {
+        if (change > 0) {
+          items.push({ 
+            description: `Purchase of ${account.accountName}`, 
+            amount: -Math.abs(change) // Purchase uses cash
+          });
+        } else {
+          items.push({ 
+            description: `Sale of ${account.accountName}`, 
+            amount: Math.abs(change) // Sale provides cash
+          });
+        }
+      }
+    }
+
     const total = items.reduce((sum, item) => sum + item.amount, 0);
 
     return { items, total };
@@ -346,11 +428,108 @@ class FinancialReportService {
    * Helper: Calculate financing activities
    */
   static async _calculateFinancingActivities(startDate, endDate) {
-    // Get loans, equity transactions
     const items = [];
+
+    // Get long-term debt accounts
+    const debtAccounts = await ChartOfAccounts.find({
+      accountType: 'liability',
+      accountSubType: { $in: ['long_term_debt', 'bonds_payable', 'notes_payable'] },
+      isActive: true
+    });
+
+    for (const account of debtAccounts) {
+      const startBalance = await this._getAccountBalanceAtDate(account._id, startDate);
+      const endBalance = await this._getAccountBalanceAtDate(account._id, endDate);
+      const change = endBalance - startBalance;
+      
+      if (Math.abs(change) > 0.01) {
+        if (change > 0) {
+          items.push({ 
+            description: `Proceeds from ${account.accountName}`, 
+            amount: Math.abs(change) // Borrowing provides cash
+          });
+        } else {
+          items.push({ 
+            description: `Repayment of ${account.accountName}`, 
+            amount: -Math.abs(change) // Repayment uses cash
+          });
+        }
+      }
+    }
+
+    // Get equity accounts
+    const equityAccounts = await ChartOfAccounts.find({
+      accountType: 'equity',
+      accountSubType: { $in: ['common_stock', 'preferred_stock', 'additional_paid_in_capital'] },
+      isActive: true
+    });
+
+    for (const account of equityAccounts) {
+      const startBalance = await this._getAccountBalanceAtDate(account._id, startDate);
+      const endBalance = await this._getAccountBalanceAtDate(account._id, endDate);
+      const change = endBalance - startBalance;
+      
+      if (Math.abs(change) > 0.01) {
+        if (change > 0) {
+          items.push({ 
+            description: `Issuance of Stock`, 
+            amount: Math.abs(change) // Stock issuance provides cash
+          });
+        } else {
+          items.push({ 
+            description: `Stock Repurchase`, 
+            amount: -Math.abs(change) // Buyback uses cash
+          });
+        }
+      }
+    }
+
+    // Get dividends
+    const dividendAccounts = await ChartOfAccounts.find({
+      accountType: 'equity',
+      accountName: { $regex: /dividend/i },
+      isActive: true
+    });
+
+    for (const account of dividendAccounts) {
+      const entries = await GeneralLedger.find({
+        account: account._id,
+        entryDate: { $gte: startDate, $lte: endDate }
+      });
+      const amount = entries.reduce((sum, entry) => sum + entry.debit - entry.credit, 0);
+      if (Math.abs(amount) > 0.01) {
+        items.push({ 
+          description: `Dividends Paid`, 
+          amount: -Math.abs(amount) // Dividends use cash
+        });
+      }
+    }
+
     const total = items.reduce((sum, item) => sum + item.amount, 0);
 
     return { items, total };
+  }
+
+  /**
+   * Helper: Get account balance at a specific date
+   */
+  static async _getAccountBalanceAtDate(accountId, asOfDate) {
+    const account = await ChartOfAccounts.findById(accountId);
+    if (!account) return 0;
+
+    const entries = await GeneralLedger.find({
+      account: accountId,
+      entryDate: { $lte: asOfDate }
+    });
+
+    const debitSum = entries.reduce((sum, entry) => sum + entry.debit, 0);
+    const creditSum = entries.reduce((sum, entry) => sum + entry.credit, 0);
+
+    if (account.normalBalance === 'debit') {
+      return debitSum - creditSum;
+    } else {
+      return creditSum - debitSum;
+    }
   }
 
   /**

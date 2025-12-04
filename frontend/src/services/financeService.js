@@ -247,7 +247,7 @@ export const financeService = {
   // Get cash flow statement
   getCashFlowStatement: (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    return apiCall(`/financial-reports/cash-flow${queryString ? '?' + queryString : ''}`);
+    return apiCall(`/financial-reports/cash-flow-statement${queryString ? '?' + queryString : ''}`);
   },
 
   // ==================== GENERAL LEDGER ====================

@@ -62,14 +62,29 @@ exports.getAllEmployees = async (req, res) => {
 // Get employee by ID
 exports.getEmployeeById = async (req, res) => {
   try {
-    const employee = await Employee.findById(req.params.id)
+    const id = req.params.id;
+    const employee = await Employee.findById(id)
       .populate('manager', 'firstName lastName employeeId position')
-      .populate('performance.reviewedBy', 'firstName lastName employeeId');
-      
+      .populate('performance.reviewedBy', 'firstName lastName employeeId')
+      .lean();
+
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
     }
-    
+
+    // Ensure we return raw arrays like documents/skills exactly as stored
+    const mongoose = require('mongoose');
+    const ObjectId = mongoose.Types.ObjectId;
+    const raw = await Employee.collection.findOne({ _id: new ObjectId(id) });
+    if (raw) {
+      if (Array.isArray(raw.documents)) employee.documents = raw.documents;
+      if (Array.isArray(raw.skills)) employee.skills = raw.skills;
+      if (raw.emergencyContact) employee.emergencyContact = raw.emergencyContact;
+      if (raw.benefits) employee.benefits = raw.benefits;
+      if (raw.leaveBalance) employee.leaveBalance = raw.leaveBalance;
+      if (typeof raw.notes !== 'undefined') employee.notes = raw.notes;
+    }
+
     res.json(employee);
   } catch (err) {
     console.error("Error fetching employee:", err);

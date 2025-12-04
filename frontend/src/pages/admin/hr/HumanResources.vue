@@ -52,6 +52,8 @@ const selectedDepartment = ref('');
 const selectedStatus = ref('');
 const searchQuery = ref('');
 const showEmployeeModal = ref(false);
+const showEmployeeViewModal = ref(false);
+const selectedEmployee = ref(null);
 const editingEmployee = ref(null);
 const currentPage = ref(1);
 const itemsPerPage = ref(20);
@@ -415,6 +417,42 @@ const closeEmployeeModal = () => {
   editingEmployee.value = null;
 };
 
+// View-only employee modal handlers
+const fetchEmployeeById = async (id) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.get(`${API_URL}/hr/employees/${id}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    return res.data;
+  } catch (err) {
+    console.error('Error fetching employee by id:', err);
+    handleAuthError(err);
+    throw err;
+  }
+};
+
+const openEmployeeView = async (employee) => {
+  try {
+    // Optimistically show existing row data immediately
+    selectedEmployee.value = employee;
+    showEmployeeViewModal.value = true;
+
+    // Then fetch the latest detail and merge
+    const full = await fetchEmployeeById(employee._id);
+    // Merge to preserve reactivity and keep any fields already present
+    selectedEmployee.value = { ...selectedEmployee.value, ...full };
+  } catch (e) {
+    console.error('Failed to open employee view', e);
+    alert('Failed to open employee view');
+  }
+};
+
+const closeEmployeeView = () => {
+  showEmployeeViewModal.value = false;
+  selectedEmployee.value = null;
+};
+
 const saveEmployee = async () => {
   try {
     // Clear any previous errors
@@ -534,6 +572,16 @@ const formatDate = (date) => {
   });
 };
 
+const formatAddress = (addr) => {
+  if (!addr) return '';
+  const parts = [];
+  if (addr.street) parts.push(addr.street);
+  const cityStateZip = [addr.city, addr.state, addr.zipCode].filter(Boolean).join(', ');
+  if (cityStateZip) parts.push(cityStateZip);
+  if (addr.country) parts.push(addr.country);
+  return parts.join(', ');
+};
+
 const getStatusClass = (status) => {
   return statusOptions.find(opt => opt.value === status)?.class || 'bg-gray-100 text-gray-800';
 };
@@ -647,11 +695,11 @@ const deleteDocument = async (documentId) => {
   }
 };
 
-const downloadDocument = async (documentId, documentName) => {
+const downloadDocument = async (employeeId, documentId, documentName) => {
   try {
     const token = localStorage.getItem("token");
     const response = await axios.get(
-      `${API_URL}/hr/employees/${editingEmployee.value._id}/documents/${documentId}/download`,
+      `${API_URL}/hr/employees/${employeeId}/documents/${documentId}/download`,
       {
         headers: { "Authorization": `Bearer ${token}` },
         responseType: 'blob'
@@ -1342,7 +1390,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                                 </div>
                                 <div class="flex items-center gap-2">
                                   <button 
-                                    @click="downloadDocument(doc._id, doc.name)" 
+                                    @click="downloadDocument(editingEmployee._id, doc._id, doc.name)" 
                                     type="button"
                                     class="p-2 text-blue-600 hover:bg-blue-50 rounded">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1415,6 +1463,157 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                     </div>
                   </div>
 
+                  <!-- Employee View Modal -->
+                  <div v-if="showEmployeeViewModal"
+                       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                       @click="closeEmployeeView">
+                    <div class="bg-white rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto" @click.stop>
+                      <div class="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 class="text-xl font-bold text-gray-900">
+                            {{ selectedEmployee?.firstName }} {{ selectedEmployee?.lastName }}
+                          </h3>
+                          <div class="mt-1 flex items-center gap-2 text-sm">
+                            <span class="text-gray-500">ID: {{ selectedEmployee?.employeeId }}</span>
+                            <span :class="['px-2 py-0.5 rounded-full text-xs', getStatusClass(selectedEmployee?.status)]">
+                              {{ statusOptions.find(s => s.value === selectedEmployee?.status)?.label || selectedEmployee?.status }}
+                            </span>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <button @click="() => { closeEmployeeView(); openEmployeeModal(selectedEmployee); }" class="btn btn-primary">Edit</button>
+                          <button @click="closeEmployeeView" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Contact -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                          <h4 class="text-sm font-semibold text-gray-700 mb-2">Contact</h4>
+                          <div class="text-sm text-gray-700 space-y-1">
+                            <div><span class="text-gray-500">Email:</span> {{ selectedEmployee?.email }}</div>
+                            <div v-if="selectedEmployee?.phone"><span class="text-gray-500">Phone:</span> {{ selectedEmployee?.phone }}</div>
+                            <div v-if="selectedEmployee?.address"><span class="text-gray-500">Address:</span> {{ formatAddress(selectedEmployee?.address) }}</div>
+                          </div>
+                        </div>
+
+                        <!-- Employment -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                          <h4 class="text-sm font-semibold text-gray-700 mb-2">Employment</h4>
+                          <div class="text-sm text-gray-700 space-y-1">
+                            <div><span class="text-gray-500">Department:</span> {{ departments.find(d => d.value === selectedEmployee?.department)?.label || selectedEmployee?.department }}</div>
+                            <div><span class="text-gray-500">Position:</span> {{ selectedEmployee?.position }}</div>
+                            <div><span class="text-gray-500">Type:</span> {{ employmentTypes.find(t => t.value === selectedEmployee?.employmentType)?.label || selectedEmployee?.employmentType }}</div>
+                            <div v-if="selectedEmployee?.manager"><span class="text-gray-500">Manager:</span> {{ selectedEmployee?.manager?.firstName }} {{ selectedEmployee?.manager?.lastName }}</div>
+                          </div>
+                        </div>
+
+                        <!-- Dates & Compensation -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                          <h4 class="text-sm font-semibold text-gray-700 mb-2">Dates & Compensation</h4>
+                          <div class="text-sm text-gray-700 space-y-1">
+                            <div><span class="text-gray-500">Start Date:</span> {{ formatDate(selectedEmployee?.startDate) }}</div>
+                            <div v-if="selectedEmployee?.endDate"><span class="text-gray-500">End Date:</span> {{ formatDate(selectedEmployee?.endDate) }}</div>
+                            <div><span class="text-gray-500">Salary:</span> {{ formatCurrency(selectedEmployee?.salary?.amount) }} ({{ selectedEmployee?.salary?.currency }})</div>
+                            <div><span class="text-gray-500">Pay Frequency:</span> {{ payFrequencies.find(p => p.value === selectedEmployee?.salary?.payFrequency)?.label || selectedEmployee?.salary?.payFrequency }}</div>
+                          </div>
+                        </div>
+
+                        <!-- Address moved into Contact section -->
+
+                        <!-- Skills -->
+                        <div class="border border-gray-200 rounded-lg p-4 md:col-span-2" v-if="selectedEmployee?.skills?.length">
+                          <h4 class="text-sm font-semibold text-gray-700 mb-2">Skills</h4>
+                          <div class="flex flex-wrap gap-2">
+                            <span v-for="(skill, idx) in selectedEmployee?.skills" :key="idx" class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">{{ skill }}</span>
+                          </div>
+                        </div>
+
+                        <!-- Documents -->
+                        <div class="border border-gray-200 rounded-lg p-4 md:col-span-2" v-if="selectedEmployee?.documents?.length">
+                          <h4 class="text-sm font-semibold text-gray-700 mb-2">Documents</h4>
+                          <div class="space-y-2">
+                            <div v-for="doc in selectedEmployee.documents" :key="doc._id" class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                              <div class="min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">{{ doc.name }}</p>
+                                <div class="flex items-center gap-2 text-xs text-gray-500">
+                                  <span class="px-2 py-0.5 bg-gray-100 rounded">{{ documentTypes.find(t => t.value === doc.type)?.label || doc.type }}</span>
+                                  <span>{{ formatDate(doc.uploadDate) }}</span>
+                                </div>
+                              </div>
+                              <button @click="downloadDocument(selectedEmployee._id, doc._id, doc.name)" class="p-2 text-blue-600 hover:bg-blue-50 rounded">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Emergency Contact -->
+                        <div class="border border-gray-200 rounded-lg p-4" v-if="selectedEmployee?.emergencyContact">
+                          <h4 class="text-sm font-semibold text-gray-700 mb-2">Emergency Contact</h4>
+                          <div class="text-sm text-gray-700 space-y-1">
+                            <div v-if="selectedEmployee?.emergencyContact?.name"><span class="text-gray-500">Name:</span> {{ selectedEmployee?.emergencyContact?.name }}</div>
+                            <div v-if="selectedEmployee?.emergencyContact?.relationship"><span class="text-gray-500">Relationship:</span> {{ selectedEmployee?.emergencyContact?.relationship }}</div>
+                            <div v-if="selectedEmployee?.emergencyContact?.phone"><span class="text-gray-500">Phone:</span> {{ selectedEmployee?.emergencyContact?.phone }}</div>
+                            <div v-if="selectedEmployee?.emergencyContact?.email"><span class="text-gray-500">Email:</span> {{ selectedEmployee?.emergencyContact?.email }}</div>
+                          </div>
+                        </div>
+
+                        <!-- Benefits -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                          <h4 class="text-sm font-semibold text-gray-700 mb-2">Benefits</h4>
+                          <div class="flex flex-wrap gap-2 text-xs">
+                            <span :class="['px-2 py-1 rounded-full', selectedEmployee?.benefits?.healthInsurance ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600']">Health Insurance</span>
+                            <span :class="['px-2 py-1 rounded-full', selectedEmployee?.benefits?.dentalInsurance ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600']">Dental Insurance</span>
+                            <span :class="['px-2 py-1 rounded-full', selectedEmployee?.benefits?.retirementPlan ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600']">Retirement Plan</span>
+                            <span :class="['px-2 py-1 rounded-full', selectedEmployee?.benefits?.lifeInsurance ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600']">Life Insurance</span>
+                          </div>
+                        </div>
+
+                        <!-- Leave Balance -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                          <h4 class="text-sm font-semibold text-gray-700 mb-2">Leave Balance</h4>
+                          <div class="text-sm text-gray-700 grid grid-cols-3 gap-2">
+                            <div><span class="text-gray-500">Vacation:</span> {{ selectedEmployee?.leaveBalance?.vacation ?? 0 }}</div>
+                            <div><span class="text-gray-500">Sick:</span> {{ selectedEmployee?.leaveBalance?.sick ?? 0 }}</div>
+                            <div><span class="text-gray-500">Personal:</span> {{ selectedEmployee?.leaveBalance?.personal ?? 0 }}</div>
+                          </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="border border-gray-200 rounded-lg p-4 md:col-span-2" v-if="selectedEmployee?.notes">
+                          <h4 class="text-sm font-semibold text-gray-700 mb-2">Notes</h4>
+                          <p class="text-sm text-gray-700 whitespace-pre-line">{{ selectedEmployee?.notes }}</p>
+                        </div>
+
+                        <!-- Performance Reviews -->
+                        <div class="border border-gray-200 rounded-lg p-4 md:col-span-2" v-if="selectedEmployee?.performance?.length">
+                          <h4 class="text-sm font-semibold text-gray-700 mb-2">Recent Performance Reviews</h4>
+                          <div class="space-y-2">
+                            <div v-for="(rev, idx) in selectedEmployee?.performance?.slice().reverse().slice(0,3)" :key="idx" class="p-3 border rounded-lg">
+                              <div class="flex justify-between text-sm">
+                                <div><span class="text-gray-500">Rating:</span> <span :class="rev.rating >= 4 ? 'text-green-600' : rev.rating >= 3 ? 'text-yellow-600' : 'text-red-600'">{{ rev.rating }}/5</span></div>
+                                <div class="text-gray-500">{{ formatDate(rev.reviewDate) }}</div>
+                              </div>
+                              <div v-if="rev.comments" class="text-sm text-gray-700 mt-1">{{ rev.comments }}</div>
+                              <div v-if="rev.reviewedBy" class="text-xs text-gray-500 mt-1">Reviewed by: {{ rev.reviewedBy?.firstName }} {{ rev.reviewedBy?.lastName }}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="mt-4 flex justify-end gap-2">
+                        <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg" @click="closeEmployeeView">Close</button>
+                      </div>
+                    </div>
+                  </div>
+
                   <!-- Employee Management Header -->
                   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div class="flex flex-col md:flex-row gap-4">
@@ -1481,7 +1680,7 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                           </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                          <tr v-for="employee in filteredEmployees" :key="employee._id" class="hover:bg-gray-50">
+                          <tr v-for="employee in filteredEmployees" :key="employee._id" class="hover:bg-gray-50 cursor-pointer" @click="openEmployeeView(employee)">
                             <td class="px-6 py-4 whitespace-nowrap">
                               <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
@@ -1544,11 +1743,11 @@ watch([selectedDepartment, selectedStatus, currentPage], fetchEmployees);
                               <div class="text-sm text-gray-900">{{ formatDate(employee.startDate) }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <button @click="openEmployeeModal(employee)"
+                              <button @click.stop="openEmployeeModal(employee)"
                                 class="text-indigo-600 hover:text-indigo-900 mr-3">
                                 Edit
                               </button>
-                              <button @click="deleteEmployee(employee._id)" class="text-red-600 hover:text-red-900">
+                              <button @click.stop="deleteEmployee(employee._id)" class="text-red-600 hover:text-red-900">
                                 Delete
                               </button>
                             </td>
