@@ -433,9 +433,21 @@ exports.pinProduct = async (req, res) => {
     // Populate the pinned products for response
     await livestream.populate('pinnedProducts.productId');
     
+    const activePinnedProducts = livestream.pinnedProducts.filter(pin => pin.isActive);
+    
+    // Broadcast pinned products update via WebSocket
+    const wsManager = req.app.locals.wsManager;
+    if (wsManager) {
+      await wsManager.broadcastPinnedProductsUpdate({
+        type: 'pinned_products_updated',
+        pinnedProducts: activePinnedProducts
+      });
+      console.log('📌 Broadcasted pinned products update via WebSocket');
+    }
+    
     res.json({
       message: 'Product pinned successfully',
-      pinnedProducts: livestream.pinnedProducts.filter(pin => pin.isActive)
+      pinnedProducts: activePinnedProducts
     });
   } catch (error) {
     console.error('Error pinning product:', error);
@@ -468,9 +480,21 @@ exports.unpinProduct = async (req, res) => {
     // Populate the pinned products for response
     await livestream.populate('pinnedProducts.productId');
     
+    const activePinnedProducts = livestream.pinnedProducts.filter(pin => pin.isActive);
+    
+    // Broadcast pinned products update via WebSocket
+    const wsManager = req.app.locals.wsManager;
+    if (wsManager) {
+      await wsManager.broadcastPinnedProductsUpdate({
+        type: 'pinned_products_updated',
+        pinnedProducts: activePinnedProducts
+      });
+      console.log('📌 Broadcasted pinned products update via WebSocket');
+    }
+    
     res.json({
       message: 'Product unpinned successfully',
-      pinnedProducts: livestream.pinnedProducts.filter(pin => pin.isActive)
+      pinnedProducts: activePinnedProducts
     });
   } catch (error) {
     console.error('Error unpinning product:', error);
@@ -537,11 +561,23 @@ exports.updatePinnedProductOrder = async (req, res) => {
     // Populate the pinned products for response
     await livestream.populate('pinnedProducts.productId');
     
+    const activePinnedProducts = livestream.pinnedProducts
+      .filter(pin => pin.isActive)
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+    
+    // Broadcast pinned products update via WebSocket
+    const wsManager = req.app.locals.wsManager;
+    if (wsManager) {
+      await wsManager.broadcastPinnedProductsUpdate({
+        type: 'pinned_products_updated',
+        pinnedProducts: activePinnedProducts
+      });
+      console.log('📌 Broadcasted pinned products update via WebSocket');
+    }
+    
     res.json({
       message: 'Pinned product order updated successfully',
-      pinnedProducts: livestream.pinnedProducts
-        .filter(pin => pin.isActive)
-        .sort((a, b) => a.displayOrder - b.displayOrder)
+      pinnedProducts: activePinnedProducts
     });
   } catch (error) {
     console.error('Error updating pinned product order:', error);
