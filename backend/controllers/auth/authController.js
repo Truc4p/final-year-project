@@ -1,6 +1,7 @@
 const User = require("../../models/auth/user");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
+const secretManager = require("../../services/secretManager");
 // const role = require("../middleware/role");
 
 const validAdminKey = "secret"; // Define secret admin key
@@ -39,7 +40,8 @@ exports.registerUser = async (req, res) => {
       },
     };
 
-    jwt.sign(payload, "secret", { expiresIn: "30d" }, (err, token) => {
+    const jwtSecret = await secretManager.getSecret('JWT_SECRET');
+    jwt.sign(payload, jwtSecret, { expiresIn: "30d" }, (err, token) => {
       if (err) throw err;
       res.json({ token });
     });
@@ -78,7 +80,8 @@ exports.loginUser = async (req, res) => {
       },
     };
 
-    jwt.sign(payload, "secret", { expiresIn: "30d" }, (err, token) => {
+    const jwtSecret = await secretManager.getSecret('JWT_SECRET');
+    jwt.sign(payload, jwtSecret, { expiresIn: "30d" }, (err, token) => {
       if (err) throw err;
       console.log("User role in backend:", user.role); // Debugging line to check the role
       res.json({ token, role: user.role, userId: user.id }); // Include role and userId in the response

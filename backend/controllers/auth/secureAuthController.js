@@ -75,21 +75,26 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log('❌ Login validation failed:', errors.array());
     return res.status(400).json({ errors: errors.array() });
   }
 
   const { username, password } = req.body;
+  console.log('🔐 Login attempt for username:', username);
 
   try {
     let user = await User.findOne({ username });
 
     if (!user) {
+      console.log('❌ User not found:', username);
       return res.status(400).json({ msg: "Invalid Credentials" });
     }
 
+    console.log('✅ User found:', username, 'Role:', user.role);
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
+      console.log('❌ Password mismatch for user:', username);
       return res.status(400).json({ msg: "Invalid Credentials" });
     }
 
