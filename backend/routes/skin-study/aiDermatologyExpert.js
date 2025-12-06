@@ -95,7 +95,7 @@ router.post('/transcribe', audioUpload.single('audio'), aiDermatologyExpertContr
 
 /**
  * POST /api/ai-dermatology-expert/text-to-speech
- * Convert text to speech using Google Cloud TTS
+ * Convert text to speech using gTTS (Google Translate Text-to-Speech)
  */
 router.post('/text-to-speech', aiDermatologyExpertController.textToSpeech);
 

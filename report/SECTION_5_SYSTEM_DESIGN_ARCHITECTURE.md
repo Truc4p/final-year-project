@@ -817,7 +817,7 @@ flowchart TD
     tts_option -->|Yes| convert_tts
     tts_option -->|No| show_sources
     
-    convert_tts[Convert Response to Speech using Google Cloud TTS]
+    convert_tts[Convert Response to Speech using gTTS]
     convert_tts --> play_audio
     play_audio[Play Audio Response]
     play_audio --> show_sources
@@ -852,7 +852,7 @@ flowchart TD
     style display_response fill:#dcedc8
 ```
 
-**Explanation:** This Activity Diagram illustrates the complete AI Dermatology Expert consultation workflow. Customers can choose between three input methods: text queries, voice input (transcribed via Gemini), or skin image uploads. For text queries, the system detects and translates the language if needed, then performs RAG (Retrieval-Augmented Generation) by querying the vector database containing dermatology knowledge. The retrieved context, along with conversation history, is passed to Google Gemini API to generate an expert response. For image analysis, customers upload a skin image with an optional description, and the system retrieves relevant dermatology knowledge before using Gemini Vision to analyze the image. After generating the response, the system saves the conversation to MongoDB and displays the AI response along with referenced knowledge sources. Customers can optionally enable text-to-speech to hear the response via Google Cloud TTS. Related skincare products are also displayed based on the consultation. The customer can continue the conversation with follow-up questions or end the session. This diagram demonstrates the integration of multiple AI services (Gemini for text generation and vision analysis, Google Cloud TTS for speech synthesis) with RAG-based knowledge retrieval to provide accurate, context-aware dermatology consultations.
+**Explanation:** This Activity Diagram illustrates the complete AI Dermatology Expert consultation workflow. Customers can choose between three input methods: text queries, voice input (transcribed via Gemini), or skin image uploads. For text queries, the system detects and translates the language if needed, then performs RAG (Retrieval-Augmented Generation) by querying the vector database containing dermatology knowledge. The retrieved context, along with conversation history, is passed to Google Gemini API to generate an expert response. For image analysis, customers upload a skin image with an optional description, and the system retrieves relevant dermatology knowledge before using Gemini Vision to analyze the image. After generating the response, the system saves the conversation to MongoDB and displays the AI response along with referenced knowledge sources. Customers can optionally enable text-to-speech to hear the response via gTTS (Google Translate Text-to-Speech). Related skincare products are also displayed based on the consultation. The customer can continue the conversation with follow-up questions or end the session. This diagram demonstrates the integration of multiple AI services (Gemini for text generation and vision analysis, gTTS for speech synthesis) with RAG-based knowledge retrieval to provide accurate, context-aware dermatology consultations.
 
 #### 4. Sequence Diagrams
 #### 4.1 Sequence Diagram – AI Chat with Product Recommendation

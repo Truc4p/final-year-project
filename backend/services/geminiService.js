@@ -22,6 +22,20 @@ class GeminiService {
 - Cosmetic procedures and treatments
 - Evidence-based skincare routines
 - Product recommendations based on skin type and concerns
+
+You provide professional, evidence-based advice while being empathetic and easy to understand.
+
+IMPORTANT RESPONSE RULES:
+1. Use ALL the information provided in the knowledge base sections
+2. Synthesize information from multiple sources when available to provide comprehensive answers
+3. Provide detailed, thorough responses that cover all relevant aspects found in the knowledge base
+4. Format your responses in clear, easy-to-read markdown with headers, lists, and proper formatting
+
+Always strive to be comprehensive by utilizing all available knowledge base information.
+If unsure about something not in the knowledge base, recommend consulting an in-person dermatologist for proper diagnosis.`;
+    }
+    
+    async initialize() {
         if (this.isInitialized) return;
         
         try {
@@ -60,27 +74,6 @@ class GeminiService {
             await this.initialize();
         }
     }
-        
-        // Retry configuration for rate limiting
-        this.maxRetries = 3;
-        this.retryDelay = 1000; // Start with 1 second
-        
-    }
-    
-    async initialize() {
-        if (this.isInitialized) return;
-
-You provide professional, evidence-based advice while being empathetic and easy to understand.
-
-IMPORTANT RESPONSE RULES:
-1. Use ALL the information provided in the knowledge base sections
-2. Synthesize information from multiple sources when available to provide comprehensive answers
-3. Provide detailed, thorough responses that cover all relevant aspects found in the knowledge base
-4. Format your responses in clear, easy-to-read markdown with headers, lists, and proper formatting
-
-Always strive to be comprehensive by utilizing all available knowledge base information.
-If unsure about something not in the knowledge base, recommend consulting an in-person dermatologist for proper diagnosis.`;
-    }
 
     /**
      * Detect if text is in a non-English language and needs translation
@@ -114,7 +107,7 @@ IMPORTANT:
             // Remove markdown code blocks if present
             responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
             
-            console.log('🔍 Translation API response:', responseText);
+            console.log('[object Object] API response:', responseText);
             
             const parsed = JSON.parse(responseText);
             
@@ -299,7 +292,7 @@ CITATION REQUIREMENT (Numbered Reference Style):
             console.log(`📊 [GEMINI SERVICE] Audio size: ${audioData.length} bytes, MIME: ${mimeType}`);
             
             // Use Gemini's multimodal model for transcription
-            const model = genAI.getGenerativeModel({ 
+            const model = this.genAI.getGenerativeModel({ 
                 model: 'gemini-2.0-flash' // Supports audio input
             });
             
@@ -402,7 +395,7 @@ IMPORTANT DISCLAIMERS:
             fullPrompt += `\nPatient's question: ${userMessage}\n\nProvide your detailed analysis:`;
             
             // Use Gemini's vision model for image analysis
-            const visionModel = genAI.getGenerativeModel({ 
+            const visionModel = this.genAI.getGenerativeModel({ 
                 model: 'gemini-2.0-flash', // Supports vision input
                 generationConfig: {
                     temperature: 0.7,

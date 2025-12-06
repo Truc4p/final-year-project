@@ -346,7 +346,7 @@ exports.transcribeAudio = async (req, res) => {
 };
 
 /**
- * @desc    Convert text to speech using Google Cloud TTS
+ * @desc    Convert text to speech using gTTS (Google Translate Text-to-Speech)
  * @route   POST /api/ai-dermatology-expert/text-to-speech
  * @access  Public
  */

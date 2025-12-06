@@ -40,3 +40,19 @@ $3
 DEL
 $85
 ai_dermatology:English:bXkgc2tpbiBnZXRzIG9pbHkgYnkgbm9vbg==:my skin gets oily by noon
+*2
+$6
+SELECT
+$1
+0
+*5
+$3
+SET
+$141
+ai_dermatology:English:d2hhdCBpcyB0aGUgcm9sZSBvZiBtYXRyaXggbWV0YWxsb3Byb3:what is the role of matrix metalloproteinases (mmps) in skin aging?
+$1686
+{"question":"What is the role of matrix metalloproteinases (MMPs) in skin aging?","response":"Matrix metalloproteinases (MMPs) play a significant role in skin aging [3]. Here's a breakdown of their involvement:\n\n*   **Degradation of Extracellular Matrix:** MMPs are proteolytic enzymes that degrade the extracellular matrix, including collagen, which leads to the characteristic changes seen in aged skin [2, 3].\n\n*   **UVR Exposure and MMPs:** Exposure to ultraviolet radiation (UVR) upregulates the production of MMPs [1, 3]. This occurs through a mechanism where UV exposure increases the amount of epidermal cytokines [1].\n\n*   **Mechanism of Action:** UV exposure activates inflammatory pathways, leading to the generation of reactive oxygen species (ROS) and proteolytic enzymes. ROS increase oxidative phosphorylation of cell surface receptors, activating transcription factors that stimulate the transcription of MMP genes in fibroblasts and keratinocytes, ultimately breaking down the dermal matrix [2].\n\n*   **Photoaging:** Long-term exposure to solar UVR induces MMPs without a parallel induction of tissue inhibitors of metalloproteinases, resulting in the degradation of collagen and accumulation of abnormal elastin, leading to solar elastosis [3]. UVA has a larger role in photoaging due to its deeper penetration into the dermis and the sensitivity of fibroblasts to UVA-induced MMPs [3].\n\n### References\n[1] Cosmeceuticals and Cosmetic Ingredients\n[2] Cosmetic Dermatology - Products and Procedures by Draelos, 2nd Edition (2016)\n[3] Textbook of Cosmetic Dermatology\n","images":[],"timestamp":"2025-12-06T12:25:29.630Z","language":"English","cached":true}
+$4
+PXAT
+$13
+1780575929632
