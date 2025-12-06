@@ -62,6 +62,9 @@ class TTSService {
             console.log('⏰ [TTS SERVICE] Start time:', new Date().toISOString());
             console.log('📝 [TTS SERVICE] Text length:', text.length);
             console.log('📁 [TTS SERVICE] Output path:', outputPath);
+            console.log('📄 [TTS SERVICE] RECEIVED TEXT:');
+            console.log('   "' + text + '"');
+            console.log('');
             
             // Use provided language code or detect from text
             const detectedLang = languageCode || this.detectLanguage(text);
@@ -72,6 +75,7 @@ class TTSService {
             await fs.mkdir(outputDir, { recursive: true });
             
             console.log(`🚀 [TTS SERVICE] Generating speech with gTTS (${detectedLang} voice)...`);
+            console.log(`🔍 [TTS SERVICE] gTTS will process this text as-is (gTTS may split internally if > 500 chars)`);
             
             // Create gTTS instance with detected language
             const gtts = gttsFactory(detectedLang);

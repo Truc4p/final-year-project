@@ -722,6 +722,10 @@ What would you like to know more about?`;
   const stripFormattingForSpeech = (text) => {
     if (!text) return '';
     
+    console.log('\n🔧 [stripFormattingForSpeech] ORIGINAL TEXT:');
+    console.log(text);
+    console.log('\n📏 [stripFormattingForSpeech] Original length:', text.length);
+    
     // Remove HTML tags
     let cleanText = text.replace(/<[^>]*>/g, ' ');
     
@@ -731,21 +735,190 @@ What would you like to know more about?`;
     // Remove markdown headers
     cleanText = cleanText.replace(/^#{1,6}\s+/gm, '');
     
-    // Remove bullet points and list markers
+    // Remove bullet points and list markers, but preserve line structure
     cleanText = cleanText.replace(/^[\*\-•]\s+/gm, '');
     cleanText = cleanText.replace(/^\d+\.\s+/gm, '');
     
-    // Remove extra whitespace
+    console.log('\n📝 [stripFormattingForSpeech] After removing formatting:');
+    console.log(cleanText);
+    
+    // CRITICAL FIX: The order of operations matters!
+    // We need to handle line breaks BEFORE adding other punctuation
+    
+    // 1. First, handle line breaks and convert them to periods (for section breaks)
+    cleanText = cleanText.replace(/\n\n+/g, '.\n'); // Double newlines become period + single newline
+    cleanText = cleanText.replace(/\n/g, '. '); // Remaining newlines become periods with space
+    
+    // 2. Add periods after reference markers [1], [2] for pauses
+    cleanText = cleanText.replace(/(\[\d+(?:,\s*\d+)*\])/g, '$1.');
+    
+    // 3. Replace colons with periods for clear pauses (headers/labels)
+    cleanText = cleanText.replace(/:/g, '.');
+    
+    // 4. Replace semicolons with periods (they deserve full stops)
+    cleanText = cleanText.replace(/;/g, '.');
+    
+    // 5. Clean up multiple periods BEFORE final spacing
+    cleanText = cleanText.replace(/\.{3,}/g, '...'); // preserve ellipsis
+    cleanText = cleanText.replace(/\.{2}(?!\.)/g, '.'); // remove double periods
+    
+    // 6. Ensure proper spacing after ALL punctuation
+    cleanText = cleanText.replace(/([.,!?])(?!\s)/g, '$1 ');
+    
+    // 7. Clean up multiple spaces
     cleanText = cleanText.replace(/\s+/g, ' ').trim();
+    
+    // 8. Final cleanup: remove any remaining problematic patterns
+    cleanText = cleanText.replace(/\.\s+\./g, '.'); // ". ." becomes "."
+    cleanText = cleanText.replace(/,\s*\./g, '.'); // ", ." becomes "."
+    
+    console.log('\n✅ [stripFormattingForSpeech] FINAL CLEANED TEXT:');
+    console.log(cleanText);
+    console.log('\n📏 [stripFormattingForSpeech] Final length:', cleanText.length);
+    console.log('\n' + '='.repeat(80) + '\n');
     
     return cleanText;
   };
 
   // Split text into sentences for faster TTS playback
+  // CRITICAL: gTTS has ~200-500 char limit and splits arbitrarily if exceeded
+  // We MUST split into proper sentences BEFORE sending to gTTS
   const splitIntoSentences = (text) => {
-    // Split by common sentence endings, but keep the punctuation
-    const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
-    return sentences.map(s => s.trim()).filter(s => s.length > 0);
+    if (!text) return [];
+    
+    // First, protect common abbreviations by temporarily replacing periods
+    let protectedText = text
+      // Common titles
+      .replace(/\b(Dr|Mr|Mrs|Ms|Prof|Sr|Jr)\./gi, '$1<PERIOD>')
+      // Common abbreviations
+      .replace(/\b(etc|vs|e\.g|i\.e|approx|min|max|no|dept|Fig|vol|pp|ed)\./gi, '$1<PERIOD>')
+      // Decimals - protect periods between numbers
+      .replace(/(\d+)\.(\d+)/g, '$1<PERIOD>$2')
+      // Citation numbers like [1], [2], [3]
+      .replace(/\[(\d+)\]/g, '<CITATION$1>')
+      // Ellipsis - treat as one unit
+      .replace(/\.\.\./g, '<ELLIPSIS>');
+    
+    let segments = [];
+    const MAX_SEGMENT_LENGTH = 400; // Keep well under gTTS limit for safety
+    
+    // Split by line breaks first to handle structure
+    const lines = protectedText.split(/\n+/);
+    
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) continue;
+      
+      // Check if line is a standalone reference marker
+      const isReferenceHeader = /^References?:?$/i.test(line);
+      const isReferenceItem = /^<CITATION\d+>/.test(line);
+      
+      if (isReferenceHeader) {
+        segments.push(line);
+        continue;
+      }
+      
+      if (isReferenceItem) {
+        segments.push(line);
+        continue;
+      }
+      
+      // Split by colons (headers/labels) - these need natural pauses
+      const colonMatch = line.match(/^([^:]+):\s*(.*)$/);
+      
+      if (colonMatch && colonMatch[1].length < 100) {
+        // It's a header/label
+        segments.push(colonMatch[1] + '.');  // Convert colon to period for natural pause
+        
+        if (colonMatch[2]) {
+          // Process the rest after the colon
+          const restSegments = splitBySentences(colonMatch[2], MAX_SEGMENT_LENGTH);
+          segments.push(...restSegments);
+        }
+      } else {
+        // Regular text - split by sentences
+        const textSegments = splitBySentences(line, MAX_SEGMENT_LENGTH);
+        segments.push(...textSegments);
+      }
+    }
+    
+    // Helper function to split by sentences
+    function splitBySentences(text, maxLength) {
+      const result = [];
+      
+      // Split on sentence-ending punctuation
+      const sentenceEndings = /([.!?]+)\s+/g;
+      let lastIndex = 0;
+      let match;
+      let currentChunk = '';
+      
+      const parts = text.split(sentenceEndings);
+      
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (!part) continue;
+        
+        // Check if this is punctuation or text
+        const isPunctuation = /^[.!?]+$/.test(part);
+        
+        if (!isPunctuation) {
+          // It's a sentence
+          const sentenceWithPunct = part + (parts[i + 1] || '');
+          
+          // If adding this would exceed limit, push current chunk first
+          if (currentChunk && (currentChunk.length + sentenceWithPunct.length > maxLength)) {
+            result.push(currentChunk.trim());
+            currentChunk = sentenceWithPunct;
+          } else {
+            currentChunk += (currentChunk ? ' ' : '') + sentenceWithPunct;
+          }
+          
+          // Skip the next part since we already used the punctuation
+          if (parts[i + 1] && /^[.!?]+$/.test(parts[i + 1])) {
+            i++;
+          }
+        }
+      }
+      
+      if (currentChunk.trim()) {
+        result.push(currentChunk.trim());
+      }
+      
+      // If no proper sentences found, split by commas or just use the whole text
+      if (result.length === 0 && text.length > maxLength) {
+        // Split by commas if too long
+        const commaParts = text.split(/,\s+/);
+        let chunk = '';
+        for (const part of commaParts) {
+          if (chunk && (chunk.length + part.length > maxLength)) {
+            result.push(chunk);
+            chunk = part;
+          } else {
+            chunk += (chunk ? ', ' : '') + part;
+          }
+        }
+        if (chunk) result.push(chunk);
+      } else if (result.length === 0) {
+        result.push(text);
+      }
+      
+      return result;
+    }
+    
+    // If no segments were found, return the whole text
+    if (segments.length === 0) {
+      segments = [protectedText];
+    }
+    
+    // Restore protected characters and clean up
+    segments = segments.map(s => 
+      s.replace(/<PERIOD>/g, '.')
+       .replace(/<ELLIPSIS>/g, '...')
+       .replace(/<CITATION(\d+)>/g, '[$1]')
+       .trim()
+    ).filter(s => s.length > 0);
+    
+    return segments;
   };
 
   // Use ref to track if playback should continue (avoids stale closure issues)
@@ -946,7 +1119,13 @@ What would you like to know more about?`;
 
       // Split into sentences for faster initial playback
       const sentences = splitIntoSentences(textToSpeak);
-      console.log('📄 [TTS] Split into', sentences.length, 'sentences');
+      console.log('\n📄 [TTS] Split into', sentences.length, 'segments/sentences');
+      console.log('\n🔍 [TTS] DETAILED SENTENCE BREAKDOWN:');
+      sentences.forEach((sentence, idx) => {
+        console.log(`\n  [${idx + 1}/${sentences.length}] Length: ${sentence.length} chars`);
+        console.log(`  Text: "${sentence}"`);
+      });
+      console.log('\n' + '='.repeat(80));
 
       // Set audio mode for playback
       await Audio.setAudioModeAsync({
@@ -966,12 +1145,16 @@ What would you like to know more about?`;
           break;
         }
 
-        console.log(`🔊 [TTS] Requesting sentence ${i + 1}/${sentences.length}`);
+        console.log(`\n🔊 [TTS] ========== REQUESTING SENTENCE ${i + 1}/${sentences.length} ==========`);
+        console.log(`📤 [TTS] Sending to backend:`);
+        console.log(`   Length: ${sentences[i].length} characters`);
+        console.log(`   Language: ${languageCode || 'auto-detect'}`);
+        console.log(`   Text: "${sentences[i]}"`);
         
         // Request TTS from backend with detected language
         const response = await liveChatService.textToSpeech(sentences[i], languageCode);
         
-        console.log(`✅ [TTS] Sentence ${i + 1} audio received`);
+        console.log(`✅ [TTS] Sentence ${i + 1} audio received (${response.audio.length} bytes)`);
 
         // Check again if user stopped during the request
         if (!playbackControlRef.current.shouldContinue || 
