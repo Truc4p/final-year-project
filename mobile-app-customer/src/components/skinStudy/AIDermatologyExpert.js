@@ -781,128 +781,52 @@ What would you like to know more about?`;
   };
 
   // Split text into sentences for faster TTS playback
-  // CRITICAL: gTTS has ~200-500 char limit and splits arbitrarily if exceeded
-  // We MUST split into proper sentences BEFORE sending to gTTS
+  // CRITICAL: gTTS internally splits text at ~200 chars, breaking mid-sentence
+  // Solution: Split at EVERY sentence boundary to give gTTS one sentence at a time
   const splitIntoSentences = (text) => {
     if (!text) return [];
+    
+    console.log('\n📐 [splitIntoSentences] Starting to split text...');
     
     // First, protect common abbreviations by temporarily replacing periods
     let protectedText = text
       // Common titles
       .replace(/\b(Dr|Mr|Mrs|Ms|Prof|Sr|Jr)\./gi, '$1<PERIOD>')
-      // Common abbreviations
+      // Common abbreviations  
       .replace(/\b(etc|vs|e\.g|i\.e|approx|min|max|no|dept|Fig|vol|pp|ed)\./gi, '$1<PERIOD>')
       // Decimals - protect periods between numbers
       .replace(/(\d+)\.(\d+)/g, '$1<PERIOD>$2')
-      // Citation numbers like [1], [2], [3]
-      .replace(/\[(\d+)\]/g, '<CITATION$1>')
       // Ellipsis - treat as one unit
       .replace(/\.\.\./g, '<ELLIPSIS>');
     
+    // Split at EVERY period, exclamation, or question mark
+    // This ensures each sentence goes to gTTS separately
+    const sentences = protectedText.split(/([.!?]+)\s+/);
+    
     let segments = [];
-    const MAX_SEGMENT_LENGTH = 400; // Keep well under gTTS limit for safety
     
-    // Split by line breaks first to handle structure
-    const lines = protectedText.split(/\n+/);
-    
-    for (let line of lines) {
-      line = line.trim();
-      if (!line) continue;
+    for (let i = 0; i < sentences.length; i++) {
+      const part = sentences[i];
+      if (!part || !part.trim()) continue;
       
-      // Check if line is a standalone reference marker
-      const isReferenceHeader = /^References?:?$/i.test(line);
-      const isReferenceItem = /^<CITATION\d+>/.test(line);
+      // Check if this is punctuation
+      const isPunctuation = /^[.!?]+$/.test(part);
       
-      if (isReferenceHeader) {
-        segments.push(line);
-        continue;
-      }
-      
-      if (isReferenceItem) {
-        segments.push(line);
-        continue;
-      }
-      
-      // Split by colons (headers/labels) - these need natural pauses
-      const colonMatch = line.match(/^([^:]+):\s*(.*)$/);
-      
-      if (colonMatch && colonMatch[1].length < 100) {
-        // It's a header/label
-        segments.push(colonMatch[1] + '.');  // Convert colon to period for natural pause
+      if (!isPunctuation) {
+        // It's a sentence - combine with following punctuation if exists
+        const nextPart = sentences[i + 1];
+        const hasPunctuation = nextPart && /^[.!?]+$/.test(nextPart);
         
-        if (colonMatch[2]) {
-          // Process the rest after the colon
-          const restSegments = splitBySentences(colonMatch[2], MAX_SEGMENT_LENGTH);
-          segments.push(...restSegments);
+        let sentence = part.trim();
+        if (hasPunctuation) {
+          sentence += nextPart;
+          i++; // Skip the punctuation part in next iteration
         }
-      } else {
-        // Regular text - split by sentences
-        const textSegments = splitBySentences(line, MAX_SEGMENT_LENGTH);
-        segments.push(...textSegments);
-      }
-    }
-    
-    // Helper function to split by sentences
-    function splitBySentences(text, maxLength) {
-      const result = [];
-      
-      // Split on sentence-ending punctuation
-      const sentenceEndings = /([.!?]+)\s+/g;
-      let lastIndex = 0;
-      let match;
-      let currentChunk = '';
-      
-      const parts = text.split(sentenceEndings);
-      
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i];
-        if (!part) continue;
         
-        // Check if this is punctuation or text
-        const isPunctuation = /^[.!?]+$/.test(part);
-        
-        if (!isPunctuation) {
-          // It's a sentence
-          const sentenceWithPunct = part + (parts[i + 1] || '');
-          
-          // If adding this would exceed limit, push current chunk first
-          if (currentChunk && (currentChunk.length + sentenceWithPunct.length > maxLength)) {
-            result.push(currentChunk.trim());
-            currentChunk = sentenceWithPunct;
-          } else {
-            currentChunk += (currentChunk ? ' ' : '') + sentenceWithPunct;
-          }
-          
-          // Skip the next part since we already used the punctuation
-          if (parts[i + 1] && /^[.!?]+$/.test(parts[i + 1])) {
-            i++;
-          }
+        if (sentence) {
+          segments.push(sentence);
         }
       }
-      
-      if (currentChunk.trim()) {
-        result.push(currentChunk.trim());
-      }
-      
-      // If no proper sentences found, split by commas or just use the whole text
-      if (result.length === 0 && text.length > maxLength) {
-        // Split by commas if too long
-        const commaParts = text.split(/,\s+/);
-        let chunk = '';
-        for (const part of commaParts) {
-          if (chunk && (chunk.length + part.length > maxLength)) {
-            result.push(chunk);
-            chunk = part;
-          } else {
-            chunk += (chunk ? ', ' : '') + part;
-          }
-        }
-        if (chunk) result.push(chunk);
-      } else if (result.length === 0) {
-        result.push(text);
-      }
-      
-      return result;
     }
     
     // If no segments were found, return the whole text
@@ -914,9 +838,13 @@ What would you like to know more about?`;
     segments = segments.map(s => 
       s.replace(/<PERIOD>/g, '.')
        .replace(/<ELLIPSIS>/g, '...')
-       .replace(/<CITATION(\d+)>/g, '[$1]')
        .trim()
     ).filter(s => s.length > 0);
+    
+    console.log(`\n✅ [splitIntoSentences] Split into ${segments.length} sentences`);
+    segments.forEach((seg, idx) => {
+      console.log(`   [${idx + 1}] ${seg.length} chars: "${seg.substring(0, 60)}${seg.length > 60 ? '...' : ''}"`);
+    });
     
     return segments;
   };
