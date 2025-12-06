@@ -375,6 +375,10 @@ const LiveChatAI = ({ navigation, route }) => {
   const cleanTextForSpeech = (text) => {
     if (!text) return '';
     
+    console.log('\n🔧 [cleanTextForSpeech] ORIGINAL TEXT:');
+    console.log(text);
+    console.log('\n📏 [cleanTextForSpeech] Original length:', text.length);
+    
     let cleanText = text;
     
     // Remove source citations like [1], [2], [3], [1,2], [1-3], [10], etc.
@@ -393,20 +397,105 @@ const LiveChatAI = ({ navigation, route }) => {
     cleanText = cleanText.replace(/^[\*\-•]\s+/gm, '');
     cleanText = cleanText.replace(/^\d+\.\s+/gm, '');
     
-    // Remove extra whitespace
+    console.log('\n📝 [cleanTextForSpeech] After removing formatting:');
+    console.log(cleanText);
+    
+    // CRITICAL FIX: Handle punctuation to create natural pauses for gTTS
+    
+    // 1. Handle line breaks first - convert to periods for section breaks
+    cleanText = cleanText.replace(/\n\n+/g, '.\n'); // Double newlines become period + single newline
+    cleanText = cleanText.replace(/\n/g, '. '); // Remaining newlines become periods with space
+    
+    // 2. Replace colons with periods for clear pauses (headers/labels)
+    cleanText = cleanText.replace(/:/g, '.');
+    
+    // 3. Replace semicolons with periods
+    cleanText = cleanText.replace(/;/g, '.');
+    
+    // 4. Clean up multiple periods
+    cleanText = cleanText.replace(/\.{3,}/g, '...'); // preserve ellipsis
+    cleanText = cleanText.replace(/\.{2}(?!\.)/g, '.'); // remove double periods
+    
+    // 5. Ensure proper spacing after punctuation
+    cleanText = cleanText.replace(/([.,!?])(?!\s)/g, '$1 ');
+    
+    // 6. Clean up multiple spaces
     cleanText = cleanText.replace(/\s+/g, ' ').trim();
+    
+    // 7. Final cleanup
+    cleanText = cleanText.replace(/\.\s+\./g, '.'); // ". ." becomes "."
+    cleanText = cleanText.replace(/,\s*\./g, '.'); // ", ." becomes "."
+    
+    console.log('\n✅ [cleanTextForSpeech] FINAL CLEANED TEXT:');
+    console.log(cleanText);
+    console.log('\n📏 [cleanTextForSpeech] Final length:', cleanText.length);
+    console.log('\n' + '='.repeat(80) + '\n');
     
     return cleanText;
   };
 
   // Split text into sentences for faster TTS streaming
+  // CRITICAL: gTTS internally splits at ~200 chars, breaking mid-sentence
+  // Solution: Split at EVERY sentence boundary to give gTTS one sentence at a time
   const splitIntoSentences = (text) => {
+    if (!text) return [];
+    
+    console.log('\n📐 [splitIntoSentences] Starting to split text...');
+    
     // Clean the text first
     const cleanedText = cleanTextForSpeech(text);
     
-    // Split by common sentence endings, but keep the punctuation
-    const sentences = cleanedText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [cleanedText];
-    return sentences.map(s => s.trim()).filter(s => s.length > 0);
+    // Protect common abbreviations
+    let protectedText = cleanedText
+      .replace(/\b(Dr|Mr|Mrs|Ms|Prof|Sr|Jr)\./gi, '$1<PERIOD>')
+      .replace(/\b(etc|vs|e\.g|i\.e|approx|min|max|no|dept|Fig|vol|pp|ed)\./gi, '$1<PERIOD>')
+      .replace(/(\d+)\.(\d+)/g, '$1<PERIOD>$2')
+      .replace(/\.\.\./g, '<ELLIPSIS>');
+    
+    // Split at EVERY period, exclamation, or question mark
+    const sentences = protectedText.split(/([.!?]+)\s+/);
+    
+    let segments = [];
+    
+    for (let i = 0; i < sentences.length; i++) {
+      const part = sentences[i];
+      if (!part || !part.trim()) continue;
+      
+      const isPunctuation = /^[.!?]+$/.test(part);
+      
+      if (!isPunctuation) {
+        const nextPart = sentences[i + 1];
+        const hasPunctuation = nextPart && /^[.!?]+$/.test(nextPart);
+        
+        let sentence = part.trim();
+        if (hasPunctuation) {
+          sentence += nextPart;
+          i++;
+        }
+        
+        if (sentence) {
+          segments.push(sentence);
+        }
+      }
+    }
+    
+    if (segments.length === 0) {
+      segments = [protectedText];
+    }
+    
+    // Restore protected characters
+    segments = segments.map(s => 
+      s.replace(/<PERIOD>/g, '.')
+       .replace(/<ELLIPSIS>/g, '...')
+       .trim()
+    ).filter(s => s.length > 0);
+    
+    console.log(`\n✅ [splitIntoSentences] Split into ${segments.length} sentences`);
+    segments.forEach((seg, idx) => {
+      console.log(`   [${idx + 1}] ${seg.length} chars: "${seg.substring(0, 60)}${seg.length > 60 ? '...' : ''}"`);
+    });
+    
+    return segments;
   };
 
   // Use ref to track if playback should continue

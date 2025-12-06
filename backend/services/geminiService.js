@@ -277,6 +277,9 @@ CITATION REQUIREMENT (Numbered Reference Style):
     async transcribeAudio(audioFilePath) {
         const startTime = Date.now();
         try {
+            // CRITICAL: Ensure Gemini is initialized before use
+            await this.ensureInitialized();
+            
             console.log('\n=== 🎤️ [GEMINI SERVICE] TRANSCRIPTION REQUEST ===');
             console.log('⏰ [GEMINI SERVICE] Start time:', new Date().toISOString());
             console.log('📁 [GEMINI SERVICE] Audio file:', audioFilePath);
