@@ -358,7 +358,7 @@ exports.textToSpeech = async (req, res) => {
         console.log('\n=== 🔊 [BACKEND] TEXT-TO-SPEECH REQUEST ===');
         console.log('⏰ [BACKEND] Request time:', new Date().toISOString());
         
-        const { text } = req.body;
+        const { text, languageCode } = req.body;
         
         if (!text || text.trim() === '') {
             console.error('❌ [BACKEND] No text provided');
@@ -366,6 +366,9 @@ exports.textToSpeech = async (req, res) => {
         }
         
         console.log('📝 [BACKEND] Text length:', text.length);
+        if (languageCode) {
+            console.log('🌍 [BACKEND] Language code provided:', languageCode);
+        }
         
         // Generate unique filename
         const timestamp = Date.now();
@@ -375,8 +378,8 @@ exports.textToSpeech = async (req, res) => {
         console.log('🚀 [BACKEND] Generating speech...');
         const ttsStartTime = Date.now();
         
-        // Generate speech
-        await ttsService.textToSpeech(text, outputPath);
+        // Generate speech (pass languageCode if provided from frontend)
+        await ttsService.textToSpeech(text, outputPath, languageCode);
         
         const ttsDuration = Date.now() - ttsStartTime;
         console.log(`✅ [BACKEND] Speech generated in ${ttsDuration}ms`);

@@ -370,10 +370,17 @@ const AIDermatologyExpert = ({ navigation }) => {
         console.log('📖 Sources used:', response.sources);
       }
 
+      // Extract detected language from performance data
+      const detectedLanguage = response._performance?.detectedLanguage;
+      if (detectedLanguage) {
+        console.log('🌍 Detected language:', detectedLanguage);
+      }
+
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: response.response,
         sources: response.sources,
+        detectedLanguage: detectedLanguage, // Store for TTS
         timestamp: new Date().toISOString()
       }]);
     } catch (error) {
@@ -748,6 +755,106 @@ What would you like to know more about?`;
     currentSound: null // Track the current sound object
   });
 
+  // Helper function to map language names to language codes
+  // Supports 50+ languages with fallback for unmapped languages
+  const mapLanguageNameToCode = (languageName) => {
+    if (!languageName) return null;
+    
+    // Comprehensive language map (50+ common languages)
+    const languageMap = {
+      // Major languages
+      'English': 'en',
+      'Spanish': 'es',
+      'French': 'fr',
+      'German': 'de',
+      'Italian': 'it',
+      'Portuguese': 'pt',
+      'Russian': 'ru',
+      'Chinese': 'zh',
+      'Japanese': 'ja',
+      'Korean': 'ko',
+      
+      // Asian languages
+      'Vietnamese': 'vi',
+      'Thai': 'th',
+      'Indonesian': 'id',
+      'Malay': 'ms',
+      'Tagalog': 'tl',
+      'Filipino': 'tl',
+      'Hindi': 'hi',
+      'Bengali': 'bn',
+      'Tamil': 'ta',
+      'Telugu': 'te',
+      'Urdu': 'ur',
+      'Burmese': 'my',
+      'Khmer': 'km',
+      'Lao': 'lo',
+      
+      // European languages
+      'Dutch': 'nl',
+      'Polish': 'pl',
+      'Swedish': 'sv',
+      'Norwegian': 'no',
+      'Danish': 'da',
+      'Finnish': 'fi',
+      'Greek': 'el',
+      'Turkish': 'tr',
+      'Czech': 'cs',
+      'Hungarian': 'hu',
+      'Romanian': 'ro',
+      'Ukrainian': 'uk',
+      'Bulgarian': 'bg',
+      'Croatian': 'hr',
+      'Serbian': 'sr',
+      'Slovak': 'sk',
+      
+      // Other major languages
+      'Arabic': 'ar',
+      'Hebrew': 'he',
+      'Persian': 'fa',
+      'Swahili': 'sw',
+      'Afrikaans': 'af'
+    };
+    
+    // Try exact match first
+    if (languageMap[languageName]) {
+      return languageMap[languageName];
+    }
+    
+    // Fallback: Try to convert language name to ISO code
+    // e.g., "Icelandic" -> "is", "Latvian" -> "lv"
+    // This handles unmapped languages gracefully
+    const lowerName = languageName.toLowerCase();
+    
+    // Common patterns for language codes
+    const fallbackMap = {
+      'icelandic': 'is',
+      'latvian': 'lv',
+      'lithuanian': 'lt',
+      'estonian': 'et',
+      'slovenian': 'sl',
+      'albanian': 'sq',
+      'macedonian': 'mk',
+      'bosnian': 'bs',
+      'catalan': 'ca',
+      'basque': 'eu',
+      'galician': 'gl',
+      'maltese': 'mt',
+      'welsh': 'cy',
+      'irish': 'ga',
+      'nepali': 'ne',
+      'sinhala': 'si',
+      'mongolian': 'mn',
+      'armenian': 'hy',
+      'georgian': 'ka',
+      'kazakh': 'kk',
+      'uzbek': 'uz',
+      'azerbaijani': 'az'
+    };
+    
+    return fallbackMap[lowerName] || null;
+  };
+
   // Text-to-speech functions using backend gTTS with sentence-by-sentence streaming
   const handleSpeak = useCallback(async (messageIndex) => {
     const message = messages[messageIndex];
@@ -827,6 +934,16 @@ What would you like to know more about?`;
       console.log('🔊 [TTS] Starting sentence-by-sentence playback');
       console.log('📝 [TTS] Text length:', textToSpeak.length);
 
+      // Get detected language from message for accurate TTS voice
+      const detectedLanguage = message.detectedLanguage;
+      const languageCode = mapLanguageNameToCode(detectedLanguage);
+      
+      if (languageCode) {
+        console.log('🌍 [TTS] Using detected language:', detectedLanguage, '→', languageCode);
+      } else {
+        console.log('🌍 [TTS] No language detected, will auto-detect');
+      }
+
       // Split into sentences for faster initial playback
       const sentences = splitIntoSentences(textToSpeak);
       console.log('📄 [TTS] Split into', sentences.length, 'sentences');
@@ -851,8 +968,8 @@ What would you like to know more about?`;
 
         console.log(`🔊 [TTS] Requesting sentence ${i + 1}/${sentences.length}`);
         
-        // Request TTS from backend
-        const response = await liveChatService.textToSpeech(sentences[i]);
+        // Request TTS from backend with detected language
+        const response = await liveChatService.textToSpeech(sentences[i], languageCode);
         
         console.log(`✅ [TTS] Sentence ${i + 1} audio received`);
 

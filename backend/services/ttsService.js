@@ -52,9 +52,10 @@ class TTSService {
      * Convert text to speech using gTTS (Google Translate TTS)
      * @param {string} text - Text to convert to speech
      * @param {string} outputPath - Path to save the audio file
+     * @param {string} languageCode - Optional language code (e.g., 'en', 'vi', 'zh'). If not provided, will auto-detect
      * @returns {Promise<string>} - Path to the generated audio file
      */
-    async textToSpeech(text, outputPath) {
+    async textToSpeech(text, outputPath, languageCode = null) {
         const startTime = Date.now();
         try {
             console.log('\n=== 🔊 [TTS SERVICE] TEXT-TO-SPEECH START ===');
@@ -62,9 +63,9 @@ class TTSService {
             console.log('📝 [TTS SERVICE] Text length:', text.length);
             console.log('📁 [TTS SERVICE] Output path:', outputPath);
             
-            // Detect language from text
-            const detectedLang = this.detectLanguage(text);
-            console.log('🌍 [TTS SERVICE] Detected language:', detectedLang);
+            // Use provided language code or detect from text
+            const detectedLang = languageCode || this.detectLanguage(text);
+            console.log('🌍 [TTS SERVICE] Language:', languageCode ? `${detectedLang} (provided)` : `${detectedLang} (detected)`);
             
             // Ensure output directory exists
             const outputDir = path.dirname(outputPath);

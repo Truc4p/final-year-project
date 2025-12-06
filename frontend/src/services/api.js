@@ -81,8 +81,11 @@ export const aiDermatologyService = {
     return response.data
   },
 
-  async textToSpeech(text) {
-    const response = await api.post('/api/ai-dermatology-expert/text-to-speech', { text })
+  async textToSpeech(text, languageCode = null) {
+    const response = await api.post('/api/ai-dermatology-expert/text-to-speech', { 
+      text,
+      languageCode // Optional: pass language code if known (e.g., from chat detection)
+    })
     return response.data
   }
 }

@@ -345,17 +345,23 @@ const LiveChatAI = ({ navigation, route }) => {
       const response = await liveChatService.chat(userMessage, newHistory);
       console.log('✅ AI response received:', response.response.substring(0, 100) + '...');
 
+      // Extract detected language from response
+      const detectedLanguage = response._performance?.detectedLanguage;
+      if (detectedLanguage) {
+        console.log('🌍 Detected language:', detectedLanguage);
+      }
+
       setIsProcessing(false);
 
-      // Add AI response to history
+      // Add AI response to history with detected language
       const fullHistory = [
         ...newHistory,
-        { role: 'assistant', content: response.response }
+        { role: 'assistant', content: response.response, detectedLanguage }
       ];
       setConversationHistory(fullHistory);
 
-      // Speak the AI response
-      await speakAIResponse(response.response);
+      // Speak the AI response with detected language
+      await speakAIResponse(response.response, detectedLanguage);
 
     } catch (error) {
       console.error('❌ Error getting AI response:', error);
@@ -409,10 +415,118 @@ const LiveChatAI = ({ navigation, route }) => {
     currentSound: null 
   });
 
-  const speakAIResponse = async (text) => {
+  // Helper function to map language names to language codes
+  // Supports 50+ languages with fallback for unmapped languages
+  const mapLanguageNameToCode = (languageName) => {
+    if (!languageName) return null;
+    
+    // Comprehensive language map (50+ common languages)
+    const languageMap = {
+      // Major languages
+      'English': 'en',
+      'Spanish': 'es',
+      'French': 'fr',
+      'German': 'de',
+      'Italian': 'it',
+      'Portuguese': 'pt',
+      'Russian': 'ru',
+      'Chinese': 'zh',
+      'Japanese': 'ja',
+      'Korean': 'ko',
+      
+      // Asian languages
+      'Vietnamese': 'vi',
+      'Thai': 'th',
+      'Indonesian': 'id',
+      'Malay': 'ms',
+      'Tagalog': 'tl',
+      'Filipino': 'tl',
+      'Hindi': 'hi',
+      'Bengali': 'bn',
+      'Tamil': 'ta',
+      'Telugu': 'te',
+      'Urdu': 'ur',
+      'Burmese': 'my',
+      'Khmer': 'km',
+      'Lao': 'lo',
+      
+      // European languages
+      'Dutch': 'nl',
+      'Polish': 'pl',
+      'Swedish': 'sv',
+      'Norwegian': 'no',
+      'Danish': 'da',
+      'Finnish': 'fi',
+      'Greek': 'el',
+      'Turkish': 'tr',
+      'Czech': 'cs',
+      'Hungarian': 'hu',
+      'Romanian': 'ro',
+      'Ukrainian': 'uk',
+      'Bulgarian': 'bg',
+      'Croatian': 'hr',
+      'Serbian': 'sr',
+      'Slovak': 'sk',
+      
+      // Other major languages
+      'Arabic': 'ar',
+      'Hebrew': 'he',
+      'Persian': 'fa',
+      'Swahili': 'sw',
+      'Afrikaans': 'af'
+    };
+    
+    // Try exact match first
+    if (languageMap[languageName]) {
+      return languageMap[languageName];
+    }
+    
+    // Fallback: Try to convert language name to ISO code
+    // e.g., "Icelandic" -> "is", "Latvian" -> "lv"
+    // This handles unmapped languages gracefully
+    const lowerName = languageName.toLowerCase();
+    
+    // Common patterns for language codes
+    const fallbackMap = {
+      'icelandic': 'is',
+      'latvian': 'lv',
+      'lithuanian': 'lt',
+      'estonian': 'et',
+      'slovenian': 'sl',
+      'albanian': 'sq',
+      'macedonian': 'mk',
+      'bosnian': 'bs',
+      'catalan': 'ca',
+      'basque': 'eu',
+      'galician': 'gl',
+      'maltese': 'mt',
+      'welsh': 'cy',
+      'irish': 'ga',
+      'nepali': 'ne',
+      'sinhala': 'si',
+      'mongolian': 'mn',
+      'armenian': 'hy',
+      'georgian': 'ka',
+      'kazakh': 'kk',
+      'uzbek': 'uz',
+      'azerbaijani': 'az'
+    };
+    
+    return fallbackMap[lowerName] || null;
+  };
+
+  const speakAIResponse = async (text, detectedLanguage = null) => {
     try {
       console.log('🔊 Speaking AI response with streaming...');
       console.log('📝 Text length:', text.length);
+      
+      // Get language code for TTS
+      const languageCode = mapLanguageNameToCode(detectedLanguage);
+      if (languageCode) {
+        console.log('🌍 Using detected language:', detectedLanguage, '→', languageCode);
+      } else {
+        console.log('🌍 No language detected, will auto-detect');
+      }
       
       // Stop any currently playing audio first
       playbackControlRef.current.shouldContinue = false;
@@ -476,8 +590,8 @@ const LiveChatAI = ({ navigation, route }) => {
 
         console.log(`🔊 Playing sentence ${i + 1}/${sentences.length}`);
         
-        // Request TTS from backend for this sentence
-        const ttsResponse = await liveChatService.textToSpeech(sentences[i]);
+        // Request TTS from backend for this sentence with detected language
+        const ttsResponse = await liveChatService.textToSpeech(sentences[i], languageCode);
         
         console.log(`✅ Sentence ${i + 1} audio received`);
 

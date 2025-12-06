@@ -134,15 +134,19 @@ export const liveChatService = {
   },
   
   // Text-to-speech endpoint
-  async textToSpeech(text) {
+  async textToSpeech(text, languageCode = null) {
     try {
       const startTime = Date.now();
       console.log('🔊 [FRONTEND] Starting TTS request at:', new Date().toISOString());
       console.log('📝 [FRONTEND] Text length:', text.length);
+      if (languageCode) {
+        console.log('🌍 [FRONTEND] Language code:', languageCode);
+      }
       console.log('🚀 [FRONTEND] API URL:', `${API_BASE_URL}/ai-dermatology-expert/text-to-speech`);
       
       const response = await api.post('/ai-dermatology-expert/text-to-speech', {
-        text
+        text,
+        languageCode
       }, {
         timeout: 60000 // 60 seconds for TTS
       });
