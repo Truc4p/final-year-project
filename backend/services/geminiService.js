@@ -43,7 +43,7 @@ If unsure about something not in the knowledge base, recommend consulting an in-
             this.genAI = new GoogleGenerativeAI(geminiApiKey);
             
             this.model = this.genAI.getGenerativeModel({ 
-                model: 'gemini-2.0-flash', // Using faster experimental model
+                model: 'gemini-2.5-flash', // Using faster experimental model
                 generationConfig: {
                     temperature: 0.7,  // Slightly reduced for faster, more focused responses
                     topP: 0.9,
@@ -54,7 +54,7 @@ If unsure about something not in the knowledge base, recommend consulting an in-
             
             // Translation model for non-English queries
             this.translationModel = this.genAI.getGenerativeModel({
-                model: 'gemini-2.0-flash',
+                model: 'gemini-2.5-flash',
                 generationConfig: {
                     temperature: 0.1, // Low temperature for accurate translation
                     maxOutputTokens: 500,
@@ -296,7 +296,7 @@ CITATION REQUIREMENT (Numbered Reference Style):
             
             // Use Gemini's multimodal model for transcription
             const model = this.genAI.getGenerativeModel({ 
-                model: 'gemini-2.0-flash' // Supports audio input
+                model: 'gemini-2.5-flash' // Supports audio input
             });
             
             const result = await model.generateContent([
@@ -399,7 +399,7 @@ IMPORTANT DISCLAIMERS:
             
             // Use Gemini's vision model for image analysis
             const visionModel = this.genAI.getGenerativeModel({ 
-                model: 'gemini-2.0-flash', // Supports vision input
+                model: 'gemini-2.5-flash', // Supports vision input
                 generationConfig: {
                     temperature: 0.7,
                     topP: 0.9,

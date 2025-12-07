@@ -3,6 +3,7 @@ import { createI18n } from 'vue-i18n';
 
 const messages = {
   en: {
+    subscriptionSuccess: 'Thank you for subscribing! You\'ll receive our latest updates.',
     ecommerce: 'E-commerce',
     memberSince: 'Member Since',
     accountStats: 'Account Stats',
@@ -242,6 +243,7 @@ const messages = {
     moveDown: 'Move Down'
   },
   vi: {
+    subscriptionSuccess: 'Cảm ơn bạn đã đăng ký! Bạn sẽ nhận được các cập nhật mới nhất của chúng tôi.',
     ecommerce: 'Thương mại điện tử',
     memberSince: 'Thành viên từ',
     accountStats: 'Thống kê tài khoản',
