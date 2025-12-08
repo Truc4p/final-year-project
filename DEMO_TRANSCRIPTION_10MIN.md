@@ -26,7 +26,7 @@
 
 click on a product to view product details. I'll add this to my cart. The cart updates in real-time. Let's proceed to checkout.
 
-At checkout, it already saved my address from previous order. The system integrates with secure payment gateway for online payment. After paying successfully, I receive an order confirmation email.
+At checkout, it already saved my address from previous order. Vnpay secure payment gateway is integrated for online payment. After paying successfully, I receive an order confirmation email.
 
 In account section, I can update my profile, view order history, check current order status or cancel order."
 
@@ -34,7 +34,7 @@ In account section, I can update my profile, view order history, check current o
 
 "Now, let's explore the AI Dermatology Expert that helps users with skin-related questions.
 
-Before we start, there's a clear disclaimer explaining that this is for informational purposes and not a replacement for professional medical advice. 
+there's a clear disclaimer explaining that this is for informational purposes and not a replacement for professional medical advice. 
 
 Users can click on sample questions to get started quickly.
 
@@ -54,19 +54,19 @@ Products featured in the stream can be added directly to cart. And if I miss a l
 
 "Now let me switch to an administrator account to show the management capabilities.
 
-In the e-commerce management section, admins have complete control. Here's the product management interface where I can add new products, edit existing ones, or remove items. Each product has detailed fields for descriptions, pricing, inventory, and images.
+In the e-commerce management section, Here's the product management interface where I can add new products, edit existing ones, or remove items. 
 
 The category management allows organizing products into logical groups. 
 
-In the orders section, I can view all customer orders, update their status, and process refunds if needed.
+In the orders section, I can view all customer orders, search orders, update their status
 
 User management shows all registered customers
 
-The analytics dashboard is particularly powerful - showing sales trends, revenue charts, popular products, and customer behavior patterns. These visualizations help make data-driven business decisions.
+The analytics dashboard shows sales trends, popular products, Low Stock Alert. These visualizations help make data-driven business decisions.
 
 Now let's explore the specialized business management modules:
 
-**Finance Management** - Let me navigate to the Finance dashboard. Here I see the financial overview with total revenue, expenses, net profit, and accounts receivable at a glance. 
+**Finance Management** - Finance dashboard shows the financial overview with total revenue, expenses, net income, and cash balance at a glance. 
 
 Let me click on 'Invoices' to see accounts receivable. I can create a new invoice by selecting a customer, adding line items with products or services, setting payment terms, and sending it. Each invoice tracks its status - draft, sent, paid, or overdue.
 

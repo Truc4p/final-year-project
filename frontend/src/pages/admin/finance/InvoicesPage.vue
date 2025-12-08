@@ -41,27 +41,35 @@
             <div class="space-y-3">
               <div v-for="(li, idx) in createForm.lineItems" :key="idx" class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
                 <div class="md:col-span-4">
-                  <input v-model="li.description" placeholder="Description" required class="w-full px-3 py-2 border rounded-lg" />
+                  <label class="block text-xs text-gray-600 mb-1">Description <span class="text-gray-500">(What you're selling)</span></label>
+                  <input v-model="li.description" placeholder="e.g., Web Development Services, Product A, Consulting Hours" required class="w-full px-3 py-2 border rounded-lg text-sm" title="Enter what product or service you're selling" />
                 </div>
                 <div class="md:col-span-2">
-                  <input v-model.number="li.quantity" type="number" min="1" placeholder="Qty" required class="w-full px-3 py-2 border rounded-lg" />
+                  <label class="block text-xs text-gray-600 mb-1">Quantity <span class="text-gray-500">(Units)</span></label>
+                  <input v-model.number="li.quantity" type="number" min="1" placeholder="e.g., 5, 10, 1" required class="w-full px-3 py-2 border rounded-lg text-sm" title="How many units of this item (e.g., 5 hours, 10 units)" />
                 </div>
                 <div class="md:col-span-2">
-                  <input v-model.number="li.unitPrice" type="number" min="0" step="0.01" placeholder="Unit Price" required class="w-full px-3 py-2 border rounded-lg" />
+                  <label class="block text-xs text-gray-600 mb-1">Unit Price <span class="text-gray-500">(Price per unit)</span></label>
+                  <input v-model.number="li.unitPrice" type="number" min="0" step="0.01" placeholder="e.g., 100, 50.50" required class="w-full px-3 py-2 border rounded-lg text-sm" title="Price per unit (e.g., $100 per hour, $50 per item). Calculation: Quantity × Unit Price = Line Subtotal" />
                 </div>
                 <div class="md:col-span-2">
-                  <input v-model.number="li.taxRate" type="number" min="0" max="100" step="0.01" placeholder="Tax %" class="w-full px-3 py-2 border rounded-lg" />
+                  <label class="block text-xs text-gray-600 mb-1">Tax Rate <span class="text-gray-500">(%)</span></label>
+                  <input v-model.number="li.taxRate" type="number" min="0" max="100" step="0.01" placeholder="e.g., 10, 5.5" class="w-full px-3 py-2 border rounded-lg text-sm" title="Tax percentage to apply to this line item (e.g., 10% sales tax). Calculation: Line Subtotal × Tax Rate % = Tax Amount" />
                 </div>
                 <div class="md:col-span-2">
-                  <select v-model="li.revenueAccount" required class="w-full px-3 py-2 border rounded-lg">
-                    <option value="" disabled>Revenue account</option>
+                  <label class="block text-xs text-gray-600 mb-1">Revenue Account</label>
+                  <select v-model="li.revenueAccount" required class="w-full px-3 py-2 border rounded-lg text-sm" title="Select the accounting category for this sale">
+                    <option value="" disabled>Select account</option>
                     <option v-for="a in revenueAccounts" :key="a._id" :value="a._id">
                       {{ a.accountCode }} - {{ a.accountName }}
                     </option>
                   </select>
                 </div>
                 <div class="md:col-span-12 flex justify-between">
-                  <div class="text-sm text-gray-600">Line total: ${{ lineTotal(li).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
+                  <div class="text-sm text-gray-600">
+                    <span class="font-medium">Line total:</span> ${{ lineTotal(li).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+                    <span class="text-xs text-gray-500 ml-2">(Qty × Unit Price + Tax)</span>
+                  </div>
                   <button type="button" @click="removeLineItem(idx)" class="text-red-600 hover:text-red-800 text-sm" v-if="createForm.lineItems.length > 1">Remove</button>
                 </div>
               </div>
@@ -71,12 +79,18 @@
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Shipping</label>
-              <input v-model.number="createForm.shippingCost" type="number" min="0" step="0.01" class="w-full px-3 py-2 border rounded-lg" />
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Shipping Cost
+              </label>
+              <input v-model.number="createForm.shippingCost" type="number" min="0" step="0.01" placeholder="e.g., 15.00" title="Enter the shipping or delivery cost for this invoice. This amount is added to the total (no tax applied here)." class="w-full px-3 py-2 border rounded-lg" />
+              <p class="text-xs text-gray-500 mt-1">If you charge for delivery, enter it here. This is added after Subtotal and Tax.</p>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Adjustments</label>
-              <input v-model.number="createForm.adjustments" type="number" step="0.01" class="w-full px-3 py-2 border rounded-lg" />
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Discounts or Extra Charges
+              </label>
+              <input v-model.number="createForm.adjustments" type="number" step="0.01" placeholder="e.g., -10 for discount, 25 for surcharge" title="Use a negative amount for discounts/credits and a positive amount for additional charges. Added directly to the total." class="w-full px-3 py-2 border rounded-lg" />
+              <p class="text-xs text-gray-500 mt-1">Use negative for discounts/credits, positive for extra charges.</p>
             </div>
             <div class="self-end text-right">
               <div class="text-sm text-gray-600">Subtotal: ${{ subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
