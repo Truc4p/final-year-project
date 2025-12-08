@@ -6,6 +6,12 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Build outputs
+dist/
+build/
+dist-ssr
+*.local
+
 # Environment variables
 .env
 .env.local
@@ -13,12 +19,6 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.test
-
-# Build outputs
-dist/
-build/
-dist-ssr
-*.local
 
 # OS generated files
 .DS_Store
