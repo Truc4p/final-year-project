@@ -115,3 +115,6 @@ jspm_packages/
 
 # Serverless directories
 .serverless
+
+# VS Code terminal auto-approve config
+@vscode-terminal-auto-approve-config.json
