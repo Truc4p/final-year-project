@@ -346,6 +346,8 @@ CITATION REQUIREMENT (Numbered Reference Style):
      * Analyze skin image and provide dermatological assessment
      */
     async analyzeSkinImage(imageFilePath, userMessage, ragContext, conversationHistory = []) {
+        await this.ensureInitialized();
+        
         const startTime = Date.now();
         try {
             console.log('\n=== 🖼️ [GEMINI SERVICE] SKIN IMAGE ANALYSIS REQUEST ===');
