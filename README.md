@@ -1,20 +1,25 @@
 # Wrencos - AI-Powered Beauty & Skincare E-Commerce Platform
+## Demo link 
+https://drive.google.com/drive/folders/1iwjvt8mkcu22mxydmO0PtbtB-T-rY-uD?usp=sharing
 
 ## 📋 Project Overview
 
 **Wrencos** is a comprehensive, multi-platform AI-powered e-commerce and customer engagement platform specifically designed for the beauty and skincare industry. The platform combines traditional e-commerce functionality with advanced AI features including a virtual dermatology expert, live streaming capabilities, and intelligent customer support.
 
 ### Key Features
-- [object Object] Platform** - Product catalog, shopping cart, checkout, and order management
+- 🛍️ **E-Commerce Platform** - Product catalog, shopping cart, checkout, and order management
 - 🤖 **AI Dermatology Expert** - Skin analysis, product recommendations, and skincare advice powered by Google Gemini AI
-- [object Object]-time product demonstrations and customer engagement
+- 📺 **Live Streaming** - Real-time product demonstrations and customer engagement
 - 💬 **AI Chat Support** - Intelligent customer support with RAG (Retrieval-Augmented Generation)
-- [object Object]** - Campaign management, templates, segmentation, and analytics
-- [object Object] insights and performance metrics
-- [object Object]d human resources management
-- [object Object] Management** - Cash flow tracking and financial analytics
-- [object Object]** - Native React Native apps for both admin and customer platforms
-- [object Object] Support** - Automatic language detection and translation
+- 📧 **Email Marketing** - Campaign management, templates, segmentation, and analytics
+- 📊 **Analytics Dashboard** - Business insights and performance metrics
+- 👥 **HR Management** - Comprehensive human resources management
+- 💰 **Finance Management** - Advanced accounting, invoicing, billing, and financial analytics
+- 💳 **Payment Integration** - VNPay payment gateway for Vietnamese market
+- 🔐 **Security & Secrets** - Encrypted secret management system
+- ⚡ **Performance** - Redis caching with semantic similarity matching
+- 📱 **Mobile Apps** - Native React Native apps for both admin and customer platforms
+- 🌐 **Multi-Language Support** - Automatic language detection and translation
 
 ---
 
@@ -25,13 +30,19 @@
 #### Backend
 - **Runtime**: Node.js with Express.js
 - **Database**: MongoDB (Atlas)
-- **AI/ML**: Google Generative AI (Gemini 2.0 Flash)
-- **Vector Database**: Qdrant (for RAG)
+- **AI/ML**: Google Generative AI (Gemini 2.0 Flash), LangChain
+- **Vector Database**: Qdrant (for RAG and semantic search)
+- **Caching**: Redis (with semantic similarity matching)
 - **Real-Time**: WebSocket (ws library)
 - **Authentication**: JWT (JSON Web Tokens)
+- **Payment Gateway**: VNPay (Vietnamese market)
+- **Live Streaming**: Agora SDK
 - **File Upload**: Multer
-- **Email**: Nodemailer
+- **Email**: Nodemailer with Gmail SMTP
+- **Security**: Helmet, bcryptjs, encrypted secret management
+- **Testing**: Jest with Supertest
 - **API Documentation**: Swagger/OpenAPI
+- **Utilities**: Moment.js, UUID, QRCode, PDF-Parse, node-gtts (Text-to-Speech)
 
 #### Frontend (Web)
 - **Framework**: Vue 3
@@ -41,12 +52,22 @@
 - **HTTP Client**: Axios
 - **Charts**: Chart.js with Vue-ChartJS
 - **Internationalization**: Vue-i18n
+- **Testing**: Vitest with Coverage
+- **PDF Generation**: jsPDF with html2canvas
+- **OCR**: Tesseract.js
+- **Spreadsheet**: xlsx (Excel import/export)
+- **Markdown**: Marked
+- **Authentication**: JWT-decode
 
 #### Mobile Apps
-- **Framework**: React Native with Expo
-- **Navigation**: React Navigation
+- **Framework**: React Native with Expo (~50.0.0)
+- **Navigation**: React Navigation (Bottom Tabs, Stack, Native Stack)
 - **State Management**: AsyncStorage
 - **Real-Time Communication**: Agora SDK (for live streaming)
+- **Media**: Expo AV, Expo Image Picker
+- **Accessibility**: Expo Speech (Text-to-Speech)
+- **UI**: React Native Vector Icons, React Native Gesture Handler
+- **HTML Rendering**: React Native Render HTML
 - **HTTP Client**: Axios
 
 ---
@@ -82,7 +103,13 @@ wrencos/
 │   ├── services/                     # External service integrations
 │   │   ├── geminiService.js          # Google Gemini AI integration
 │   │   ├── vectorService.js          # Qdrant vector DB integration
+│   │   ├── cacheService.js           # Redis caching with semantic similarity
+│   │   ├── secretManager.js          # Encrypted secret management
+│   │   ├── secretInitializer.js      # Secret initialization
 │   │   ├── emailService.js           # Email sending service
+│   │   ├── emailNotificationService.js # Email notifications
+│   │   ├── emailScheduler.js         # Scheduled email campaigns
+│   │   ├── financialReportService.js # Financial reporting
 │   │   └── ttsService.js             # Text-to-speech service
 │   ├── utils/                        # Utility functions
 │   ├── scripts/                      # Maintenance and utility scripts
@@ -185,14 +212,37 @@ ADMIN_KEY=secret
 # Google Gemini AI
 GEMINI_API_KEY=your_gemini_api_key
 
-# Qdrant Vector Database
+# RAG & Vector Database Configuration
+EMBEDDING_PROVIDER=gemini
 QDRANT_URL=http://localhost:6333
-QDRANT_API_KEY=your_qdrant_api_key
+# QDRANT_API_KEY=your_qdrant_api_key (only needed for Qdrant Cloud)
 
-# Email Service
-EMAIL_SERVICE=gmail
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASSWORD=your_app_password
+# Redis Cache
+REDIS_URL=redis://localhost:6379
+
+# Email Service (Gmail SMTP)
+# Instructions:
+# 1. Use your Gmail address
+# 2. Generate an App Password (not your regular password):
+#    - Go to Google Account settings
+#    - Security > 2-Step Verification (must be enabled)
+#    - App passwords > Select app: Mail > Generate password
+#    - Use the 16-character password here
+GMAIL_USER=your_email@gmail.com
+GMAIL_APP_PASSWORD=your_16_char_app_password
+COMPANY_NAME=Wrencos
+
+# VNPay Payment Gateway (Vietnam)
+VNP_TMN_CODE=your_vnpay_tmn_code
+VNP_HASH_SECRET=your_vnpay_hash_secret
+VNP_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+VNP_RETURN_URL=http://localhost:3000/payments/vnpay/return
+VNP_EXCHANGE_RATE=24000
+
+# Agora Live Streaming
+# Get these from: https://console.agora.io
+AGORA_APP_ID=your_agora_app_id
+AGORA_APP_CERTIFICATE=your_agora_app_certificate
 
 # Frontend URL
 FRONTEND_URL=http://localhost:5173
@@ -347,14 +397,27 @@ npm start
 ### 7. Finance Management
 
 **Models**:
-- `CashFlowTransaction` - Financial transactions
+- `ChartOfAccounts` - Account structure and hierarchy
+- `GeneralLedger` - Double-entry bookkeeping ledger
+- `JournalEntry` - Financial transactions journal
+- `CashFlowTransaction` - Cash flow tracking
 - `BusinessExpense` - Expense tracking
+- `Invoice` - Customer invoicing
+- `Bill` - Vendor bills and payables
+- `Customer` - Customer financial records
+- `Vendor` - Vendor/supplier management
+- `BankAccount` - Bank account management
 
 **Features**:
-- Cash flow tracking
-- Expense management
-- Financial reporting
-- Budget analysis
+- **Double-Entry Accounting**: Complete general ledger system
+- **Accounts Payable**: Bill management and vendor tracking
+- **Accounts Receivable**: Invoice generation and customer management
+- **Chart of Accounts**: Hierarchical account structure
+- **Cash Flow Tracking**: Real-time cash flow monitoring
+- **Financial Reports**: Balance sheet, income statement, cash flow reports
+- **Bank Reconciliation**: Bank account management and reconciliation
+- **Expense Management**: Comprehensive expense tracking and categorization
+- **Multi-Currency**: Support for currency conversion
 
 ### 8. HR Management
 
@@ -409,6 +472,11 @@ npm start
 - `PUT /orders/:id` - Update order
 - `DELETE /orders/:id` - Delete order
 
+### Payments
+- `POST /payments/vnpay/create` - Create VNPay payment URL
+- `GET /payments/vnpay/return` - VNPay return URL handler
+- `POST /payments/vnpay/ipn` - VNPay IPN (Instant Payment Notification)
+
 ### Chat
 - `GET /chat/conversations/:sessionId` - Get conversation
 - `POST /chat/message` - Send message
@@ -433,6 +501,23 @@ npm start
 - `GET /analytics/sales` - Sales analytics
 - `GET /analytics/products` - Product analytics
 - `GET /analytics/customers` - Customer analytics
+
+### Finance
+- `GET /finance/chart-of-accounts` - Get chart of accounts
+- `POST /finance/chart-of-accounts` - Create account
+- `GET /finance/general-ledger` - Get general ledger entries
+- `POST /finance/journal-entries` - Create journal entry
+- `GET /finance/invoices` - Get invoices
+- `POST /finance/invoices` - Create invoice
+- `GET /finance/bills` - Get bills
+- `POST /finance/bills` - Create bill
+- `GET /finance/customers` - Get customers
+- `GET /finance/vendors` - Get vendors
+- `GET /finance/bank-accounts` - Get bank accounts
+- `GET /finance/cash-flow` - Get cash flow transactions
+- `GET /finance/reports/balance-sheet` - Balance sheet report
+- `GET /finance/reports/income-statement` - Income statement
+- `GET /finance/reports/cash-flow` - Cash flow statement
 
 ### AI Dermatology Expert
 - `POST /api/ai-dermatology-expert/analyze-text` - Text-based consultation
@@ -601,8 +686,19 @@ npm start
 8. Keep functions small and focused
 
 ### Testing
-- Run tests: `npm test`
-- Test coverage: `npm run coverage`
+
+**Backend (Jest):**
+- Run all tests: `npm test`
+- Watch mode: `npm run test:watch`
+- Unit tests: `npm run test:unit`
+- Integration tests: `npm run test:integration`
+- Coverage report: `npm test` (coverage included by default)
+
+**Frontend (Vitest):**
+- Run tests: `npm run test`
+- Watch mode: `npm run test:watch`
+- UI mode: `npm run test:ui`
+- Coverage: `npm run test -- --coverage`
 
 ---
 
@@ -625,19 +721,29 @@ npm start
 
 ---
 
-##[object Object] Implemented Optimizations
+## ⚡ Performance & Optimization
+
+### Implemented Optimizations
 1. **Database Indexing**: Indexes on frequently queried fields
-2. **Caching**: In-memory caching for frequently accessed data
+2. **Redis Caching**: Multi-layer caching with semantic similarity matching
+   - Exact match cache for identical queries
+   - Semantic similarity cache (85% threshold) for similar queries
+   - Vector-based cache lookup using embeddings
+   - Automatic cache invalidation
 3. **Pagination**: Limit results to prevent large data transfers
 4. **Text Search**: MongoDB full-text search for product queries
 5. **Vector Search**: Qdrant for semantic search in RAG
 6. **Rate Limiting**: Express rate limiter to prevent abuse
 7. **Compression**: Gzip compression for API responses
+8. **Lazy Loading**: Redis client with lazy connection initialization
+9. **Connection Pooling**: MongoDB connection pooling for better performance
 
 ### Performance Monitoring
 - `backend/utils/performanceMonitor.js` - Tracks API performance metrics
 - Logs execution times for AI operations
 - Monitors database query performance
+- Redis cache hit/miss tracking
+- Semantic similarity matching performance metrics
 
 ---
 
@@ -645,11 +751,17 @@ npm start
 
 1. **Password Hashing**: bcryptjs with salt rounds
 2. **JWT Authentication**: Secure token-based auth
-3. **CORS**: Cross-Origin Resource Sharing configured
-4. **Rate Limiting**: Prevents brute force attacks
-5. **Input Validation**: Express-validator for input sanitization
-6. **Helmet**: Security headers middleware
-7. **Environment Variables**: Sensitive data in .env files
+3. **Secret Management**: Encrypted secret storage with AES-256-GCM
+   - Centralized secret management system
+   - Environment variable fallback
+   - CLI tool for secret management (`npm run secrets`)
+   - Automatic secret initialization
+4. **CORS**: Cross-Origin Resource Sharing configured
+5. **Rate Limiting**: Prevents brute force attacks
+6. **Input Validation**: Express-validator for input sanitization
+7. **Helmet**: Security headers middleware
+8. **Payment Security**: Secure VNPay integration with HMAC-SHA512
+9. **API Key Protection**: Encrypted storage for third-party API keys
 
 ---
 
@@ -667,7 +779,7 @@ To update API documentation:
 
 ---
 
-## [object Object]
+## 🔧 Troubleshooting
 
 **MongoDB Connection Error**
 - Check MongoDB Atlas connection string
@@ -679,6 +791,24 @@ To update API documentation:
 - Check API quota in Google Cloud Console
 - Consider upgrading API tier
 
+**Redis Connection Issues**
+- Ensure Redis is running: `redis-server`
+- Check Redis URL in environment variables
+- Verify Redis port (default: 6379)
+- Application continues to work without Redis (caching bypassed)
+
+**VNPay Payment Errors**
+- Verify VNP_TMN_CODE and VNP_HASH_SECRET
+- Check VNP_RETURN_URL matches your domain
+- Ensure proper HMAC-SHA512 signature generation
+- Test with sandbox environment first
+
+**Secret Management Issues**
+- Initialize secrets: `npm run secrets:init`
+- Check secret health: `npm run secrets:health`
+- Manage secrets via CLI: `npm run secrets`
+- Ensure .secrets.enc file permissions are correct
+
 **WebSocket Connection Issues**
 - Ensure WebSocket port is open
 - Check firewall settings
@@ -688,6 +818,12 @@ To update API documentation:
 - Check file size limits
 - Verify upload directory permissions
 - Ensure multer configuration is correct
+
+**Agora Live Streaming Issues**
+- Verify AGORA_APP_ID and AGORA_APP_CERTIFICATE
+- Check Agora project settings in console
+- Ensure proper token generation
+- Test with Agora demo first
 
 ---
 
@@ -739,7 +875,7 @@ This project is part of a Final Year Project (FYP) at the university.
 
 ---
 
-**Last Updated**: November 2024
+**Last Updated**: December 2024
 **Version**: 1.0.0
 **Status**: Active Development
 
