@@ -149,6 +149,13 @@ const routes = [
       { path: "social-media/posts/:id", component: () => import("@/pages/admin/social-media/CreatePost.vue") },
       { path: "social-media/calendar", component: () => import("@/pages/admin/social-media/Calendar.vue") },
 
+      // Referral Marketing Routes
+      { path: "referral", component: () => import("@/pages/admin/referral/Dashboard.vue") },
+      { path: "referral/programs", component: () => import("@/pages/admin/referral/Dashboard.vue") },
+      { path: "referral/programs/create", component: () => import("@/pages/admin/referral/ProgramBuilder.vue") },
+      { path: "referral/programs/:id/edit", component: () => import("@/pages/admin/referral/ProgramBuilder.vue") },
+      { path: "referral/leaderboard", component: () => import("@/pages/admin/referral/Leaderboard.vue") },
+
     ],
   },
 

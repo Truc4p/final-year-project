@@ -154,6 +154,20 @@
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Calendar
               </router-link>
+              <div class="border-t my-1"></div>
+              <div class="px-3 py-1 text-xs font-semibold text-gray-500 uppercase">Referral Marketing</div>
+              <router-link :to="{ path: '/admin/referral' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Dashboard
+              </router-link>
+              <router-link :to="{ path: '/admin/referral/programs' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Programs
+              </router-link>
+              <router-link :to="{ path: '/admin/referral/leaderboard' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Leaderboard
+              </router-link>
             </div>
           </div>
 

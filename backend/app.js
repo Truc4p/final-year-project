@@ -34,6 +34,10 @@ const socialMediaPostRoutes = require("./routes/marketing/socialMediaPostRoutes"
 const socialMediaAccountRoutes = require("./routes/marketing/socialMediaAccountRoutes");
 const postTemplateRoutes = require("./routes/marketing/postTemplateRoutes");
 const socialMediaAnalyticsRoutes = require("./routes/marketing/socialMediaAnalyticsRoutes");
+const referralProgramRoutes = require("./routes/marketing/referralProgramRoutes");
+const referralCodeRoutes = require("./routes/marketing/referralCodeRoutes");
+const referralRoutes = require("./routes/marketing/referralRoutes");
+const referralRewardRoutes = require("./routes/marketing/referralRewardRoutes");
 const aiDermatologyExpertRoutes = require("./routes/skin-study/aiDermatologyExpert");
 const { initializeSecrets } = require("./services/secretInitializer");
 const emailScheduler = require("./services/emailScheduler");
@@ -114,6 +118,10 @@ app.use("/social-media", socialMediaPostRoutes);
 app.use("/social-media", socialMediaAccountRoutes);
 app.use("/social-media", postTemplateRoutes);
 app.use("/social-media", socialMediaAnalyticsRoutes);
+app.use("/referral", referralProgramRoutes);
+app.use("/referral", referralCodeRoutes);
+app.use("/referral", referralRoutes);
+app.use("/referral", referralRewardRoutes);
 app.use("/api/ai-dermatology-expert", aiDermatologyExpertRoutes);
 
 // Define a route for the root URL
