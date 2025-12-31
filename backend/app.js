@@ -30,6 +30,10 @@ const newsletterRoutes = require("./routes/marketing/newsletterRoutes");
 const emailCampaignRoutes = require("./routes/marketing/emailCampaignRoutes");
 const emailTemplateRoutes = require("./routes/marketing/emailTemplateRoutes");
 const emailSegmentRoutes = require("./routes/marketing/emailSegmentRoutes");
+const socialMediaPostRoutes = require("./routes/marketing/socialMediaPostRoutes");
+const socialMediaAccountRoutes = require("./routes/marketing/socialMediaAccountRoutes");
+const postTemplateRoutes = require("./routes/marketing/postTemplateRoutes");
+const socialMediaAnalyticsRoutes = require("./routes/marketing/socialMediaAnalyticsRoutes");
 const aiDermatologyExpertRoutes = require("./routes/skin-study/aiDermatologyExpert");
 const { initializeSecrets } = require("./services/secretInitializer");
 const emailScheduler = require("./services/emailScheduler");
@@ -106,6 +110,10 @@ app.use("/newsletter", newsletterRoutes);
 app.use("/email-campaigns", emailCampaignRoutes);
 app.use("/email-templates", emailTemplateRoutes);
 app.use("/email-segments", emailSegmentRoutes);
+app.use("/social-media", socialMediaPostRoutes);
+app.use("/social-media", socialMediaAccountRoutes);
+app.use("/social-media", postTemplateRoutes);
+app.use("/social-media", socialMediaAnalyticsRoutes);
 app.use("/api/ai-dermatology-expert", aiDermatologyExpertRoutes);
 
 // Define a route for the root URL

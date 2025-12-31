@@ -142,6 +142,13 @@ const routes = [
       { path: "email-marketing/campaigns/create", component: () => import("@/pages/admin/email-marketing/CreateCampaign.vue") },
       { path: "email-marketing/analytics", component: () => import("@/pages/admin/email-marketing/Analytics.vue") },
 
+      // Social Media Marketing Routes
+      { path: "social-media", component: () => import("@/pages/admin/social-media/Dashboard.vue") },
+      { path: "social-media/accounts", component: () => import("@/pages/admin/social-media/Accounts.vue") },
+      { path: "social-media/posts/create", component: () => import("@/pages/admin/social-media/CreatePost.vue") },
+      { path: "social-media/posts/:id", component: () => import("@/pages/admin/social-media/CreatePost.vue") },
+      { path: "social-media/calendar", component: () => import("@/pages/admin/social-media/Calendar.vue") },
+
     ],
   },
 

@@ -108,7 +108,7 @@
             </div>
           </div>
 
-          <!-- Email Marketing Dropdown -->
+          <!-- Marketing Dropdown -->
           <div class="relative group">
             <div class="navbar-link flex items-center space-x-1 cursor-pointer">
               <span>{{ t('marketing') }}</span>
@@ -123,6 +123,7 @@
 
             <div
               class="absolute top-full left-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2">
+              <div class="px-3 py-1 text-xs font-semibold text-gray-500 uppercase">Email Marketing</div>
               <router-link :to="{ path: '/admin/email-marketing/subscribers' }"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Subscribers
@@ -137,7 +138,21 @@
               </router-link>
               <router-link :to="{ path: '/admin/email-marketing/analytics' }"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                Analytics
+                Email Analytics
+              </router-link>
+              <div class="border-t my-1"></div>
+              <div class="px-3 py-1 text-xs font-semibold text-gray-500 uppercase">Social Media</div>
+              <router-link :to="{ path: '/admin/social-media' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Posts
+              </router-link>
+              <router-link :to="{ path: '/admin/social-media/accounts' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Accounts
+              </router-link>
+              <router-link :to="{ path: '/admin/social-media/calendar' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Calendar
               </router-link>
             </div>
           </div>
