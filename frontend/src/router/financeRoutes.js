@@ -6,6 +6,12 @@ import BankAccountsPage from '../pages/admin/finance/BankAccountsPage.vue';
 import ChartOfAccountsPage from '../pages/admin/finance/ChartOfAccountsPage.vue';
 import FinancialReportsPage from '../pages/admin/finance/FinancialReportsPage.vue';
 import GeneralLedgerPage from '../pages/admin/finance/GeneralLedgerPage.vue';
+import BudgetsPage from '../pages/admin/finance/BudgetsPage.vue';
+import BudgetAnalysisPage from '../pages/admin/finance/BudgetAnalysisPage.vue';
+import ApprovalsPage from '../pages/admin/finance/ApprovalsPage.vue';
+import ApprovalDetailPage from '../pages/admin/finance/ApprovalDetailPage.vue';
+import CustomReportsPage from '../pages/admin/finance/CustomReportsPage.vue';
+import ReportViewerPage from '../pages/admin/finance/ReportViewerPage.vue';
 
 export const financeRoutes = [
   {
@@ -68,6 +74,60 @@ export const financeRoutes = [
     component: GeneralLedgerPage,
     meta: {
       title: 'General Ledger',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/budgets',
+    name: 'Budgets',
+    component: BudgetsPage,
+    meta: {
+      title: 'Budget Management',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/budgets/:id/analysis',
+    name: 'BudgetAnalysis',
+    component: BudgetAnalysisPage,
+    meta: {
+      title: 'Budget Analysis',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/approvals',
+    name: 'Approvals',
+    component: ApprovalsPage,
+    meta: {
+      title: 'Approval Workflows',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/approvals/:id',
+    name: 'ApprovalDetail',
+    component: ApprovalDetailPage,
+    meta: {
+      title: 'Approval Details',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/custom-reports',
+    name: 'CustomReports',
+    component: CustomReportsPage,
+    meta: {
+      title: 'Custom Reports',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/reports/:id/view',
+    name: 'ReportViewer',
+    component: ReportViewerPage,
+    meta: {
+      title: 'View Report',
       requiresAuth: true
     }
   }

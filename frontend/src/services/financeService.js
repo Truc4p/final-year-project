@@ -321,8 +321,255 @@ export const financeService = {
   testEmailConnection: (data) => apiCall('/api/finance/email-notifications/test', {
     method: 'POST',
     body: JSON.stringify(data)
-  })
-};
+  }),
 
-export default financeService;
+  // ===== BUDGET MANAGEMENT =====
+  
+  // Get all budgets
+  getBudgets: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/budgets${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get single budget
+  getBudget: (budgetId) => apiCall(`/api/finance/budgets/${budgetId}`),
+
+  // Create budget
+  createBudget: (data) => apiCall('/api/finance/budgets', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Update budget
+  updateBudget: (budgetId, data) => apiCall(`/api/finance/budgets/${budgetId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  // Delete budget
+  deleteBudget: (budgetId) => apiCall(`/api/finance/budgets/${budgetId}`, {
+    method: 'DELETE'
+  }),
+
+  // Approve budget
+  approveBudget: (budgetId) => apiCall(`/api/finance/budgets/${budgetId}/approve`, {
+    method: 'POST'
+  }),
+
+  // Update budget actuals
+  updateBudgetActuals: (budgetId) => apiCall(`/api/finance/budgets/${budgetId}/update-actuals`, {
+    method: 'POST'
+  }),
+
+  // Get budget analysis
+  getBudgetAnalysis: (budgetId) => apiCall(`/api/finance/budgets/${budgetId}/analysis`),
+
+  // Duplicate budget
+  duplicateBudget: (budgetId, data = {}) => apiCall(`/api/finance/budgets/${budgetId}/duplicate`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Close budget
+  closeBudget: (budgetId) => apiCall(`/api/finance/budgets/${budgetId}/close`, {
+    method: 'POST'
+  }),
+
+  // Compare budgets
+  compareBudgets: (budgetIds) => {
+    const queryString = new URLSearchParams({ budgetIds }).toString();
+    return apiCall(`/api/finance/budgets/compare?${queryString}`);
+  }
+,
+
+  // ==================== APPROVAL WORKFLOWS ====================
+
+  // Get all approvals
+  getApprovals: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/approvals${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get single approval with document details
+  getApproval: (id) => apiCall(`/api/finance/approvals/${id}`),
+
+  // Create approval workflow
+  createApproval: (data) => apiCall('/api/finance/approvals', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Approve step
+  approveStep: (approvalId, data) => apiCall(`/api/finance/approvals/${approvalId}/approve`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Reject approval
+  rejectApproval: (approvalId, data) => apiCall(`/api/finance/approvals/${approvalId}/reject`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Cancel approval
+  cancelApproval: (approvalId, data) => apiCall(`/api/finance/approvals/${approvalId}/cancel`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Escalate approval (admin only)
+  escalateApproval: (approvalId, data) => apiCall(`/api/finance/approvals/${approvalId}/escalate`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Reassign approval step (admin only)
+  reassignApproval: (approvalId, data) => apiCall(`/api/finance/approvals/${approvalId}/reassign`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Get approval statistics
+  getApprovalStats: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/approvals/stats${queryString ? '?' + queryString : ''}`);
+  },
+
+  // ==================== CUSTOM REPORTS ====================
+
+  // Get all reports
+  getReports: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/reports${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get single report
+  getReport: (id) => apiCall(`/api/finance/reports/${id}`),
+
+  // Create report
+  createReport: (data) => apiCall('/api/finance/reports', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Update report
+  updateReport: (id, data) => apiCall(`/api/finance/reports/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  // Delete report
+  deleteReport: (id) => apiCall(`/api/finance/reports/${id}`, {
+    method: 'DELETE'
+  }),
+
+  // Run report
+  runReport: (id) => apiCall(`/api/finance/reports/${id}/run`, {
+    method: 'POST'
+  }),
+
+  // Export report as PDF
+  exportReportPDF: (id) => apiCall(`/api/finance/reports/${id}/export/pdf`),
+
+  // Export report as Excel
+  exportReportExcel: (id) => apiCall(`/api/finance/reports/${id}/export/excel`),
+
+  // Duplicate report
+  duplicateReport: (id) => apiCall(`/api/finance/reports/${id}/duplicate`, {
+    method: 'POST'
+  }),
+
+  // Share report
+  shareReport: (id, data) => apiCall(`/api/finance/reports/${id}/share`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Get report templates
+  getReportTemplates: () => apiCall('/api/finance/reports/templates'),
+
+  // Get popular reports
+  getPopularReports: (limit = 10) => {
+    const queryString = new URLSearchParams({ limit }).toString();
+    return apiCall(`/api/finance/reports/popular?${queryString}`);
+  },
+
+  // ==================== TAX MANAGEMENT ====================
+
+  // Tax Rates
+  getTaxRates: (filters = {}) => {
+    const queryString = new URLSearchParams(filters).toString();
+    return apiCall(`/api/finance/tax/rates?${queryString}`);
+  },
+
+  getTaxRate: (id) => apiCall(`/api/finance/tax/rates/${id}`),
+
+  createTaxRate: (data) => apiCall('/api/finance/tax/rates', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  updateTaxRate: (id, data) => apiCall(`/api/finance/tax/rates/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  deleteTaxRate: (id) => apiCall(`/api/finance/tax/rates/${id}`, {
+    method: 'DELETE'
+  }),
+
+  getApplicableTaxRates: (criteria) => {
+    const queryString = new URLSearchParams(criteria).toString();
+    return apiCall(`/api/finance/tax/rates/applicable?${queryString}`);
+  },
+
+  // Tax Liabilities
+  getTaxLiabilities: (filters = {}) => {
+    const queryString = new URLSearchParams(filters).toString();
+    return apiCall(`/api/finance/tax/liabilities?${queryString}`);
+  },
+
+  getTaxLiability: (id) => apiCall(`/api/finance/tax/liabilities/${id}`),
+
+  createTaxLiability: (data) => apiCall('/api/finance/tax/liabilities', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  updateTaxLiability: (id, data) => apiCall(`/api/finance/tax/liabilities/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  deleteTaxLiability: (id) => apiCall(`/api/finance/tax/liabilities/${id}`, {
+    method: 'DELETE'
+  }),
+
+  calculateTaxLiability: (data) => apiCall('/api/finance/tax/liabilities/calculate', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  fileTaxLiability: (id) => apiCall(`/api/finance/tax/liabilities/${id}/file`, {
+    method: 'POST'
+  }),
+
+  addTaxPayment: (id, data) => apiCall(`/api/finance/tax/liabilities/${id}/payments`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  calculateTaxPenalties: (id, data = {}) => apiCall(`/api/finance/tax/liabilities/${id}/penalties`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  getTaxSummary: (params) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/tax/summary?${queryString}`);
+  },
+
+  getOverdueTaxLiabilities: () => apiCall('/api/finance/tax/liabilities/overdue')
+
+};
 
