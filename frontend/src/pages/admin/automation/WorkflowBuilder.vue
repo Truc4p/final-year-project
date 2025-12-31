@@ -87,6 +87,16 @@
                 <span class="text-sm font-medium">Delay</span>
               </div>
             </div>
+
+            <div draggable="true" @dragstart="startDrag($event, 'split')" 
+                 class="p-3 bg-accent/10 rounded-lg cursor-move hover:shadow-lg transition-shadow">
+              <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                <span class="text-sm font-medium">A/B Split</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -130,6 +140,7 @@
                 'bg-info text-info-content border-info': node.type === 'action',
                 'bg-warning text-warning-content border-warning': node.type === 'condition',
                 'bg-secondary text-secondary-content border-secondary': node.type === 'delay',
+                'bg-accent text-accent-content border-accent': node.type === 'split',
                 'bg-error text-error-content border-error': node.type === 'end',
                 'ring-4 ring-accent': selectedNode?.id === node.id
               }"
@@ -200,6 +211,40 @@
               <span class="label-text">SMS Message</span>
             </label>
             <textarea v-model="selectedNode.actionConfig.smsTemplate" class="textarea textarea-bordered" rows="3"></textarea>
+          </div>
+
+          <div v-if="selectedNode.actionType === 'send_push'" class="form-control">
+            <label class="label">
+              <span class="label-text">Push Title</span>
+            </label>
+            <input v-model="selectedNode.actionConfig.pushTemplate.title" type="text" placeholder="Notification title" class="input input-bordered input-sm mb-2" />
+            <label class="label">
+              <span class="label-text">Push Body</span>
+            </label>
+            <textarea v-model="selectedNode.actionConfig.pushTemplate.body" class="textarea textarea-bordered" rows="3"></textarea>
+          </div>
+
+          <div v-if="selectedNode.actionType === 'webhook'" class="form-control">
+            <label class="label">
+              <span class="label-text">Webhook URL</span>
+            </label>
+            <input v-model="selectedNode.actionConfig.webhookUrl" type="url" placeholder="https://..." class="input input-bordered input-sm" />
+          </div>
+        </div>
+
+        <!-- Split Settings -->
+        <div v-if="selectedNode.type === 'split'" class="space-y-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Split Percentage (Variant A)</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input v-model.number="selectedNode.splitPercentage" type="range" min="0" max="100" class="range range-primary" />
+              <span class="badge badge-primary">{{ selectedNode.splitPercentage }}%</span>
+            </div>
+            <label class="label">
+              <span class="label-text-alt">Variant B gets {{ 100 - selectedNode.splitPercentage }}%</span>
+            </label>
           </div>
         </div>
 
@@ -400,13 +445,17 @@ const addNode = (type, x, y) => {
     }
   } else if (type === 'action') {
     newNode.actionType = 'send_email';
-    newNode.actionConfig = {};
+    newNode.actionConfig = {
+      pushTemplate: { title: '', body: '' }
+    };
   } else if (type === 'condition') {
     newNode.conditionType = 'customer_property';
     newNode.conditionRules = [];
   } else if (type === 'delay') {
     newNode.delayDuration = 1;
     newNode.delayUnit = 'days';
+  } else if (type === 'split') {
+    newNode.splitPercentage = 50;
   }
 
   workflow.value.nodes.push(newNode);
@@ -440,6 +489,7 @@ const getNodeLabel = (node) => {
     action: 'Send Action',
     condition: 'Condition',
     delay: 'Wait',
+    split: 'A/B Split',
     end: 'End'
   };
   return labels[node.type] || node.type;
@@ -454,6 +504,9 @@ const getNodeDescription = (node) => {
   }
   if (node.type === 'delay') {
     return `Wait ${node.delayDuration} ${node.delayUnit}`;
+  if (node.type === 'split') {
+    return `${node.splitPercentage}% / ${100 - node.splitPercentage}%`;
+  }
   }
   return 'Click to configure';
 };

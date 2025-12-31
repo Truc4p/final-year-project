@@ -1,5 +1,8 @@
 const WorkflowExecution = require('../../models/marketing/workflowExecution');
 const Workflow = require('../../models/marketing/workflow');
+const smsService = require('../../services/smsService');
+const pushNotificationService = require('../../services/pushNotificationService');
+const axios = require('axios');
 
 // Get all executions
 exports.getExecutions = async (req, res) => {
@@ -268,6 +271,11 @@ async function executeWorkflow(executionId) {
         const nextNodeInfo = evaluateCondition(currentNode, execution.context, result.conditionResult);
         currentNode = workflow.nodes.find(n => n.id === nextNodeInfo.nodeId);
         execution.currentNode = nextNodeInfo.nodeId;
+      } else if (currentNode.type === 'split') {
+        // A/B testing split - determine path based on percentage
+        const nextNodeInfo = determineSplitPath(currentNode, execution);
+        currentNode = workflow.nodes.find(n => n.id === nextNodeInfo.nodeId);
+        execution.currentNode = nextNodeInfo.nodeId;
       } else {
         // Move to next node
         execution.currentNode = currentNode.nextNodes[0].nodeId;
@@ -315,18 +323,170 @@ async function executeNode(node, execution) {
 // Execute action node
 async function executeAction(node, execution) {
   try {
-    // Mock implementation - integrate with actual services
-    console.log(`Executing action: ${node.actionType} for customer ${execution.customer._id}`);
-    
-    // Simulate email/SMS/push sending
-    return {
-      success: true,
-      metadata: {
-        actionType: node.actionType,
-        timestamp: new Date()
+    const customer = execution.customer;
+    const actionType = node.actionType;
+    const config = node.actionConfig || {};
+
+    console.log(`Executing action: ${actionType} for customer ${customer._id}`);
+
+    switch (actionType) {
+      case 'send_email': {
+        // Email sending handled by existing email service
+        const EmailTemplate = require('../../models/marketing/emailTemplate');
+        const emailService = require('../../services/emailService');
+        
+        if (config.emailTemplate) {
+          const template = await EmailTemplate.findById(config.emailTemplate);
+          if (template && customer.email) {
+            await emailService.sendEmail({
+              to: customer.email,
+              subject: template.subject,
+              html: template.body,
+              variables: execution.context
+            });
+          }
+        }
+        
+        return {
+          success: true,
+          metadata: { actionType, recipient: customer.email, timestamp: new Date() }
+        };
       }
-    };
+
+      case 'send_sms': {
+        if (!customer.phone) {
+          return { success: false, error: 'Customer phone number not available' };
+        }
+
+        const result = await smsService.sendSMS({
+          to: customer.phone,
+          message: config.smsTemplate || '',
+          variables: {
+            name: customer.name,
+            ...execution.context
+          }
+        });
+
+        return {
+          success: result.success,
+          error: result.error,
+          metadata: { actionType, messageId: result.messageId, timestamp: new Date() }
+        };
+      }
+
+      case 'send_push': {
+        if (!customer.fcmToken) {
+          return { success: false, error: 'Customer FCM token not available' };
+        }
+
+        const pushConfig = config.pushTemplate || {};
+        const result = await pushNotificationService.sendToDevice({
+          token: customer.fcmToken,
+          title: pushConfig.title || 'Notification',
+          body: pushConfig.body || '',
+          data: execution.context,
+          variables: {
+            name: customer.name,
+            ...execution.context
+          }
+        });
+
+        return {
+          success: result.success,
+          error: result.error,
+          metadata: { actionType, messageId: result.messageId, timestamp: new Date() }
+        };
+      }
+
+      case 'webhook': {
+        if (!config.webhookUrl) {
+          return { success: false, error: 'Webhook URL not configured' };
+        }
+
+        const webhookData = {
+          customer: {
+            id: customer._id,
+            email: customer.email,
+            name: customer.name
+          },
+          workflow: {
+            id: execution.workflow._id,
+            name: execution.workflow.name
+          },
+          context: execution.context,
+          timestamp: new Date()
+        };
+
+        const result = await axios.post(config.webhookUrl, webhookData, {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'WrencOS-Automation/1.0'
+          }
+        });
+
+        return {
+          success: result.status >= 200 && result.status < 300,
+          metadata: { 
+            actionType, 
+            statusCode: result.status,
+            timestamp: new Date() 
+          }
+        };
+      }
+
+      case 'add_tag': {
+        const Customer = require('../../models/ecommerce/Customer');
+        if (config.tags && config.tags.length > 0) {
+          await Customer.findByIdAndUpdate(customer._id, {
+            $addToSet: { tags: { $each: config.tags } }
+          });
+        }
+        return {
+          success: true,
+          metadata: { actionType, tags: config.tags, timestamp: new Date() }
+        };
+      }
+
+      case 'remove_tag': {
+        const Customer = require('../../models/ecommerce/Customer');
+        if (config.tags && config.tags.length > 0) {
+          await Customer.findByIdAndUpdate(customer._id, {
+            $pull: { tags: { $in: config.tags } }
+          });
+        }
+        return {
+          success: true,
+          metadata: { actionType, tags: config.tags, timestamp: new Date() }
+        };
+      }
+
+      case 'update_field': {
+        const Customer = require('../../models/ecommerce/Customer');
+        if (config.field && config.value !== undefined) {
+          const updateData = { [config.field]: config.value };
+          await Customer.findByIdAndUpdate(customer._id, updateData);
+        }
+        return {
+          success: true,
+          metadata: { 
+            actionType, 
+            field: config.field, 
+            value: config.value, 
+            timestamp: new Date() 
+          }
+        };
+      }
+
+      default:
+        return {
+          success: false,
+          error: `Unknown action type: ${actionType}`
+        };
+    }
+
   } catch (error) {
+    console.error('Action execution error:', error);
     return {
       success: false,
       error: error.message
@@ -382,6 +542,32 @@ function evaluateRule(value, operator, compareValue) {
 function evaluateCondition(node, context, conditionResult) {
   const nextNode = node.nextNodes.find(n => n.condition === (conditionResult ? 'true' : 'false'));
   return nextNode || node.nextNodes[0];
+}
+
+// Determine split path for A/B testing
+function determineSplitPath(node, execution) {
+  // Use execution ID to generate consistent random path for same execution
+  const executionIdHash = execution._id.toString().split('').reduce((acc, char) => {
+    return acc + char.charCodeAt(0);
+  }, 0);
+  
+  const randomValue = (executionIdHash % 100);
+  const splitPercentage = node.splitPercentage || 50;
+  
+  // Find variant A and variant B paths
+  const variantA = node.nextNodes.find(n => n.condition === 'variantA');
+  const variantB = node.nextNodes.find(n => n.condition === 'variantB');
+  
+  // Determine which variant based on percentage
+  if (randomValue < splitPercentage) {
+    // Variant A
+    execution.context.variant = 'A';
+    return variantA || node.nextNodes[0];
+  } else {
+    // Variant B
+    execution.context.variant = 'B';
+    return variantB || node.nextNodes[1] || node.nextNodes[0];
+  }
 }
 
 // Calculate delay time

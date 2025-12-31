@@ -168,6 +168,42 @@
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 Leaderboard
               </router-link>
+              <div class="border-t my-1"></div>
+              <div class="px-3 py-1 text-xs font-semibold text-gray-500 uppercase">Marketing Automation</div>
+              <router-link :to="{ path: '/admin/automation' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Dashboard
+              </router-link>
+              <router-link :to="{ path: '/admin/automation/templates' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Templates
+              </router-link>
+              <div class="border-t my-1"></div>
+              <div class="px-3 py-1 text-xs font-semibold text-gray-500 uppercase">Retargeting Ads 🎯</div>
+              <router-link :to="{ path: '/admin/retargeting/dashboard' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Dashboard
+              </router-link>
+              <router-link :to="{ path: '/admin/retargeting/pixels' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Tracking Pixels
+              </router-link>
+              <router-link :to="{ path: '/admin/retargeting/audiences' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Audiences
+              </router-link>
+              <router-link :to="{ path: '/admin/retargeting/campaigns' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Campaigns
+              </router-link>
+              <router-link :to="{ path: '/admin/retargeting/platforms' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Platforms
+              </router-link>
+              <router-link :to="{ path: '/admin/retargeting/analytics' }"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Analytics
+              </router-link>
             </div>
           </div>
 
@@ -326,6 +362,68 @@
           </div>
         </div>
 
+        <!-- Marketing Automation Mobile Menu -->
+        <div class="py-2">
+          <button @click="automationMobileDropdownOpen = !automationMobileDropdownOpen"
+            class="w-full text-left navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 flex items-center justify-between">
+            <span>Marketing Automation</span>
+            <svg :class="{ 'rotate-180': automationMobileDropdownOpen }" class="w-4 h-4 transition-transform" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+
+          <div v-if="automationMobileDropdownOpen" class="ml-4 mt-2 space-y-1">
+            <router-link :to="{ path: '/admin/automation' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              Dashboard
+            </router-link>
+            <router-link :to="{ path: '/admin/automation/templates' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              Templates
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Retargeting Ads Mobile Menu -->
+        <div class="py-2">
+          <button @click="retargetingMobileDropdownOpen = !retargetingMobileDropdownOpen"
+            class="w-full text-left navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 flex items-center justify-between">
+            <span>Retargeting Ads 🎯</span>
+            <svg :class="{ 'rotate-180': retargetingMobileDropdownOpen }" class="w-4 h-4 transition-transform" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+
+          <div v-if="retargetingMobileDropdownOpen" class="ml-4 mt-2 space-y-1">
+            <router-link :to="{ path: '/admin/retargeting/dashboard' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              Dashboard
+            </router-link>
+            <router-link :to="{ path: '/admin/retargeting/pixels' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              Tracking Pixels
+            </router-link>
+            <router-link :to="{ path: '/admin/retargeting/audiences' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              Audiences
+            </router-link>
+            <router-link :to="{ path: '/admin/retargeting/campaigns' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              Campaigns
+            </router-link>
+            <router-link :to="{ path: '/admin/retargeting/platforms' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              Platforms
+            </router-link>
+            <router-link :to="{ path: '/admin/retargeting/analytics' }"
+              class="block navbar-link py-2 px-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200 text-sm">
+              Analytics
+            </router-link>
+          </div>
+        </div>
+
         <!-- Mobile Language Switcher -->
         <div class="pt-3 border-t border-secondary-200">
           <label class="block text-sm font-medium text-secondary-700 mb-2">{{ t('language') || 'Language' }}</label>
@@ -356,6 +454,8 @@ const currentLocale = ref(locale.value);
 const mobileMenuOpen = ref(false);
 const ecommerceMobileDropdownOpen = ref(false);
 const emailMobileDropdownOpen = ref(false);
+const automationMobileDropdownOpen = ref(false);
+const retargetingMobileDropdownOpen = ref(false);
 const financeMobileDropdownOpen = ref(false);
 
 const toggleMobileMenu = () => {

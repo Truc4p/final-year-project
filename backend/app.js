@@ -40,6 +40,7 @@ const referralRoutes = require("./routes/marketing/referralRoutes");
 const referralRewardRoutes = require("./routes/marketing/referralRewardRoutes");
 const workflowRoutes = require("./routes/marketing/workflowRoutes");
 const workflowExecutionRoutes = require("./routes/marketing/workflowExecutionRoutes");
+const retargetingRoutes = require("./routes/marketing/retargetingRoutes");
 const aiDermatologyExpertRoutes = require("./routes/skin-study/aiDermatologyExpert");
 const { initializeSecrets } = require("./services/secretInitializer");
 const emailScheduler = require("./services/emailScheduler");
@@ -127,6 +128,7 @@ app.use("/referral", referralRoutes);
 app.use("/referral", referralRewardRoutes);
 app.use("/automation", workflowRoutes);
 app.use("/automation", workflowExecutionRoutes);
+app.use("/api/marketing", retargetingRoutes);
 app.use("/api/ai-dermatology-expert", aiDermatologyExpertRoutes);
 
 // Define a route for the root URL

@@ -156,6 +156,23 @@ const routes = [
       { path: "referral/programs/:id/edit", component: () => import("@/pages/admin/referral/ProgramBuilder.vue") },
       { path: "referral/leaderboard", component: () => import("@/pages/admin/referral/Leaderboard.vue") },
 
+      // Marketing Automation Routes
+      { path: "automation", component: () => import("@/pages/admin/automation/Dashboard.vue") },
+      { path: "automation/workflows/create", component: () => import("@/pages/admin/automation/WorkflowBuilder.vue") },
+      { path: "automation/workflows/:id/edit", component: () => import("@/pages/admin/automation/WorkflowBuilder.vue") },
+      { path: "automation/templates", component: () => import("@/pages/admin/automation/Templates.vue") },
+
+      // Retargeting/Display Ads Routes
+      { path: "retargeting/dashboard", component: () => import("@/pages/admin/retargeting/Dashboard.vue") },
+      { path: "retargeting/pixels", component: () => import("@/pages/admin/retargeting/TrackingPixels.vue") },
+      { path: "retargeting/audiences", component: () => import("@/pages/admin/retargeting/Audiences.vue") },
+      { path: "retargeting/audiences/create", component: () => import("@/pages/admin/retargeting/AudienceBuilder.vue") },
+      { path: "retargeting/campaigns", component: () => import("@/pages/admin/retargeting/Campaigns.vue") },
+      { path: "retargeting/campaigns/create", component: () => import("@/pages/admin/retargeting/CampaignBuilder.vue") },
+      { path: "retargeting/campaigns/:id/edit", component: () => import("@/pages/admin/retargeting/CampaignBuilder.vue") },
+      { path: "retargeting/platforms", component: () => import("@/pages/admin/retargeting/Platforms.vue") },
+      { path: "retargeting/analytics", component: () => import("@/pages/admin/retargeting/Analytics.vue") },
+
     ],
   },
 

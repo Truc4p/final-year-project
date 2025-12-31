@@ -13,7 +13,8 @@
     "secrets": "node scripts/secretCLI.js",
     "secrets:init": "node -e \"require('./services/secretInitializer').initializeSecrets().then(() => process.exit(0)).catch(e => {console.error(e); process.exit(1)})\"",
     "secrets:health": "npm run secrets health",
-    "send-scheduled-emails": "node scripts/sendScheduledCampaigns.js"
+    "send-scheduled-emails": "node scripts/sendScheduledCampaigns.js",
+    "init-retargeting": "node scripts/initRetargetingAds.js"
   },
   "keywords": [],
   "author": "",
@@ -25,7 +26,7 @@
     "@langchain/google-genai": "^0.1.12",
     "@qdrant/js-client-rest": "^1.15.1",
     "agora-access-token": "^2.0.4",
-    "axios": "^1.12.2",
+    "axios": "^1.13.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
@@ -34,6 +35,8 @@
     "express": "^4.19.2",
     "express-rate-limit": "^7.4.0",
     "express-validator": "^7.1.0",
+    "firebase-admin": "^13.6.0",
+    "geoip-lite": "^1.4.10",
     "helmet": "^8.1.0",
     "imap": "^0.8.19",
     "jsonwebtoken": "^9.0.2",
@@ -53,6 +56,8 @@
     "redis": "^4.7.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "twilio": "^5.11.1",
+    "useragent": "^2.3.0",
     "uuid": "^13.0.0",
     "ws": "^8.18.3"
   },
