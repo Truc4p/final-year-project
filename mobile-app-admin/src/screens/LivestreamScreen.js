@@ -41,6 +41,7 @@ export default function LivestreamScreen({ navigation }) {
   const [streamDuration, setStreamDuration] = useState(0);
   const [viewerCount, setViewerCount] = useState(0);
   const [likes, setLikes] = useState(0);
+  const stoppingRef = useRef(false); // Guard against duplicate stop requests
 
   // Stream setup
   const [streamTitle, setStreamTitle] = useState('');
@@ -328,20 +329,31 @@ export default function LivestreamScreen({ navigation }) {
   };
 
   const stopStream = async () => {
+    // Prevent duplicate stop requests
+    if (stoppingRef.current) {
+      console.log('⏸️ Stop already in progress, skipping duplicate request');
+      return;
+    }
+    
+    if (!currentStreamId) {
+      console.log('⚠️ No active stream to stop');
+      return;
+    }
+    
+    stoppingRef.current = true;
+    
     try {
       // Stop livestream in backend
-      if (currentStreamId) {
-        await livestreamService.stopLivestream(currentStreamId, {
-          maxViewers: viewerCount,
-          viewCount: viewerCount,
-          likes,
-        });
+      await livestreamService.stopLivestream(currentStreamId, {
+        maxViewers: viewerCount,
+        viewCount: viewerCount,
+        likes,
+      });
 
-        // Notify via WebSocket
-        livestreamService.stopStream(currentStreamId);
-        
-        Alert.alert('Success', 'Livestream stopped!');
-      }
+      // Notify via WebSocket
+      livestreamService.stopStream(currentStreamId);
+      
+      Alert.alert('Success', 'Livestream stopped!');
 
       // Reset state
       setIsStreaming(false);
@@ -355,7 +367,24 @@ export default function LivestreamScreen({ navigation }) {
       setStreamDescription('');
     } catch (error) {
       console.error('Error stopping stream:', error);
-      Alert.alert('Error', 'Failed to stop livestream properly');
+      // Check if it's just an "already stopped" error
+      if (error.response?.data?.message?.includes('already stopped')) {
+        console.log('ℹ️ Stream was already stopped, continuing with cleanup');
+        // Still reset state even if already stopped
+        setIsStreaming(false);
+        setCurrentStreamId(null);
+        setStreamDuration(0);
+        setViewerCount(0);
+        setLikes(0);
+        setChatMessages([]);
+        setPinnedProducts([]);
+        setStreamTitle('');
+        setStreamDescription('');
+      } else {
+        Alert.alert('Error', 'Failed to stop livestream properly');
+      }
+    } finally {
+      stoppingRef.current = false;
     }
   };
 

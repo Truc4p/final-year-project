@@ -257,14 +257,22 @@ exports.stopLiveStream = async (req, res) => {
       return res.status(404).json({ message: 'Livestream not found' });
     }
 
+    // Make endpoint idempotent - if already stopped, return success with existing data
     if (!livestream.isActive) {
-      return res.status(400).json({ message: 'Livestream is not active' });
+      console.log(`ℹ️ Livestream ${id} already stopped, returning existing data`);
+      return res.json({
+        message: 'Livestream already stopped',
+        livestream
+      });
     }
 
     // Calculate duration
     const endTime = new Date();
     const duration = Math.floor((endTime - livestream.startTime) / 1000);
 
+    // Sync likes count from likedBy array length (source of truth)
+    const actualLikes = livestream.likedBy?.length || 0;
+    
     // Update livestream
     livestream.isActive = false;
     livestream.endTime = endTime;
@@ -272,11 +280,12 @@ exports.stopLiveStream = async (req, res) => {
     livestream.isRecorded = !!videoUrl;
     livestream.videoUrl = videoUrl || '';
     livestream.thumbnailUrl = thumbnailUrl || '';
-    livestream.maxViewers = maxViewers || livestream.maxViewers;
-    livestream.viewCount = viewCount || livestream.viewCount;
-    livestream.likes = likes || livestream.likes;
+    livestream.maxViewers = maxViewers !== undefined ? maxViewers : livestream.maxViewers;
+    livestream.viewCount = viewCount !== undefined ? viewCount : livestream.viewCount;
+    // Use actual likes from likedBy array instead of client-provided value
+    livestream.likes = actualLikes;
 
-    console.log(`💾 Saving livestream with final stats: viewCount=${livestream.viewCount}, likes=${livestream.likes}, maxViewers=${livestream.maxViewers}`);
+    console.log(`💾 Saving livestream with final stats: viewCount=${livestream.viewCount}, likes=${livestream.likes} (from ${livestream.likedBy?.length || 0} likedBy entries), maxViewers=${livestream.maxViewers}`);
 
     await livestream.save();
 
