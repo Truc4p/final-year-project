@@ -237,7 +237,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -305,18 +305,20 @@ const getPaymentStatusLabel = (paymentStatus) => {
   }
 };
 
-onMounted(async () => {
-  const orderId = route.params.id;
-  console.log('Fetching order with ID:', orderId); // Debugging log
+// Function to fetch order details
+const fetchOrderDetails = async (orderId) => {
+  console.log('Fetching order with ID:', orderId);
+  order.value = null; // Reset order to show loading state
+  
   try {
     const response = await axios.get(`${API_URL}/orders/order/${orderId}`, {
       headers: {
         'x-auth-token': localStorage.getItem('token'),
       },
     });
-    console.log('API response:', response.data); // Debugging log
-    console.log('User field:', response.data.user); // Debug user field specifically
-    console.log('User type:', typeof response.data.user); // Check if it's string or object
+    console.log('API response:', response.data);
+    console.log('User field:', response.data.user);
+    console.log('User type:', typeof response.data.user);
     order.value = response.data;
     
     // If user is just an ID string, fetch the user details
@@ -337,6 +339,21 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Error fetching order details:', error);
+  }
+};
+
+// Watch for route parameter changes
+watch(() => route.params.id, (newId) => {
+  if (newId) {
+    console.log('Route parameter changed to:', newId);
+    fetchOrderDetails(newId);
+  }
+});
+
+onMounted(() => {
+  const orderId = route.params.id;
+  if (orderId) {
+    fetchOrderDetails(orderId);
   }
 });
 </script>

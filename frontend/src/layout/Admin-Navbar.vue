@@ -142,6 +142,9 @@
             </div>
           </div>
 
+          <!-- Notification Bell -->
+          <NotificationBell />
+
           <!-- Language Switcher -->
           <div class="language-selector">
             <select @change="changeLanguage" v-model="currentLocale">
@@ -317,6 +320,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { ref } from 'vue';
+import NotificationBell from '../components/NotificationBell.vue';
 
 const { locale, t } = useI18n();
 const currentLocale = ref(locale.value);

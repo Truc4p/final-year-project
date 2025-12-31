@@ -145,7 +145,7 @@
                 v-for="relatedStream in relatedStreams" 
                 :key="relatedStream._id"
                 class="flex space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                @click="() => $router.push(`/live-stream/watch/${relatedStream._id}`)"
+                @click="navigateToStream(relatedStream._id)"
               >
                 <div class="w-20 h-14 bg-gray-200 rounded flex-shrink-0 relative overflow-hidden">
                   <img 
@@ -182,7 +182,7 @@
         <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ t('streamNotFound') || 'Stream Not Found' }}</h2>
         <p class="text-gray-500 mb-6">{{ t('streamNotFoundDesc') || 'The livestream you\'re looking for doesn\'t exist or has been removed.' }}</p>
         <button 
-          @click="$router.push('/live-stream')"
+          @click="$router.push('/customer/live-stream')"
           class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
         >
           {{ t('backToStreams') || 'Back to Streams' }}
@@ -193,7 +193,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 
@@ -333,6 +333,29 @@ const onVideoPlay = () => {
   // Increment view count when video starts playing
   incrementViewCount();
 };
+
+const navigateToStream = (streamId) => {
+  router.push(`/customer/live-stream/watch/${streamId}`);
+};
+
+// Watch for route param changes and refetch stream
+watch(() => route.params.id, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    // Reset state
+    stream.value = null;
+    loading.value = true;
+    isLiked.value = false;
+    
+    // Pause and clear video if playing
+    if (videoPlayer.value) {
+      videoPlayer.value.pause();
+      videoPlayer.value.src = '';
+    }
+    
+    // Fetch new stream data
+    fetchStream();
+  }
+});
 
 onMounted(() => {
   fetchStream();

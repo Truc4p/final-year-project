@@ -359,6 +359,29 @@ class WebSocketManager {
     return sent > 0;
   }
 
+  // Broadcast new order notification to all connected admins
+  async broadcastNewOrderNotification(orderData) {
+    const notification = {
+      type: 'new_order',
+      orderId: orderData.orderId,
+      customerName: orderData.customerName,
+      totalPrice: orderData.totalPrice,
+      products: orderData.products,
+      timestamp: new Date().toISOString()
+    };
+
+    let sent = 0;
+    for (const [userId, connection] of this.adminConnections.entries()) {
+      if (connection.ws.readyState === WebSocket.OPEN) {
+        connection.ws.send(JSON.stringify(notification));
+        sent++;
+      }
+    }
+
+    console.log(`🛒 Broadcasted new order notification to ${sent} admin(s) - Order ID: ${orderData.orderId}`);
+    return sent > 0;
+  }
+
   // Get connection status for a customer session
   isSessionConnected(sessionId) {
     const connection = this.customerConnections.get(sessionId);

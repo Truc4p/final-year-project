@@ -134,6 +134,53 @@
                 <span class="ml-2 text-sm">({{ formatRecordingTime(recordingDuration) }})</span>
               </div>
             </div>
+
+            <!-- Upload Progress Indicator -->
+            <div v-if="uploadProgress.isUploading" class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                    <span class="font-medium">{{ uploadProgress.message }}</span>
+                  </div>
+                  <span class="text-sm">{{ uploadProgress.progress }}%</span>
+                </div>
+                <div class="w-full bg-blue-200 rounded-full h-2">
+                  <div 
+                    class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    :style="{ width: uploadProgress.progress + '%' }"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upload Error with Retry -->
+            <div v-if="uploadProgress.error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                  <span class="font-medium">{{ uploadProgress.error }}</span>
+                </div>
+                <button
+                  @click="retryUpload"
+                  class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors"
+                >
+                  Retry Upload
+                </button>
+              </div>
+            </div>
+
+            <!-- Upload Success -->
+            <div v-if="uploadProgress.success" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span class="font-medium">Recording uploaded successfully!</span>
+              </div>
+            </div>
           </div>
           
           <!-- Pinned Products Management -->
@@ -446,7 +493,20 @@ const selectedProductToPin = ref('');
     const recordedChunks = ref([]);
     const isRecording = ref(false);
     const recordingDuration = ref(0);
-    const recordingTimer = ref(null);// Mock past streams data - will be replaced with API call
+    const recordingTimer = ref(null);
+
+// Upload progress tracking
+const uploadProgress = ref({
+  isUploading: false,
+  progress: 0,
+  message: '',
+  error: null,
+  success: false
+});
+
+const pendingRecording = ref(null); // Store recording blob for retry
+
+// Mock past streams data - will be replaced with API call
 const pastStreams = ref([]);
 
 // API functions
@@ -802,6 +862,9 @@ const uploadRecording = async (videoBlob) => {
     const uploadData = await uploadResponse.json();
     console.log('Video uploaded successfully:', uploadData);
     
+    uploadProgress.value.message = 'Generating thumbnail...';
+    uploadProgress.value.progress = 60;
+    
     // Generate thumbnail
     console.log('🖼️ Generating thumbnail for recorded video...');
     const thumbnail = await generateThumbnail(videoBlob);
@@ -809,6 +872,9 @@ const uploadRecording = async (videoBlob) => {
     
     if (thumbnail) {
       console.log('✅ Thumbnail generated, uploading...');
+      uploadProgress.value.message = 'Uploading thumbnail...';
+      uploadProgress.value.progress = 70;
+      
       thumbnailUrl = await uploadThumbnail(thumbnail, streamId);
       if (thumbnailUrl) {
         console.log('✅ Thumbnail upload completed:', thumbnailUrl);
@@ -818,6 +884,9 @@ const uploadRecording = async (videoBlob) => {
     } else {
       console.warn('⚠️ Thumbnail generation failed - video will be saved without thumbnail');
     }
+    
+    uploadProgress.value.message = 'Finalizing...';
+    uploadProgress.value.progress = 80;
     
     // Update the livestream record with video URL and thumbnail
     const updateResponse = await fetch(`${apiUrl}/livestreams/${streamId}`, {
@@ -834,18 +903,60 @@ const uploadRecording = async (videoBlob) => {
     });
     
     if (!updateResponse.ok) {
-      throw new Error('Failed to update livestream record');
+      const errorData = await updateResponse.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to update livestream record');
     }
     
     console.log('Livestream updated with recording details');
     
+    uploadProgress.value.message = 'Refreshing stream list...';
+    uploadProgress.value.progress = 90;
+    
     // Now refresh the past streams to show the completed recording with thumbnail
     console.log('🔄 Refreshing past streams with completed recording...');
     await fetchPastStreams();
+    
+    // Success!
+    uploadProgress.value = {
+      isUploading: false,
+      progress: 100,
+      message: 'Upload complete',
+      error: null,
+      success: true
+    };
+    
+    // Clear pending recording
+    pendingRecording.value = null;
+    
+    // Clear success message after 5 seconds
+    setTimeout(() => {
+      if (uploadProgress.value.success) {
+        uploadProgress.value.success = false;
+      }
+    }, 5000);
+    
   } catch (error) {
     console.error('Error uploading recording:', error);
-    alert('Failed to save recording');
+    
+    uploadProgress.value = {
+      isUploading: false,
+      progress: 0,
+      message: '',
+      error: `Upload failed: ${error.message || 'Unknown error'}`,
+      success: false
+    };
   }
+};
+
+// Retry upload function
+const retryUpload = async () => {
+  if (!pendingRecording.value) {
+    uploadProgress.value.error = 'No recording available to retry';
+    return;
+  }
+  
+  console.log('Retrying upload for stream:', pendingRecording.value.streamId);
+  await uploadRecording(pendingRecording.value.videoBlob, pendingRecording.value.streamId);
 };
 
 const generateThumbnail = (videoBlob) => {
@@ -1003,6 +1114,10 @@ const formatDuration = (seconds) => {
     return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
   return `${minutes}:${secs.toString().padStart(2, '0')}`;
+};
+
+const formatRecordingTime = (seconds) => {
+  return formatDuration(seconds);
 };
 
 const getMediaStream = async () => {
@@ -1279,13 +1394,6 @@ onBeforeRouteLeave((to, from, next) => {
     next(); // Allow navigation
   }
 });
-
-// Utility function to format recording duration
-const formatRecordingTime = (seconds) => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-};
 
 onUnmounted(() => {
   // Clean up

@@ -101,9 +101,9 @@
           </div>
 
           <!-- Chat Sidebar -->
-          <div class="lg:col-span-1 space-y-6">
+          <div class="lg:col-span-1 space-y-6 relative">
             <!-- Pinned Products -->
-            <div v-if="livestreamStore.pinnedProducts.length > 0" class="bg-white rounded-lg">
+            <div v-if="livestreamStore.pinnedProducts.length > 0" class="bg-white rounded-lg shadow-lg">
               <div class="p-4 pb-0">
                 <h3 class="font-semibold text-lg">{{ t('featuredProducts') || 'Featured Products' }}</h3>
               </div>
@@ -146,7 +146,7 @@
             </div>
             
             <!-- Live Chat -->
-            <div class="bg-white rounded-lg h-full max-h-96 lg:max-h-[500px] flex flex-col ">
+            <div class="bg-white rounded-lg shadow-lg h-full max-h-96 lg:max-h-[500px] flex flex-col relative z-10">
               <div class="p-4 border-b">
                 <h3 class="font-semibold text-lg">{{ t('liveChat') }}</h3>
                 <p class="text-sm text-gray-500">{{ chatMessages.length }} {{ t('messages') }}</p>
@@ -167,7 +167,7 @@
                 </div>
               </div>
               
-              <div class="p-4">
+              <div class="p-4 border-t bg-white">
                 <div class="flex space-x-2">
                   <input
                     v-model="newMessage"
@@ -567,11 +567,11 @@ const watchRecording = (stream) => {
       window.open(stream.recordingUrl, '_blank');
     } else {
       // Internal route - navigate to video player page
-      router.push(`/live-stream/watch/${stream.id}`);
+      router.push(`/customer/live-stream/watch/${stream.id}`);
     }
   } else {
     // Show stream details even if no recording available
-    router.push(`/live-stream/watch/${stream.id}`);
+    router.push(`/customer/live-stream/watch/${stream.id}`);
   }
 };
 

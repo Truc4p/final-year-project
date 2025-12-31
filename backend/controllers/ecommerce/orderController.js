@@ -176,6 +176,33 @@ exports.createOrder = async (req, res) => {
       console.warn('⚠️ Order was created successfully, but email failed to send');
     }
     
+    // Send real-time notification to admins via WebSocket
+    console.log('\n--- Sending real-time notification to admins ---');
+    try {
+      const wsManager = req.app.locals.wsManager;
+      if (wsManager) {
+        const userDetails = await User.findById(userId).select('username');
+        const populatedOrder = await Order.findById(order._id).populate('products.productId');
+        
+        await wsManager.broadcastNewOrderNotification({
+          orderId: order._id.toString(),
+          customerName: userDetails?.username || 'Customer',
+          totalPrice: order.totalPrice,
+          products: populatedOrder.products.map(item => ({
+            name: item.productId.name,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        });
+        console.log('✅ Admin notification sent via WebSocket');
+      } else {
+        console.warn('⚠️ WebSocket manager not available, notification not sent');
+      }
+    } catch (notificationError) {
+      console.error('❌ Error sending admin notification:', notificationError.message);
+      console.warn('⚠️ Order was created successfully, but notification failed to send');
+    }
+    
     console.log('\n========== CREATE ORDER SUCCESS ==========\n');
     res.status(201).send(order);
   } catch (error) {
