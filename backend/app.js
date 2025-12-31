@@ -38,9 +38,12 @@ const referralProgramRoutes = require("./routes/marketing/referralProgramRoutes"
 const referralCodeRoutes = require("./routes/marketing/referralCodeRoutes");
 const referralRoutes = require("./routes/marketing/referralRoutes");
 const referralRewardRoutes = require("./routes/marketing/referralRewardRoutes");
+const workflowRoutes = require("./routes/marketing/workflowRoutes");
+const workflowExecutionRoutes = require("./routes/marketing/workflowExecutionRoutes");
 const aiDermatologyExpertRoutes = require("./routes/skin-study/aiDermatologyExpert");
 const { initializeSecrets } = require("./services/secretInitializer");
 const emailScheduler = require("./services/emailScheduler");
+const workflowScheduler = require("./services/workflowScheduler");
 
 const connectDB = require("./db");
 const path = require("path"); // Import the path module
@@ -122,6 +125,8 @@ app.use("/referral", referralProgramRoutes);
 app.use("/referral", referralCodeRoutes);
 app.use("/referral", referralRoutes);
 app.use("/referral", referralRewardRoutes);
+app.use("/automation", workflowRoutes);
+app.use("/automation", workflowExecutionRoutes);
 app.use("/api/ai-dermatology-expert", aiDermatologyExpertRoutes);
 
 // Define a route for the root URL
