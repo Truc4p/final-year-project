@@ -1,68 +1,68 @@
 const express = require('express');
 const router = express.Router();
 const auditController = require('../../controllers/finance/auditController');
-const { authenticateToken } = require('../../middleware/auth');
-const { requireRole } = require('../../middleware/role');
+const auth = require('../../middleware/auth');
+const role = require('../../middleware/role');
 
 // All routes require authentication
-router.use(authenticateToken);
+router.use(auth);
 
 // ==================== AUDIT LOGS ====================
 
 // Get all audit logs
-router.get('/logs', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getAuditLogs);
+router.get('/logs', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getAuditLogs);
 
 // Get single audit log
-router.get('/logs/:id', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getAuditLog);
+router.get('/logs/:id', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getAuditLog);
 
 // Get entity audit trail
-router.get('/logs/entity/:entityType/:entityId', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getEntityTrail);
+router.get('/logs/entity/:entityType/:entityId', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getEntityTrail);
 
 // Get user activity
-router.get('/logs/user/:userId', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getUserActivity);
+router.get('/logs/user/:userId', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getUserActivity);
 
 // Get compliance-flagged logs
-router.get('/logs/compliance/flagged', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getComplianceLogs);
+router.get('/logs/compliance/flagged', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getComplianceLogs);
 
 // Get audit statistics
-router.get('/logs/statistics', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getAuditStatistics);
+router.get('/logs/statistics', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getAuditStatistics);
 
 // Export audit logs
-router.get('/logs/export', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.exportAuditLogs);
+router.get('/logs/export', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.exportAuditLogs);
 
 // Archive old logs
-router.post('/logs/archive', requireRole(['admin', 'cfo']), auditController.archiveOldLogs);
+router.post('/logs/archive', role(['admin', 'cfo']), auditController.archiveOldLogs);
 
 // ==================== COMPLIANCE REPORTS ====================
 
 // Get compliance dashboard
-router.get('/dashboard', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getComplianceDashboard);
+router.get('/dashboard', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getComplianceDashboard);
 
 // Get all compliance reports
-router.get('/reports', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getComplianceReports);
+router.get('/reports', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getComplianceReports);
 
 // Get single compliance report
-router.get('/reports/:id', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getComplianceReport);
+router.get('/reports/:id', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.getComplianceReport);
 
 // Create compliance report
-router.post('/reports', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.createComplianceReport);
+router.post('/reports', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.createComplianceReport);
 
 // Update compliance report
-router.put('/reports/:id', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.updateComplianceReport);
+router.put('/reports/:id', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.updateComplianceReport);
 
 // Delete compliance report
-router.delete('/reports/:id', requireRole(['admin', 'cfo']), auditController.deleteComplianceReport);
+router.delete('/reports/:id', role(['admin', 'cfo']), auditController.deleteComplianceReport);
 
 // Submit report for review
-router.post('/reports/:id/submit', requireRole(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.submitForReview);
+router.post('/reports/:id/submit', role(['admin', 'finance_manager', 'cfo', 'auditor']), auditController.submitForReview);
 
 // Review report
-router.post('/reports/:id/review', requireRole(['admin', 'finance_manager', 'cfo']), auditController.reviewReport);
+router.post('/reports/:id/review', role(['admin', 'finance_manager', 'cfo']), auditController.reviewReport);
 
 // Approve report
-router.post('/reports/:id/approve', requireRole(['admin', 'cfo']), auditController.approveReport);
+router.post('/reports/:id/approve', role(['admin', 'cfo']), auditController.approveReport);
 
 // Archive report
-router.post('/reports/:id/archive', requireRole(['admin', 'cfo']), auditController.archiveReport);
+router.post('/reports/:id/archive', role(['admin', 'cfo']), auditController.archiveReport);
 
 module.exports = router;

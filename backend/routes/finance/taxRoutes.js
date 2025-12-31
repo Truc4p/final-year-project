@@ -1,32 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const taxController = require('../../controllers/finance/taxController');
-const { authenticateToken } = require('../../middleware/auth');
-const { requireRole } = require('../../middleware/role');
+const auth = require('../../middleware/auth');
+const role = require('../../middleware/role');
 
 // Tax Rate Routes
-router.get('/rates', authenticateToken, taxController.getTaxRates);
-router.get('/rates/applicable', authenticateToken, taxController.getApplicableRates);
-router.get('/rates/:id', authenticateToken, taxController.getTaxRate);
-router.post('/rates', authenticateToken, requireRole(['admin', 'finance_manager']), taxController.createTaxRate);
-router.put('/rates/:id', authenticateToken, requireRole(['admin', 'finance_manager']), taxController.updateTaxRate);
-router.delete('/rates/:id', authenticateToken, requireRole(['admin', 'finance_manager']), taxController.deleteTaxRate);
+router.get('/rates', auth, taxController.getTaxRates);
+router.get('/rates/applicable', auth, taxController.getApplicableRates);
+router.get('/rates/:id', auth, taxController.getTaxRate);
+router.post('/rates', auth, role(['admin', 'finance_manager']), taxController.createTaxRate);
+router.put('/rates/:id', auth, role(['admin', 'finance_manager']), taxController.updateTaxRate);
+router.delete('/rates/:id', auth, role(['admin', 'finance_manager']), taxController.deleteTaxRate);
 
 // Tax Liability Routes
-router.get('/liabilities', authenticateToken, taxController.getTaxLiabilities);
-router.get('/liabilities/overdue', authenticateToken, taxController.getOverdueLiabilities);
-router.get('/liabilities/:id', authenticateToken, taxController.getTaxLiability);
-router.post('/liabilities', authenticateToken, requireRole(['admin', 'finance_manager']), taxController.createTaxLiability);
-router.put('/liabilities/:id', authenticateToken, requireRole(['admin', 'finance_manager']), taxController.updateTaxLiability);
-router.delete('/liabilities/:id', authenticateToken, requireRole(['admin', 'finance_manager']), taxController.deleteTaxLiability);
+router.get('/liabilities', auth, taxController.getTaxLiabilities);
+router.get('/liabilities/overdue', auth, taxController.getOverdueLiabilities);
+router.get('/liabilities/:id', auth, taxController.getTaxLiability);
+router.post('/liabilities', auth, role(['admin', 'finance_manager']), taxController.createTaxLiability);
+router.put('/liabilities/:id', auth, role(['admin', 'finance_manager']), taxController.updateTaxLiability);
+router.delete('/liabilities/:id', auth, role(['admin', 'finance_manager']), taxController.deleteTaxLiability);
 
 // Tax Liability Actions
-router.post('/liabilities/calculate', authenticateToken, requireRole(['admin', 'finance_manager']), taxController.calculateTaxLiability);
-router.post('/liabilities/:id/file', authenticateToken, requireRole(['admin', 'finance_manager', 'cfo']), taxController.fileTaxLiability);
-router.post('/liabilities/:id/payments', authenticateToken, requireRole(['admin', 'finance_manager']), taxController.addPayment);
-router.post('/liabilities/:id/penalties', authenticateToken, requireRole(['admin', 'finance_manager']), taxController.calculatePenalties);
+router.post('/liabilities/calculate', auth, role(['admin', 'finance_manager']), taxController.calculateTaxLiability);
+router.post('/liabilities/:id/file', auth, role(['admin', 'finance_manager', 'cfo']), taxController.fileTaxLiability);
+router.post('/liabilities/:id/payments', auth, role(['admin', 'finance_manager']), taxController.addPayment);
+router.post('/liabilities/:id/penalties', auth, role(['admin', 'finance_manager']), taxController.calculatePenalties);
 
 // Tax Reports
-router.get('/summary', authenticateToken, taxController.getTaxSummary);
+router.get('/summary', auth, taxController.getTaxSummary);
 
 module.exports = router;

@@ -14,6 +14,12 @@ import CustomReportsPage from '../pages/admin/finance/CustomReportsPage.vue';
 import ReportViewerPage from '../pages/admin/finance/ReportViewerPage.vue';
 import TaxManagementPage from '../pages/admin/finance/TaxManagementPage.vue';
 import PaymentManagementPage from '../pages/admin/finance/PaymentManagementPage.vue';
+import AuditLogsPage from '../pages/admin/finance/AuditLogsPage.vue';
+import ComplianceReportsPage from '../pages/admin/finance/ComplianceReportsPage.vue';
+import ReconciliationPage from '../pages/admin/finance/ReconciliationPage.vue';
+import ReconciliationDetailPage from '../pages/admin/finance/ReconciliationDetailPage.vue';
+import FixedAssetsPage from '../pages/admin/finance/FixedAssetsPage.vue';
+import ForecastingPage from '../pages/admin/finance/ForecastingPage.vue';
 
 export const financeRoutes = [
   {
@@ -148,6 +154,60 @@ export const financeRoutes = [
     component: PaymentManagementPage,
     meta: {
       title: 'Payment Management',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/audit-logs',
+    name: 'AuditLogs',
+    component: AuditLogsPage,
+    meta: {
+      title: 'Audit Logs',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/compliance',
+    name: 'ComplianceReports',
+    component: ComplianceReportsPage,
+    meta: {
+      title: 'Compliance Reports',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/reconciliation',
+    name: 'Reconciliation',
+    component: ReconciliationPage,
+    meta: {
+      title: 'Reconciliation',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/reconciliation/:id',
+    name: 'ReconciliationDetail',
+    component: ReconciliationDetailPage,
+    meta: {
+      title: 'Reconciliation Details',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/fixed-assets',
+    name: 'FixedAssets',
+    component: FixedAssetsPage,
+    meta: {
+      title: 'Fixed Assets Management',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/forecasting',
+    name: 'Forecasting',
+    component: ForecastingPage,
+    meta: {
+      title: 'Financial Forecasting',
       requiresAuth: true
     }
   }

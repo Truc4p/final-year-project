@@ -646,7 +646,360 @@ export const financeService = {
   }),
 
   // Payment Stats
-  getPaymentStats: () => apiCall('/api/finance/payments/stats')
+  getPaymentStats: () => apiCall('/api/finance/payments/stats'),
+
+  // ==================== AUDIT & COMPLIANCE ====================
+
+  // Audit Logs
+  getAuditLogs: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/audit/logs?${queryString}`);
+  },
+
+  getAuditLog: (id) => apiCall(`/api/finance/audit/logs/${id}`),
+
+  getEntityTrail: (entityType, entityId) => apiCall(`/api/finance/audit/logs/entity/${entityType}/${entityId}`),
+
+  getUserActivity: (userId, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/audit/logs/user/${userId}?${queryString}`);
+  },
+
+  getComplianceLogs: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/audit/logs/compliance/flagged?${queryString}`);
+  },
+
+  getAuditStatistics: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/audit/logs/statistics?${queryString}`);
+  },
+
+  exportAuditLogs: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/audit/logs/export?${queryString}`);
+  },
+
+  archiveOldLogs: (daysToKeep) => apiCall('/api/finance/audit/logs/archive', {
+    method: 'POST',
+    body: JSON.stringify({ daysToKeep })
+  }),
+
+  // Compliance Reports
+  getComplianceDashboard: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/audit/dashboard?${queryString}`);
+  },
+
+  getComplianceReports: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/audit/reports?${queryString}`);
+  },
+
+  getComplianceReport: (id) => apiCall(`/api/finance/audit/reports/${id}`),
+
+  createComplianceReport: (data) => apiCall('/api/finance/audit/reports', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  updateComplianceReport: (id, data) => apiCall(`/api/finance/audit/reports/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  deleteComplianceReport: (id) => apiCall(`/api/finance/audit/reports/${id}`, {
+    method: 'DELETE'
+  }),
+
+  submitComplianceReportForReview: (id) => apiCall(`/api/finance/audit/reports/${id}/submit`, {
+    method: 'POST'
+  }),
+
+  reviewComplianceReport: (id, data) => apiCall(`/api/finance/audit/reports/${id}/review`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  approveComplianceReport: (id, data) => apiCall(`/api/finance/audit/reports/${id}/approve`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  archiveComplianceReport: (id, data) => apiCall(`/api/finance/audit/reports/${id}/archive`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // ==================== RECONCILIATION ====================
+
+  // Reconciliation Dashboard
+  getReconciliationDashboard: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/reconciliation/dashboard?${queryString}`);
+  },
+
+  // Reconciliation Rules
+  getReconciliationRules: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/reconciliation/rules?${queryString}`);
+  },
+
+  getReconciliationRule: (id) => apiCall(`/api/finance/reconciliation/rules/${id}`),
+
+  createReconciliationRule: (data) => apiCall('/api/finance/reconciliation/rules', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  updateReconciliationRule: (id, data) => apiCall(`/api/finance/reconciliation/rules/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  deleteReconciliationRule: (id) => apiCall(`/api/finance/reconciliation/rules/${id}`, {
+    method: 'DELETE'
+  }),
+
+  toggleReconciliationRule: (id) => apiCall(`/api/finance/reconciliation/rules/${id}/toggle`, {
+    method: 'PATCH'
+  }),
+
+  // Reconciliation Batches
+  getReconciliationBatches: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/reconciliation/batches?${queryString}`);
+  },
+
+  getReconciliationBatch: (id) => apiCall(`/api/finance/reconciliation/batches/${id}`),
+
+  createReconciliationBatch: (data) => apiCall('/api/finance/reconciliation/batches', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  updateReconciliationBatch: (id, data) => apiCall(`/api/finance/reconciliation/batches/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  deleteReconciliationBatch: (id) => apiCall(`/api/finance/reconciliation/batches/${id}`, {
+    method: 'DELETE'
+  }),
+
+  // Reconciliation Processing
+  loadReconciliationItems: (batchId) => apiCall(`/api/finance/reconciliation/batches/${batchId}/load-items`, {
+    method: 'POST'
+  }),
+
+  runAutoMatching: (batchId) => apiCall(`/api/finance/reconciliation/batches/${batchId}/auto-match`, {
+    method: 'POST'
+  }),
+
+  manualReconciliationMatch: (batchId, data) => apiCall(`/api/finance/reconciliation/batches/${batchId}/manual-match`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  confirmReconciliationMatch: (batchId, matchId) => apiCall(`/api/finance/reconciliation/batches/${batchId}/matches/${matchId}/confirm`, {
+    method: 'POST'
+  }),
+
+  rejectReconciliationMatch: (batchId, matchId, notes = '') => apiCall(`/api/finance/reconciliation/batches/${batchId}/matches/${matchId}/reject`, {
+    method: 'POST',
+    body: JSON.stringify({ notes })
+  }),
+
+  bulkConfirmReconciliationMatches: (batchId, matchIds) => apiCall(`/api/finance/reconciliation/batches/${batchId}/bulk-confirm`, {
+    method: 'POST',
+    body: JSON.stringify({ matchIds })
+  }),
+
+  getReconciliationSuggestions: (batchId) => apiCall(`/api/finance/reconciliation/batches/${batchId}/suggestions`),
+
+  // Discrepancy Management
+  getReconciliationDiscrepancies: (batchId, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/reconciliation/batches/${batchId}/discrepancies?${queryString}`);
+  },
+
+  resolveReconciliationDiscrepancy: (batchId, discrepancyId, data) => apiCall(`/api/finance/reconciliation/batches/${batchId}/discrepancies/${discrepancyId}/resolve`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Batch Workflow
+  submitReconciliationForReview: (batchId, notes = '') => apiCall(`/api/finance/reconciliation/batches/${batchId}/submit-review`, {
+    method: 'POST',
+    body: JSON.stringify({ notes })
+  }),
+
+  completeReconciliation: (batchId) => apiCall(`/api/finance/reconciliation/batches/${batchId}/complete`, {
+    method: 'POST'
+  }),
+
+  // ==================== FIXED ASSETS MANAGEMENT ====================
+
+  // Get all fixed assets with filters
+  getFixedAssets: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/fixed-assets${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get single fixed asset
+  getFixedAsset: (id) => apiCall(`/api/finance/fixed-assets/${id}`),
+
+  // Create fixed asset
+  createFixedAsset: (data) => apiCall('/api/finance/fixed-assets', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Update fixed asset
+  updateFixedAsset: (id, data) => apiCall(`/api/finance/fixed-assets/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  // Delete fixed asset
+  deleteFixedAsset: (id) => apiCall(`/api/finance/fixed-assets/${id}`, {
+    method: 'DELETE'
+  }),
+
+  // Get depreciation schedule
+  getDepreciationSchedule: (assetId) => apiCall(`/api/finance/fixed-assets/${assetId}/depreciation-schedule`),
+
+  // Regenerate depreciation schedule
+  regenerateDepreciationSchedule: (assetId) => apiCall(`/api/finance/fixed-assets/${assetId}/depreciation-schedule/regenerate`, {
+    method: 'POST'
+  }),
+
+  // Process single period depreciation
+  processDepreciation: (assetId, periodIndex) => apiCall(`/api/finance/fixed-assets/${assetId}/depreciate`, {
+    method: 'POST',
+    body: JSON.stringify({ periodIndex })
+  }),
+
+  // Bulk process depreciation for all eligible assets
+  bulkProcessDepreciation: (data = {}) => apiCall('/api/finance/fixed-assets/bulk-depreciation', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Dispose asset
+  disposeFixedAsset: (assetId, data) => apiCall(`/api/finance/fixed-assets/${assetId}/dispose`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Revalue asset
+  revalueFixedAsset: (assetId, data) => apiCall(`/api/finance/fixed-assets/${assetId}/revalue`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Transfer asset
+  transferFixedAsset: (assetId, data) => apiCall(`/api/finance/fixed-assets/${assetId}/transfer`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Add maintenance record
+  addMaintenanceRecord: (assetId, data) => apiCall(`/api/finance/fixed-assets/${assetId}/maintenance`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Get maintenance history
+  getMaintenanceHistory: (assetId) => apiCall(`/api/finance/fixed-assets/${assetId}/maintenance`),
+
+  // Dashboard & Reports
+  getFixedAssetsDashboard: () => apiCall('/api/finance/fixed-assets/dashboard'),
+
+  getAssetRegisterReport: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/fixed-assets/reports/register${queryString ? '?' + queryString : ''}`);
+  },
+
+  getDepreciationReport: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/fixed-assets/reports/depreciation${queryString ? '?' + queryString : ''}`);
+  },
+
+  // ==================== FINANCIAL FORECASTING ====================
+
+  // Get all forecasts
+  getForecasts: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/api/finance/forecasts${queryString ? '?' + queryString : ''}`);
+  },
+
+  // Get single forecast
+  getForecast: (id) => apiCall(`/api/finance/forecasts/${id}`),
+
+  // Create forecast
+  createForecast: (data) => apiCall('/api/finance/forecasts', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  // Update forecast
+  updateForecast: (id, data) => apiCall(`/api/finance/forecasts/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  // Delete forecast
+  deleteForecast: (id) => apiCall(`/api/finance/forecasts/${id}`, {
+    method: 'DELETE'
+  }),
+
+  // Generate predictions
+  generateForecastPredictions: (id) => apiCall(`/api/finance/forecasts/${id}/generate`, {
+    method: 'POST'
+  }),
+
+  // Get trend analysis
+  getForecastTrends: (id) => apiCall(`/api/finance/forecasts/${id}/trends`),
+
+  // Scenarios
+  getForecastScenarios: (id) => apiCall(`/api/finance/forecasts/${id}/scenarios`),
+
+  createForecastScenario: (id, data) => apiCall(`/api/finance/forecasts/${id}/scenarios`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  compareForecastScenarios: (id, scenarioIds) => apiCall(`/api/finance/forecasts/${id}/scenarios/compare`, {
+    method: 'POST',
+    body: JSON.stringify({ scenarioIds })
+  }),
+
+  // KPI tracking
+  getForecastKPI: (id) => apiCall(`/api/finance/forecasts/${id}/kpi`),
+
+  setForecastKPITargets: (id, targets) => apiCall(`/api/finance/forecasts/${id}/kpi`, {
+    method: 'POST',
+    body: JSON.stringify({ targets })
+  }),
+
+  // Recommendations
+  getForecastRecommendations: (id) => apiCall(`/api/finance/forecasts/${id}/recommendations`),
+
+  // Workflow
+  approveForecast: (id) => apiCall(`/api/finance/forecasts/${id}/approve`, {
+    method: 'POST'
+  }),
+
+  archiveForecast: (id) => apiCall(`/api/finance/forecasts/${id}/archive`, {
+    method: 'POST'
+  }),
+
+  // Accuracy tracking
+  trackForecastAccuracy: (id) => apiCall(`/api/finance/forecasts/${id}/accuracy`),
+
+  // Dashboard
+  getForecastDashboard: () => apiCall('/api/finance/forecasts/dashboard')
 
 };
 
