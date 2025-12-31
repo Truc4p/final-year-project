@@ -12,6 +12,8 @@ import ApprovalsPage from '../pages/admin/finance/ApprovalsPage.vue';
 import ApprovalDetailPage from '../pages/admin/finance/ApprovalDetailPage.vue';
 import CustomReportsPage from '../pages/admin/finance/CustomReportsPage.vue';
 import ReportViewerPage from '../pages/admin/finance/ReportViewerPage.vue';
+import TaxManagementPage from '../pages/admin/finance/TaxManagementPage.vue';
+import PaymentManagementPage from '../pages/admin/finance/PaymentManagementPage.vue';
 
 export const financeRoutes = [
   {
@@ -128,6 +130,24 @@ export const financeRoutes = [
     component: ReportViewerPage,
     meta: {
       title: 'View Report',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/tax',
+    name: 'TaxManagement',
+    component: TaxManagementPage,
+    meta: {
+      title: 'Tax Management',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/admin/finance/payments',
+    name: 'PaymentManagement',
+    component: PaymentManagementPage,
+    meta: {
+      title: 'Payment Management',
       requiresAuth: true
     }
   }

@@ -569,7 +569,85 @@ export const financeService = {
     return apiCall(`/api/finance/tax/summary?${queryString}`);
   },
 
-  getOverdueTaxLiabilities: () => apiCall('/api/finance/tax/liabilities/overdue')
+  getOverdueTaxLiabilities: () => apiCall('/api/finance/tax/liabilities/overdue'),
+
+  // ==================== PAYMENT MANAGEMENT ====================
+
+  // Payment Batches
+  getPaymentBatches: (filters = {}) => {
+    const queryString = new URLSearchParams(filters).toString();
+    return apiCall(`/api/finance/payments/batches?${queryString}`);
+  },
+
+  getPaymentBatch: (id) => apiCall(`/api/finance/payments/batches/${id}`),
+
+  createPaymentBatch: (data) => apiCall('/api/finance/payments/batches', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  updatePaymentBatch: (id, data) => apiCall(`/api/finance/payments/batches/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  deletePaymentBatch: (id) => apiCall(`/api/finance/payments/batches/${id}`, {
+    method: 'DELETE'
+  }),
+
+  approveBatch: (id) => apiCall(`/api/finance/payments/batches/${id}/approve`, {
+    method: 'POST'
+  }),
+
+  processBatch: (id) => apiCall(`/api/finance/payments/batches/${id}/process`, {
+    method: 'POST'
+  }),
+
+  cancelBatch: (id) => apiCall(`/api/finance/payments/batches/${id}/cancel`, {
+    method: 'POST'
+  }),
+
+  // Scheduled Payments
+  getScheduledPayments: (filters = {}) => {
+    const queryString = new URLSearchParams(filters).toString();
+    return apiCall(`/api/finance/payments/scheduled?${queryString}`);
+  },
+
+  getScheduledPayment: (id) => apiCall(`/api/finance/payments/scheduled/${id}`),
+
+  createScheduledPayment: (data) => apiCall('/api/finance/payments/scheduled', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  updateScheduledPayment: (id, data) => apiCall(`/api/finance/payments/scheduled/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  deleteScheduledPayment: (id) => apiCall(`/api/finance/payments/scheduled/${id}`, {
+    method: 'DELETE'
+  }),
+
+  pauseScheduledPayment: (id) => apiCall(`/api/finance/payments/scheduled/${id}/pause`, {
+    method: 'POST'
+  }),
+
+  resumeScheduledPayment: (id) => apiCall(`/api/finance/payments/scheduled/${id}/resume`, {
+    method: 'POST'
+  }),
+
+  cancelScheduledPayment: (id) => apiCall(`/api/finance/payments/scheduled/${id}/cancel`, {
+    method: 'POST'
+  }),
+
+  executeScheduledPayment: (id) => apiCall(`/api/finance/payments/scheduled/${id}/execute`, {
+    method: 'POST'
+  }),
+
+  // Payment Stats
+  getPaymentStats: () => apiCall('/api/finance/payments/stats')
 
 };
 
+export default financeService;
