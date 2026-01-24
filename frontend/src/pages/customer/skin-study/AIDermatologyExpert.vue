@@ -1097,7 +1097,7 @@ What would you like to know more about?`
 .ai-dermatology-expert {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100vh;
     background: var(--primary-50);
     position: relative;
 }
@@ -1317,9 +1317,8 @@ What would you like to know more about?`
 /* Chat Container */
 .chat-container {
     flex: 1;
-    overflow-y: auto;
     padding: 2rem;
-    padding-bottom: 150px;
+    padding-bottom: 200px;
     /* Space for fixed input area */
     max-width: 1200px;
     width: 100%;

@@ -137,3 +137,34 @@ $4
 PXAT
 $13
 1780812932127
+*2
+$6
+SELECT
+$1
+0
+*2
+$3
+DEL
+$65
+ai_dermatology:English:aG93IHRvIGN1cmUgYWNuZT8=:how to cure acne?
+*2
+$3
+DEL
+$148
+ai_dermatology:German:d2VsY2hlIHJvbGxlIHNwaWVsZW4gbWF0cml4LW1ldGFsbG9wcm:welche rolle spielen matrix-metalloproteinasen (mmps) bei der hautalterung?
+*2
+$3
+DEL
+$64
+ai_dermatology:English:aG93IHRvIGN1cmUgYWNuZQ==:how to cure acne
+*5
+$3
+SET
+$142
+ai_dermatology:English:d2hhdCBhcmUgdGhlIGRpZmZlcmVudCB0eXBlcyBvZiBjaGVtaW:what are the different types of chemical peels and how do they work?
+$2607
+{"question":"What are the different types of chemical peels and how do they work?","response":"Chemical peels are a versatile treatment technique used to improve and smooth the texture of facial and/or body skin by applying a chemical solution that causes dead skin to slough off and peel away [1]. This process results in regenerated skin that is typically smoother, healthier, and less wrinkled than the original skin [1]. The historical roots of skin peeling treatments date back to the nineteenth century in Europe, with the process being introduced to America by a young esthetician [2].\n\n### Types and Mechanisms of Chemical Peels\n\nChemical peels can be classified based on their mechanism of action, which goes beyond just acidity [1]. The three proposed mechanisms are:\n\n1.  **Acidity:** This is the traditionally accepted mechanism, where the effect of the peel is attributed to its acidic nature [1].\n2.  **Toxicity:** Some chemical peel solutions exert their effects through toxic interactions with the skin cells [1].\n3.  **Metabolic Interactions:** Chemical peels can also influence skin cell processes through metabolic interactions [1].\n\n### Depth of Peels and Their Applications\n\nThe depth to which a chemical peel can resurface the skin varies, allowing for controlled and artistic application [3]. By inducing a controlled wound, chemical peels can target different layers of the skin [3]:\n\n*   **Very Superficial and Superficial Peels:** These peels resurface part or all of the epidermis [3].\n*   **Medium-Depth Peels:** These peels reach the papillary dermis [3].\n*   **Deep Peels:** These peels can extend down to the level of the upper or mid-reticular dermis [3].\n\nBy accelerating skin cell turnover, chemical peels can effectively address a range of conditions including photodamage, rhytides (wrinkles), pigmentation abnormalities, and scarring [3].\n\nIt is important to note that various peeling and exfoliation treatments exist, from gentle brushing and light enzyme peels to strong surgical-level peels administered by dermatologists and plastic surgeons [2]. For any chemical peel procedure, especially those beyond superficial salon treatments, hands-on training with a specialist such as a dermatologist, plastic surgeon, or facial plastic surgeon experienced in specific peel types is advised [1, 2].\n\n### References\n[1,3] Chemical Peels - Procedures in Cosmetic Dermatology Series, 3rd Edition (2020) by Suzan Obagi\n[2] Skin Care - Beyond the Basics, 4th Edition","images":[],"timestamp":"2026-01-18T11:19:19.408Z","language":"English","cached":true}
+$4
+PXAT
+$13
+1784287159410

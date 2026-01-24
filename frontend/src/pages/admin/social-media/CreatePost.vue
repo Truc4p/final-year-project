@@ -236,9 +236,46 @@ const suggestHashtags = async () => {
   }
 };
 
-const uploadMedia = () => {
-  // Implement file upload
-  alert('File upload feature - integrate with your upload service');
+const uploadMedia = async () => {
+  // Create a file input element
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*,video/*';
+  input.multiple = true;
+  
+  input.onchange = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    // Upload each file
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const formData = new FormData();
+      formData.append('media', file);
+      
+      try {
+        const response = await axios.post(`${API_URL}/uploads/media`, formData, {
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        if (response.data.success) {
+          post.value.media.push({
+            url: `${API_URL}${response.data.data.url}`,
+            type: response.data.data.type,
+            filename: response.data.data.filename
+          });
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        alert(`Failed to upload ${file.name}: ${error.response?.data?.message || error.message}`);
+      }
+    }
+  };
+  
+  input.click();
 };
 
 const removeMedia = (index) => {

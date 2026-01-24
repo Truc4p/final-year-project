@@ -120,7 +120,17 @@
             <div>
               <label class="block text-sm font-medium mb-2">Access Token</label>
               <textarea v-model="newAccount.accessToken" class="form-input w-full" rows="3" placeholder="Paste your access token here" required></textarea>
-              <p class="text-xs text-gray-500 mt-1">Get this from the platform's developer portal</p>
+              <div class="mt-2 flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="text-xs text-blue-900">
+                  <button @click="showHelp = true" type="button" class="font-medium underline hover:no-underline">
+                    Need help getting credentials?
+                  </button>
+                  <p class="mt-1">Click to see step-by-step instructions for {{ newAccount.platform || 'your platform' }}</p>
+                </div>
+              </div>
             </div>
 
             <div class="flex gap-2">
@@ -128,6 +138,203 @@
               <button type="submit" class="btn btn-primary flex-1">Connect</button>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div v-if="showHelp" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 bg-white border-b p-6">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xl font-bold">How to Get {{ getPlatformName(newAccount.platform) }} Credentials</h3>
+            <button @click="showHelp = false" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <!-- Facebook Instructions -->
+          <div v-if="newAccount.platform === 'facebook'">
+            <div class="prose max-w-none">
+              <h4 class="text-lg font-semibold mb-3">📘 Facebook Page Setup</h4>
+              
+              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <div class="flex items-start gap-2">
+                  <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                  </svg>
+                  <p class="text-sm text-yellow-900"><strong>Important:</strong> You need a Facebook Developer Account and a Facebook Page (not personal profile) to get these credentials.</p>
+                </div>
+              </div>
+
+              <h5 class="font-semibold text-base mb-2">Step 1: Create a Facebook App</h5>
+              <ol class="list-decimal pl-5 space-y-2 mb-4">
+                <li>Go to <a href="https://developers.facebook.com" target="_blank" class="text-blue-600 underline">developers.facebook.com</a></li>
+                <li>Click <strong>"My Apps"</strong> → <strong>"Create App"</strong></li>
+                <li>Select <strong>"Business"</strong> as the app type</li>
+                <li>Fill in app details:
+                  <ul class="list-disc pl-5 mt-1">
+                    <li>App Name: e.g., "My Social Media Manager"</li>
+                    <li>App Contact Email: Your email</li>
+                  </ul>
+                </li>
+                <li>Click <strong>"Create App"</strong></li>
+              </ol>
+
+              <h5 class="font-semibold text-base mb-2">Step 2: Configure Facebook Login</h5>
+              <ol class="list-decimal pl-5 space-y-2 mb-4">
+                <li>In your app dashboard, find <strong>"Facebook Login"</strong> and click <strong>"Set Up"</strong></li>
+                <li>Choose <strong>"Web"</strong> platform</li>
+                <li>Enter your website URL (e.g., <code class="bg-gray-100 px-1 rounded">http://localhost:5173</code> for development)</li>
+                <li>Go to <strong>Settings → Basic</strong> and add:
+                  <ul class="list-disc pl-5 mt-1">
+                    <li>App Domains: <code class="bg-gray-100 px-1 rounded">localhost</code></li>
+                    <li>Privacy Policy URL (required)</li>
+                    <li>Terms of Service URL (optional)</li>
+                  </ul>
+                </li>
+              </ol>
+
+              <h5 class="font-semibold text-base mb-2">Step 3: Add Facebook Pages API</h5>
+              <ol class="list-decimal pl-5 space-y-2 mb-4">
+                <li>In the left sidebar, click <strong>"Add Product"</strong></li>
+                <li>Find <strong>"Facebook Login for Business"</strong> and click <strong>"Set Up"</strong></li>
+                <li>Configure permissions:
+                  <ul class="list-disc pl-5 mt-1">
+                    <li><code class="bg-gray-100 px-1 rounded">pages_show_list</code> - Read your pages</li>
+                    <li><code class="bg-gray-100 px-1 rounded">pages_read_engagement</code> - Read page insights</li>
+                    <li><code class="bg-gray-100 px-1 rounded">pages_manage_posts</code> - Create and publish posts</li>
+                    <li><code class="bg-gray-100 px-1 rounded">pages_read_user_content</code> - Read user content</li>
+                  </ul>
+                </li>
+              </ol>
+
+              <h5 class="font-semibold text-base mb-2">Step 4: Get Your Access Token</h5>
+              <ol class="list-decimal pl-5 space-y-2 mb-4">
+                <li>Go to <a href="https://developers.facebook.com/tools/explorer" target="_blank" class="text-blue-600 underline">Graph API Explorer</a></li>
+                <li>Select your app from the dropdown</li>
+                <li>Click <strong>"Generate Access Token"</strong></li>
+                <li>Grant all the required permissions</li>
+                <li>Click <strong>"Get User Access Token"</strong></li>
+                <li>Copy the token (it will be a long string)</li>
+                <li><strong>Important:</strong> To get a long-lived token (60 days), use the <a href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank" class="text-blue-600 underline">Access Token Debugger</a> to extend it</li>
+              </ol>
+
+              <h5 class="font-semibold text-base mb-2">Step 5: Get Account Information</h5>
+              <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div>
+                  <strong>Account Name:</strong>
+                  <p class="text-sm text-gray-600 mt-1">Your Facebook Page name (e.g., "@mybusiness" or "My Business Page")</p>
+                </div>
+                <div>
+                  <strong>Account ID:</strong>
+                  <p class="text-sm text-gray-600 mt-1">
+                    Go to your Facebook Page → <strong>Settings</strong> → <strong>Page Info</strong> → Find "Page ID" (a numeric string like <code class="bg-gray-100 px-1 rounded">123456789012345</code>)
+                  </p>
+                  <p class="text-sm text-gray-600 mt-1">
+                    Or use Graph API Explorer: Query <code class="bg-gray-100 px-1 rounded">me/accounts</code> to see all your pages and their IDs
+                  </p>
+                </div>
+                <div>
+                  <strong>Access Token:</strong>
+                  <p class="text-sm text-gray-600 mt-1">Paste the token you generated in Step 4</p>
+                </div>
+              </div>
+
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                <h5 class="font-semibold text-sm mb-2">💡 Quick Test:</h5>
+                <p class="text-sm text-gray-700">After getting your token, test it at <a href="https://developers.facebook.com/tools/explorer" target="_blank" class="text-blue-600 underline">Graph API Explorer</a> with query: <code class="bg-white px-2 py-1 rounded border">me?fields=id,name</code></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Instagram Instructions -->
+          <div v-else-if="newAccount.platform === 'instagram'">
+            <div class="prose max-w-none">
+              <h4 class="text-lg font-semibold mb-3">📸 Instagram Business Setup</h4>
+              
+              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <p class="text-sm text-yellow-900"><strong>Requirements:</strong> Instagram Business/Creator account connected to a Facebook Page</p>
+              </div>
+
+              <ol class="list-decimal pl-5 space-y-3">
+                <li>Convert your Instagram to a <strong>Business or Creator account</strong></li>
+                <li>Connect it to a Facebook Page</li>
+                <li>Follow the Facebook instructions above to create an app</li>
+                <li>Add <strong>Instagram Basic Display API</strong> or <strong>Instagram Graph API</strong> product</li>
+                <li>Get access token using Graph API Explorer with Instagram permissions:
+                  <ul class="list-disc pl-5 mt-2">
+                    <li><code class="bg-gray-100 px-1 rounded">instagram_basic</code></li>
+                    <li><code class="bg-gray-100 px-1 rounded">instagram_content_publish</code></li>
+                    <li><code class="bg-gray-100 px-1 rounded">pages_read_engagement</code></li>
+                  </ul>
+                </li>
+                <li>Use query <code class="bg-gray-100 px-1 rounded">me/accounts</code> to get your Instagram Business Account ID</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Twitter Instructions -->
+          <div v-else-if="newAccount.platform === 'twitter'">
+            <div class="prose max-w-none">
+              <h4 class="text-lg font-semibold mb-3">𝕏 Twitter/X Setup</h4>
+              
+              <ol class="list-decimal pl-5 space-y-3">
+                <li>Go to <a href="https://developer.twitter.com" target="_blank" class="text-blue-600 underline">developer.twitter.com</a></li>
+                <li>Apply for a developer account (if you don't have one)</li>
+                <li>Create a new App in the Developer Portal</li>
+                <li>Go to your app's <strong>Keys and tokens</strong> section</li>
+                <li>Generate:
+                  <ul class="list-disc pl-5 mt-2">
+                    <li><strong>Bearer Token</strong> (for API v2) - Use this as Access Token</li>
+                    <li>Or <strong>Access Token & Secret</strong> (for API v1.1)</li>
+                  </ul>
+                </li>
+                <li><strong>Account ID:</strong> Your Twitter handle (e.g., @mybusiness)</li>
+                <li><strong>Account Name:</strong> Your display name</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- LinkedIn Instructions -->
+          <div v-else-if="newAccount.platform === 'linkedin'">
+            <div class="prose max-w-none">
+              <h4 class="text-lg font-semibold mb-3">💼 LinkedIn Setup</h4>
+              
+              <ol class="list-decimal pl-5 space-y-3">
+                <li>Go to <a href="https://www.linkedin.com/developers" target="_blank" class="text-blue-600 underline">LinkedIn Developers</a></li>
+                <li>Create a new App</li>
+                <li>Add LinkedIn Pages as a product</li>
+                <li>Request access to necessary permissions:
+                  <ul class="list-disc pl-5 mt-2">
+                    <li><code class="bg-gray-100 px-1 rounded">r_organization_social</code></li>
+                    <li><code class="bg-gray-100 px-1 rounded">w_organization_social</code></li>
+                    <li><code class="bg-gray-100 px-1 rounded">rw_organization_admin</code></li>
+                  </ul>
+                </li>
+                <li>Use OAuth 2.0 to get access token</li>
+                <li><strong>Account ID:</strong> Your LinkedIn Organization/Page ID</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- No platform selected -->
+          <div v-else>
+            <div class="text-center py-8">
+              <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="text-gray-600">Please select a platform first to see specific instructions</p>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-6 border-t">
+            <button @click="showHelp = false" class="btn btn-primary w-full">Got it!</button>
+          </div>
         </div>
       </div>
     </div>
@@ -151,6 +358,7 @@ const getAuthHeaders = () => {
 const accounts = ref([]);
 const loading = ref(false);
 const showConnectModal = ref(false);
+const showHelp = ref(false);
 const newAccount = ref({
   platform: '',
   accountName: '',
@@ -266,6 +474,16 @@ const formatNumber = (num) => {
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
+const getPlatformName = (platform) => {
+  const names = {
+    facebook: 'Facebook',
+    instagram: 'Instagram',
+    twitter: 'Twitter/X',
+    linkedin: 'LinkedIn'
+  };
+  return names[platform] || 'Social Media';
+};
+
 
 onMounted(() => {
   loadAccounts();
