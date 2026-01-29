@@ -265,6 +265,13 @@ const loadProgram = async () => {
     });
     if (response.data.success) {
       program.value = response.data.data;
+      // Format dates for datetime-local input (yyyy-MM-ddThh:mm)
+      if (program.value.startDate) {
+        program.value.startDate = new Date(program.value.startDate).toISOString().slice(0, 16);
+      }
+      if (program.value.endDate) {
+        program.value.endDate = new Date(program.value.endDate).toISOString().slice(0, 16);
+      }
     }
   } catch (error) {
     console.error('Load program error:', error);
@@ -274,11 +281,24 @@ const loadProgram = async () => {
 
 const saveProgram = async () => {
   try {
+    // Create a copy of the program data
+    const programData = { ...program.value };
+    
+    // Remove fields that shouldn't be sent when updating
+    if (isEditing.value) {
+      delete programData._id;
+      delete programData.__v;
+      delete programData.createdAt;
+      delete programData.updatedAt;
+      delete programData.createdBy;
+      delete programData.analytics;
+    }
+    
     const response = isEditing.value
-      ? await axios.put(`${API_URL}/referral/programs/${route.params.id}`, program.value, {
+      ? await axios.put(`${API_URL}/referral/programs/${route.params.id}`, programData, {
           headers: getAuthHeaders()
         })
-      : await axios.post(`${API_URL}/referral/programs`, program.value, {
+      : await axios.post(`${API_URL}/referral/programs`, programData, {
           headers: getAuthHeaders()
         });
     
@@ -288,7 +308,8 @@ const saveProgram = async () => {
     }
   } catch (error) {
     console.error('Save program error:', error);
-    alert(error.response?.data?.message || 'Failed to save program');
+    console.error('Error response:', error.response?.data);
+    alert(error.response?.data?.message || error.response?.data?.errors?.join(', ') || 'Failed to save program');
   }
 };
 

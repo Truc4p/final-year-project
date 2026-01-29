@@ -153,7 +153,7 @@
         </div>
         
         <div v-else class="divide-y">
-          <div v-for="program in programs" :key="program._id" class="p-6 hover:bg-gray-50 cursor-pointer" @click="$router.push(`/admin/referral/programs/${program._id}`)">
+          <div v-for="program in programs" :key="program._id" class="p-6 hover:bg-gray-50 cursor-pointer" @click="$router.push(`/admin/referral/programs/${program._id}/analytics`)">
             <div class="flex items-start justify-between">
               <div class="flex-1">
                 <div class="flex items-center mb-2">
@@ -235,7 +235,8 @@ const stats = ref({
 const loadPrograms = async () => {
   try {
     loading.value = true;
-    const response = await axios.get(`${API_URL}/referral/programs?status=active`, {
+    // Fetch all programs regardless of status to show draft, active, paused, and ended
+    const response = await axios.get(`${API_URL}/referral/programs`, {
       headers: getAuthHeaders()
     });
     if (response.data.success) {

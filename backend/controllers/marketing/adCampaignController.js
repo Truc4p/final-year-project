@@ -11,6 +11,8 @@ const FacebookAdsService = require('../../services/facebookAdsService');
  */
 exports.getCampaigns = async (req, res) => {
   try {
+    console.log('📋 Fetching campaigns with filters:', req.query);
+    
     const { status, platform, objective } = req.query;
     const filter = {};
     
@@ -20,12 +22,24 @@ exports.getCampaigns = async (req, res) => {
       filter['platforms.platform'] = platform;
     }
     
+    console.log('🔍 Query filter:', filter);
+    
     const campaigns = await AdCampaign.find(filter)
       .populate('targetAudiences')
       .populate('budget')
       .populate('creatives')
       .populate('createdBy', 'name email')
       .sort({ createdAt: -1 });
+    
+    console.log('✅ Found campaigns:', campaigns.length);
+    if (campaigns.length > 0) {
+      console.log('📝 First campaign:', {
+        id: campaigns[0]._id,
+        name: campaigns[0].name,
+        status: campaigns[0].status,
+        budget: campaigns[0].budget
+      });
+    }
     
     res.json({
       success: true,
@@ -78,26 +92,40 @@ exports.getCampaign = async (req, res) => {
  */
 exports.createCampaign = async (req, res) => {
   try {
+    console.log('📝 Creating campaign with data:', JSON.stringify(req.body, null, 2));
+    console.log('👤 User from token:', req.user);
+    
     const campaignData = {
       ...req.body,
-      createdBy: req.user._id
+      createdBy: req.user._id || req.user.id // Support both _id and id
     };
     
     // Create budget first
     if (req.body.budgetData) {
+      console.log('💰 Creating budget:', req.body.budgetData);
       const budget = await AdBudget.create({
         ...req.body.budgetData,
         createdBy: req.user._id
       });
+      console.log('✅ Budget created with ID:', budget._id);
       campaignData.budget = budget._id;
     }
     
+    console.log('📋 Creating campaign with data:', campaignData);
     const campaign = await AdCampaign.create(campaignData);
+    console.log('✅ Campaign created with ID:', campaign._id);
     
-    // If platforms are specified, create on those platforms
+    // If platforms are specified, try to create on those platforms (skip if no connection)
     if (req.body.platforms && req.body.platforms.length > 0) {
+      console.log('🔗 Attempting to create campaign on platforms:', req.body.platforms);
       for (const platformConfig of req.body.platforms) {
-        await exports.createCampaignOnPlatform(campaign, platformConfig.platform);
+        try {
+          await exports.createCampaignOnPlatform(campaign, platformConfig.platform);
+          console.log('✅ Campaign created on platform:', platformConfig.platform);
+        } catch (platformError) {
+          console.log('⚠️ Could not create campaign on platform:', platformConfig.platform, '-', platformError.message);
+          // Continue even if platform creation fails
+        }
       }
     }
     

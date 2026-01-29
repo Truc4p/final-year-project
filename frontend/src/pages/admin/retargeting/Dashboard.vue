@@ -149,20 +149,20 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ campaign.platforms.join(', ') }}
+                {{ campaign.platforms?.map(p => p.platform).join(', ') || 'N/A' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ campaign.impressions.toLocaleString() }}
+                {{ (campaign.performance?.impressions || 0).toLocaleString() }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ campaign.ctr }}%
+                {{ (campaign.performance?.ctr || 0).toFixed(2) }}%
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ${{ campaign.spent.toLocaleString() }}
+                ${{ (campaign.performance?.spent || 0).toLocaleString() }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span :class="campaign.roas >= 2 ? 'text-green-600 font-semibold' : 'text-gray-900'">
-                  {{ campaign.roas }}x
+                <span :class="(campaign.performance?.roas || 0) >= 2 ? 'text-green-600 font-semibold' : 'text-gray-900'">
+                  {{ (campaign.performance?.roas || 0).toFixed(2) }}x
                 </span>
               </td>
             </tr>
@@ -211,6 +211,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const stats = ref({
   activeCampaigns: 0,
@@ -229,31 +230,61 @@ onMounted(async () => {
 
 const loadDashboardData = async () => {
   try {
-    // TODO: Replace with actual API calls
-    // For now, showing placeholder data
-    stats.value = {
-      activeCampaigns: 0,
-      totalAudiences: 0,
-      totalAudienceMembers: 0,
-      roas: 0,
-      budgetSpent: 0,
-      totalBudget: 0
-    };
+    console.log('📊 Loading dashboard data...');
+    console.log('🔗 API URL:', API_URL);
     
-    campaigns.value = [];
+    // Fetch campaigns from API
+    const token = localStorage.getItem('token');
+    console.log('🔑 Token present:', !!token);
     
-    // Example of how to fetch real data:
-    // const response = await fetch('/api/marketing/analytics/dashboard', {
-    //   headers: {
-    //     'Authorization': `Bearer ${localStorage.getItem('token')}`
-    //   }
-    // });
-    // const data = await response.json();
-    // stats.value = data.stats;
-    // campaigns.value = data.recentCampaigns;
+    const url = `${API_URL}/api/marketing/campaigns`;
+    console.log('📡 Fetching from:', url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    console.log('📥 Response status:', response.status);
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ API Response:', data);
+      console.log('📋 Campaigns received:', data.campaigns?.length || 0);
+      
+      campaigns.value = data.campaigns || [];
+      console.log('💾 Campaigns stored:', campaigns.value.length);
+      
+      if (campaigns.value.length > 0) {
+        console.log('📝 First campaign:', campaigns.value[0]);
+      }
+      
+      // Calculate stats from campaigns
+      const activeCampaigns = campaigns.value.filter(c => c.status === 'active').length;
+      const totalBudget = campaigns.value.reduce((sum, c) => sum + (c.budget?.amount || 0), 0);
+      const budgetSpent = campaigns.value.reduce((sum, c) => sum + (c.budget?.spent || 0), 0);
+      
+      stats.value = {
+        activeCampaigns,
+        totalAudiences: 0, // TODO: fetch from audiences API
+        totalAudienceMembers: 0,
+        roas: 0,
+        budgetSpent,
+        totalBudget
+      };
+      
+      console.log('📊 Stats calculated:', stats.value);
+    } else {
+      const errorText = await response.text();
+      console.error('❌ Failed to fetch campaigns:', response.status, errorText);
+      campaigns.value = [];
+    }
     
   } catch (error) {
-    console.error('Error loading dashboard data:', error);
+    console.error('❌ Error loading dashboard data:', error);
+    console.error('Error stack:', error.stack);
+    campaigns.value = [];
   }
 };
 </script>

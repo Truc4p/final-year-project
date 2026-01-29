@@ -67,24 +67,45 @@
             <tr v-for="campaign in campaigns" :key="campaign._id">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-gray-900">{{ campaign.name }}</div>
+                <div class="text-xs text-gray-500">{{ campaign.objective }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                <span :class="{
+                  'bg-green-100 text-green-800': campaign.status === 'active',
+                  'bg-yellow-100 text-yellow-800': campaign.status === 'paused',
+                  'bg-gray-100 text-gray-800': campaign.status === 'draft',
+                  'bg-red-100 text-red-800': campaign.status === 'cancelled'
+                }" class="px-2 py-1 text-xs rounded-full capitalize">
                   {{ campaign.status }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                {{ campaign.platform }}
+                <div v-if="campaign.platforms && campaign.platforms.length > 0" class="flex flex-col gap-1">
+                  <span v-for="platform in campaign.platforms" :key="platform.platform" class="text-xs">
+                    {{ platform.platform.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) }}
+                  </span>
+                </div>
+                <span v-else class="text-gray-400">-</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                ${{ campaign.budget }}
+                <div v-if="campaign.budget">
+                  <div class="font-medium">${{ campaign.budget.amount }}</div>
+                  <div class="text-xs text-gray-500">{{ campaign.budget.budgetType }}</div>
+                </div>
+                <span v-else class="text-gray-400">-</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                ROAS: {{ campaign.roas }}x
+                <div v-if="campaign.performance">
+                  <div>ROAS: {{ campaign.performance.roas || 0 }}x</div>
+                  <div class="text-xs text-gray-500">
+                    {{ campaign.performance.clicks || 0 }} clicks
+                  </div>
+                </div>
+                <span v-else class="text-gray-400">No data</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <button class="text-blue-600 hover:text-blue-700 mr-3">Edit</button>
-                <button class="text-red-600 hover:text-red-700">Delete</button>
+                <button @click="editCampaign(campaign._id)" class="text-blue-600 hover:text-blue-700 mr-3">Edit</button>
+                <button @click="deleteCampaign(campaign._id)" class="text-red-600 hover:text-red-700">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -96,7 +117,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const campaigns = ref([]);
 
 onMounted(() => {
@@ -104,7 +128,56 @@ onMounted(() => {
 });
 
 const loadCampaigns = async () => {
-  // TODO: Implement API call
-  campaigns.value = [];
+  try {
+    console.log('📊 Loading campaigns from API...');
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`${API_URL}/api/marketing/campaigns`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    console.log('📡 Response status:', response.status);
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ Campaigns data:', data);
+      campaigns.value = data.campaigns || [];
+      console.log('📋 Loaded campaigns:', campaigns.value.length);
+    } else {
+      console.error('❌ Failed to load campaigns:', response.status);
+    }
+  } catch (error) {
+    console.error('❌ Error loading campaigns:', error);
+  }
+};
+
+const editCampaign = (id) => {
+  router.push(`/admin/retargeting/campaigns/${id}/edit`);
+};
+
+const deleteCampaign = async (id) => {
+  if (!confirm('Are you sure you want to delete this campaign?')) return;
+  
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/api/marketing/campaigns/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (response.ok) {
+      alert('Campaign deleted successfully');
+      loadCampaigns();
+    } else {
+      alert('Failed to delete campaign');
+    }
+  } catch (error) {
+    console.error('Delete error:', error);
+    alert('Error deleting campaign');
+  }
 };
 </script>

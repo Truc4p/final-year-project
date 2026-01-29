@@ -154,6 +154,8 @@ const routes = [
       { path: "referral/programs", component: () => import("@/pages/admin/referral/Dashboard.vue") },
       { path: "referral/programs/create", component: () => import("@/pages/admin/referral/ProgramBuilder.vue") },
       { path: "referral/programs/:id/edit", component: () => import("@/pages/admin/referral/ProgramBuilder.vue") },
+      { path: "referral/programs/:id/analytics", component: () => import("@/pages/admin/referral/ProgramAnalytics.vue") },
+      { path: "referral/rewards", component: () => import("@/pages/admin/referral/Dashboard.vue") },
       { path: "referral/leaderboard", component: () => import("@/pages/admin/referral/Leaderboard.vue") },
 
       // Marketing Automation Routes

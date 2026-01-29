@@ -56,21 +56,39 @@ exports.getProgram = async (req, res) => {
 // Create program
 exports.createProgram = async (req, res) => {
   try {
+    console.log('Creating referral program with data:', req.body);
+    
     const programData = {
       ...req.body,
       createdBy: req.user.id
     };
     
+    console.log('Program data to save:', programData);
+    
     const program = new ReferralProgram(programData);
-    await program.save();
+    console.log('New program instance created, about to save...');
+    
+    const savedProgram = await program.save();
+    console.log('Program saved successfully with ID:', savedProgram._id);
     
     res.status(201).json({
       success: true,
       message: 'Referral program created successfully',
-      data: program
+      data: savedProgram
     });
   } catch (error) {
     console.error('Create program error:', error);
+    
+    // Better error handling for validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validation error', 
+        errors 
+      });
+    }
+    
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
@@ -78,6 +96,9 @@ exports.createProgram = async (req, res) => {
 // Update program
 exports.updateProgram = async (req, res) => {
   try {
+    console.log('Updating referral program:', req.params.id);
+    console.log('Update data:', req.body);
+    
     const program = await ReferralProgram.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -88,6 +109,8 @@ exports.updateProgram = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Program not found' });
     }
     
+    console.log('Program updated successfully with ID:', program._id);
+    
     res.json({
       success: true,
       message: 'Program updated successfully',
@@ -95,6 +118,26 @@ exports.updateProgram = async (req, res) => {
     });
   } catch (error) {
     console.error('Update program error:', error);
+    console.error('Error details:', error.stack);
+    
+    // Better error handling for validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validation error', 
+        errors 
+      });
+    }
+    
+    if (error.name === 'CastError') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid ID format', 
+        error: error.message 
+      });
+    }
+    
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
