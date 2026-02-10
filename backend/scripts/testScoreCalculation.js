@@ -45,8 +45,8 @@ async function testScoreCalculation() {
         
         console.log('\n💡 HOW THE SCORE IS CALCULATED:');
         console.log('================================');
-        console.log('1. Your query is converted to a 768-dimensional vector using Gemini');
-        console.log('2. Each document chunk is also a 768-dimensional vector');
+        console.log('1. Your query is converted to a 3072-dimensional vector using Gemini');
+        console.log('2. Each document chunk is also a 3072-dimensional vector');
         console.log('3. Cosine similarity is calculated: (A·B) / (||A|| × ||B||)');
         console.log('4. Result is a number between 0.0 (no similarity) and 1.0 (identical)');
         console.log('5. Your score of 0.63495445 means ~63.5% semantic similarity');

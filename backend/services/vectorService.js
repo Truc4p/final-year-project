@@ -1,7 +1,7 @@
 const { QdrantClient } = require('@qdrant/js-client-rest');
 const { GoogleGenerativeAIEmbeddings } = require('@langchain/google-genai');
-const { RecursiveCharacterTextSplitter } = require('langchain/text_splitter');
-const { Document } = require('langchain/document');
+const { RecursiveCharacterTextSplitter } = require('@langchain/textsplitters');
+const { Document } = require('@langchain/core/documents');
 const fs = require('fs').promises;
 const path = require('path');
 const performanceMonitor = require('../utils/performanceMonitor');
@@ -12,7 +12,7 @@ class VectorService {
         this.qdrantClient = null;
         this.embeddings = null;
         this.isInitialized = false;
-        this.vectorSize = 768; // Gemini embedding dimension
+        this.vectorSize = 3072; // gemini-embedding-001 dimension
         this.collectionName = 'dermatology_knowledge';
     }
     
@@ -34,7 +34,7 @@ class VectorService {
             console.log('🆓 Using Gemini embeddings');
             this.embeddings = new GoogleGenerativeAIEmbeddings({
                 apiKey: geminiApiKey,
-                modelName: 'text-embedding-004' // Gemini's latest embedding model
+                modelName: 'gemini-embedding-001' // Latest Gemini embedding model
             });
             
             this.isInitialized = true;
@@ -63,7 +63,7 @@ class VectorService {
             );
 
             if (!exists) {
-                // Create collection with Gemini vector size (768)
+                // Create collection with Gemini vector size (3072)
                 await this.qdrantClient.createCollection(this.collectionName, {
                     vectors: {
                         size: this.vectorSize,
@@ -116,8 +116,8 @@ class VectorService {
                 
                 // Split the text into chunks
                 const textSplitter = new RecursiveCharacterTextSplitter({
-                    chunkSize: 1500,  // Increased from 1000 to capture more complete sections
-                    chunkOverlap: 300, // Increased overlap to ensure continuity
+                    chunkSize: 3000,  // Larger chunks = fewer total docs = faster indexing
+                    chunkOverlap: 500, // Good overlap to ensure continuity
                     separators: ['\n\n', '\n', '. ', ' ', '']
                 });
 
@@ -150,24 +150,43 @@ class VectorService {
     }
 
     /**
-     * Index documents into Qdrant
+     * Index documents into Qdrant with resume support and adaptive rate limiting
      */
-    async indexDocuments(documents) {
+    async indexDocuments(documents, { resumeFrom = 0 } = {}) {
         try {
-            console.log(`Indexing ${documents.length} documents...`);
-            
-            const batchSize = 50; // Reduced from 100 to prevent timeouts
+            const batchSize = 50; // Gemini can handle larger batches
             const totalBatches = Math.ceil(documents.length / batchSize);
-            let successfulBatches = 0;
+            const startBatch = Math.floor(resumeFrom / batchSize);
+            let successfulDocs = resumeFrom;
             let failedBatches = 0;
             const failedBatchNumbers = [];
+            let consecutiveSuccesses = 0;
+            let currentDelay = 1500; // Adaptive delay (ms)
+            const startTime = Date.now();
+
+            // Checkpoint file for resume support
+            const checkpointPath = path.join(__dirname, '../.vector-index-checkpoint.json');
+
+            console.log(`Indexing ${documents.length} documents (batch size: ${batchSize}, ${totalBatches} batches)...`);
+            if (resumeFrom > 0) {
+                console.log(`📌 Resuming from document ${resumeFrom} (batch ${startBatch + 1})`);
+            }
+
+            const formatETA = (docsRemaining, msPerDoc) => {
+                const totalMs = docsRemaining * msPerDoc;
+                const mins = Math.floor(totalMs / 60000);
+                const secs = Math.floor((totalMs % 60000) / 1000);
+                if (mins > 60) return `~${(mins / 60).toFixed(1)}h`;
+                return `~${mins}m ${secs}s`;
+            };
             
-            for (let i = 0; i < documents.length; i += batchSize) {
+            for (let i = startBatch * batchSize; i < documents.length; i += batchSize) {
                 const batch = documents.slice(i, i + batchSize);
                 const batchNum = Math.floor(i / batchSize) + 1;
                 
-                let retries = 3;
+                let retries = 5;
                 let success = false;
+                let backoffDelay = 5000; // Exponential backoff starting point
                 
                 while (retries > 0 && !success) {
                     try {
@@ -176,12 +195,13 @@ class VectorService {
                         const embeddings = await this.embeddings.embedDocuments(texts);
                         
                         // Validate embeddings before uploading
-                        const validEmbeddings = embeddings.every(emb => 
-                            Array.isArray(emb) && emb.length === 768 && emb.some(v => v !== 0)
-                        );
+                        const invalidEmbeddings = embeddings
+                            .map((emb, idx) => ({ idx, len: Array.isArray(emb) ? emb.length : -1, allZero: Array.isArray(emb) && !emb.some(v => v !== 0) }))
+                            .filter(e => e.len !== this.vectorSize || e.allZero);
                         
-                        if (!validEmbeddings) {
-                            throw new Error('Invalid embeddings: empty or wrong dimension');
+                        if (invalidEmbeddings.length > 0) {
+                            const details = invalidEmbeddings.map(e => `doc[${e.idx}]: dim=${e.len}`).join(', ');
+                            throw new Error(`RATE_LIMITED: ${details}`);
                         }
                         
                         // Prepare points for Qdrant
@@ -200,46 +220,127 @@ class VectorService {
                             points: points
                         });
                         
-                        console.log(`Indexed batch ${batchNum}/${totalBatches} (${i + batch.length}/${documents.length} docs)`);
+                        successfulDocs += batch.length;
+                        consecutiveSuccesses++;
                         success = true;
-                        successfulBatches++;
                         
-                        // Small delay between batches to prevent overwhelming Qdrant
-                        await new Promise(resolve => setTimeout(resolve, 100));
+                        // Save checkpoint every 5 batches
+                        if (batchNum % 5 === 0) {
+                            await fs.writeFile(checkpointPath, JSON.stringify({
+                                resumeFrom: i + batch.length,
+                                timestamp: new Date().toISOString(),
+                                totalDocs: documents.length
+                            }));
+                        }
+                        
+                        // Progress logging (every 5 batches or key points)
+                        if (batchNum <= 3 || batchNum % 5 === 0 || batchNum === totalBatches) {
+                            const pct = (successfulDocs / documents.length * 100).toFixed(1);
+                            const elapsed = Date.now() - startTime;
+                            const docsProcessed = successfulDocs - resumeFrom;
+                            const msPerDoc = docsProcessed > 0 ? elapsed / docsProcessed : 0;
+                            const remaining = documents.length - successfulDocs;
+                            const eta = docsProcessed > 0 ? formatETA(remaining, msPerDoc) : '...';
+                            console.log(`✅ Batch ${batchNum}/${totalBatches} | ${successfulDocs}/${documents.length} docs (${pct}%) | ETA: ${eta}`);
+                        }
+                        
+                        // Adaptive delay: speed up after consecutive successes, minimum 500ms
+                        if (consecutiveSuccesses > 10) {
+                            currentDelay = Math.max(500, currentDelay - 100);
+                        } else if (consecutiveSuccesses > 5) {
+                            currentDelay = Math.max(800, currentDelay - 50);
+                        }
+                        await new Promise(resolve => setTimeout(resolve, currentDelay));
                         
                     } catch (error) {
                         retries--;
+                        consecutiveSuccesses = 0;
+                        
+                        const isRateLimited = error.message.includes('RATE_LIMITED') || 
+                                              error.message.includes('429') || 
+                                              error.message.includes('Resource exhausted');
+                        
                         if (retries > 0) {
-                            console.log(`   ⚠️  Batch ${batchNum} failed, retrying... (${retries} attempts left)`);
-                            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s before retry
+                            // Exponential backoff: 5s, 10s, 20s, 40s
+                            const delay = isRateLimited ? backoffDelay : 3000;
+                            console.log(`   ⏳ Batch ${batchNum}: waiting ${(delay/1000).toFixed(0)}s before retry... (${retries} retries left)`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            backoffDelay = Math.min(backoffDelay * 2, 120000); // Max 2 min
+                            // Slow down future batches after a rate limit
+                            currentDelay = Math.min(currentDelay + 500, 3000);
                         } else {
-                            console.log(`   ❌ Batch ${batchNum} failed after 3 attempts - SKIPPING and continuing...`);
-                            console.log(`      Error: ${error.message}`);
-                            failedBatches++;
-                            failedBatchNumbers.push(batchNum);
-                            success = true; // Mark as "success" to continue to next batch
+                            // Final fallback: split batch in half and retry each half
+                            console.log(`   🔄 Batch ${batchNum}: splitting into smaller sub-batches...`);
+                            let fallbackSuccess = 0;
+                            const subBatchSize = Math.ceil(batch.length / 5);
+                            
+                            for (let s = 0; s < batch.length; s += subBatchSize) {
+                                const subBatch = batch.slice(s, s + subBatchSize);
+                                try {
+                                    await new Promise(resolve => setTimeout(resolve, 5000));
+                                    const subTexts = subBatch.map(doc => doc.pageContent);
+                                    const subEmbeddings = await this.embeddings.embedDocuments(subTexts);
+                                    
+                                    const validPairs = subEmbeddings
+                                        .map((emb, idx) => ({ emb, idx }))
+                                        .filter(p => Array.isArray(p.emb) && p.emb.length === this.vectorSize && p.emb.some(v => v !== 0));
+                                    
+                                    if (validPairs.length > 0) {
+                                        const subPoints = validPairs.map(p => ({
+                                            id: i + s + p.idx,
+                                            vector: p.emb,
+                                            payload: {
+                                                text: subBatch[p.idx].pageContent,
+                                                metadata: subBatch[p.idx].metadata
+                                            }
+                                        }));
+                                        await this.qdrantClient.upsert(this.collectionName, { wait: true, points: subPoints });
+                                        fallbackSuccess += validPairs.length;
+                                    }
+                                } catch (e) {
+                                    // Skip this sub-batch
+                                }
+                            }
+                            
+                            if (fallbackSuccess > 0) {
+                                console.log(`   ✅ Batch ${batchNum}: recovered ${fallbackSuccess}/${batch.length} docs via sub-batch fallback`);
+                                successfulDocs += fallbackSuccess;
+                            } else {
+                                console.log(`   ❌ Batch ${batchNum}: completely failed, skipping`);
+                                failedBatches++;
+                                failedBatchNumbers.push(batchNum);
+                            }
+                            success = true;
+                            
+                            // Extra cooldown after fallback
+                            currentDelay = 3000;
+                            await new Promise(resolve => setTimeout(resolve, 15000));
                         }
                     }
                 }
             }
+
+            // Cleanup checkpoint on completion
+            try { await fs.unlink(checkpointPath); } catch (e) { /* ignore */ }
             
+            const totalTime = ((Date.now() - startTime) / 1000).toFixed(0);
             console.log('\n' + '='.repeat(60));
             console.log('Indexing Summary:');
             console.log('='.repeat(60));
-            console.log(`✅ Successful batches: ${successfulBatches}/${totalBatches}`);
+            console.log(`✅ Documents indexed: ${successfulDocs}/${documents.length}`);
             console.log(`❌ Failed batches: ${failedBatches}/${totalBatches}`);
             if (failedBatches > 0) {
                 console.log(`   Failed batch numbers: ${failedBatchNumbers.join(', ')}`);
                 console.log(`   Documents skipped: ~${failedBatches * batchSize}`);
             }
-            console.log(`📊 Total documents indexed: ~${successfulBatches * batchSize}/${documents.length}`);
+            console.log(`⏱️  Total time: ${totalTime}s`);
             console.log('='.repeat(60));
             
             if (failedBatches === totalBatches) {
                 throw new Error('All batches failed - check Gemini API key and rate limits');
             }
             
-            console.log('\n✅ Indexing completed with some batches skipped');
+            console.log('\n✅ Indexing completed!');
         } catch (error) {
             console.error('Error indexing documents:', error);
             throw error;
@@ -361,8 +462,8 @@ class VectorService {
             console.log('   Score = Cosine Similarity between query vector and chunk vector');
             console.log('   Range: 0.0 (completely different) to 1.0 (identical meaning)');
             console.log('   Distance metric: Cosine');
-            console.log('   Vector dimensions: 768 (Gemini embeddings)');
-            console.log('   Model: text-embedding-004\n');
+            console.log('   Vector dimensions: 3072 (gemini-embedding-001)');
+            console.log('   Model: gemini-embedding-001\n');
             
             // Analyze why scores are what they are
             console.log('🧠 WHY THESE SCORES?:');
@@ -486,11 +587,16 @@ class VectorService {
         try {
             console.log('🔄 Resetting vector database...\n');
             
+            // 0. Ensure initialized (need qdrantClient to delete)
+            await this.ensureInitialized();
+            
             // 1. Delete existing collection
             await this.deleteCollection();
             
-            // 2. Run setup again
-            await this.setup();
+            // 2. Run setup again (re-create collection + re-index)
+            await this.initializeCollection();
+            const documents = await this.loadKnowledgeBase();
+            await this.indexDocuments(documents);
             
             console.log('\n✅ Vector database reset completed!');
         } catch (error) {

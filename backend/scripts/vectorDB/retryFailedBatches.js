@@ -119,12 +119,12 @@ async function retryBatch(batch, startIndex, batchNum, maxRetries = 5) {
             
             // Validate embeddings
             const validEmbeddings = embeddings.every(emb => 
-                Array.isArray(emb) && emb.length === 768 && emb.some(v => v !== 0)
+                Array.isArray(emb) && emb.length === 3072 && emb.some(v => v !== 0)
             );
             
             if (!validEmbeddings) {
                 const invalidIndices = embeddings
-                    .map((emb, idx) => (!Array.isArray(emb) || emb.length !== 768 || !emb.some(v => v !== 0)) ? idx : -1)
+                    .map((emb, idx) => (!Array.isArray(emb) || emb.length !== 3072 || !emb.some(v => v !== 0)) ? idx : -1)
                     .filter(idx => idx !== -1);
                 throw new Error(`Invalid embeddings at indices: ${invalidIndices.join(', ')}`);
             }
@@ -182,7 +182,7 @@ async function indexOneByOne(batch, startIndex, batchNum) {
             const embedding = await vectorService.embeddings.embedQuery(doc.pageContent);
             
             // Validate
-            if (!Array.isArray(embedding) || embedding.length !== 768 || !embedding.some(v => v !== 0)) {
+            if (!Array.isArray(embedding) || embedding.length !== 3072 || !embedding.some(v => v !== 0)) {
                 console.log(`   ⚠️  Document ${i + 1}: Invalid embedding - skipping`);
                 continue;
             }

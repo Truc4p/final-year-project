@@ -4,7 +4,7 @@ class ScoreAnalyzer {
     constructor() {
         this.embeddings = new GoogleGenerativeAIEmbeddings({
             apiKey: process.env.GEMINI_API_KEY,
-            modelName: 'text-embedding-004'
+            modelName: 'gemini-embedding-001'
         });
     }
 

@@ -90,7 +90,7 @@ async function main() {
  */
 async function indexRemainingDocuments(documents, startIndex) {
     try {
-        const batchSize = 50;
+        const batchSize = 10; // Small batches for gemini-embedding-001 rate limits
         const totalBatches = Math.ceil(documents.length / batchSize);
         const startBatch = Math.floor(startIndex / batchSize) + 1;
         let successfulBatches = 0;
@@ -102,7 +102,7 @@ async function indexRemainingDocuments(documents, startIndex) {
             const actualBatchNum = startBatch + Math.floor(i / batchSize);
             const absoluteIndex = startIndex + i;
             
-            let retries = 3;
+            let retries = 5;
             let success = false;
             
             while (retries > 0 && !success) {
@@ -112,12 +112,13 @@ async function indexRemainingDocuments(documents, startIndex) {
                     const embeddings = await vectorService.embeddings.embedDocuments(texts);
                     
                     // Validate embeddings before uploading
-                    const validEmbeddings = embeddings.every(emb => 
-                        Array.isArray(emb) && emb.length === 768 && emb.some(v => v !== 0)
-                    );
+                    const invalidEmbeddings = embeddings
+                        .map((emb, idx) => ({ idx, len: Array.isArray(emb) ? emb.length : -1, allZero: Array.isArray(emb) && !emb.some(v => v !== 0) }))
+                        .filter(e => e.len !== 3072 || e.allZero);
                     
-                    if (!validEmbeddings) {
-                        throw new Error('Invalid embeddings: empty or wrong dimension');
+                    if (invalidEmbeddings.length > 0) {
+                        const details = invalidEmbeddings.map(e => `doc[${e.idx}]: dim=${e.len}`).join(', ');
+                        throw new Error(`Invalid embeddings (expected dim 3072): ${details}`);
                     }
                     
                     // Prepare points for Qdrant with correct IDs
@@ -136,20 +137,21 @@ async function indexRemainingDocuments(documents, startIndex) {
                         points: points
                     });
                     
-                    console.log(`Indexed batch ${actualBatchNum}/297 (${absoluteIndex + batch.length}/14809 docs)`);
+                    console.log(`Indexed batch ${actualBatchNum} (${absoluteIndex + batch.length} docs so far)`);
                     success = true;
                     successfulBatches++;
                     
-                    // Small delay between batches
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    // Delay between batches to respect rate limits
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     
                 } catch (error) {
                     retries--;
                     if (retries > 0) {
-                        console.log(`   ⚠️  Batch ${actualBatchNum} failed, retrying... (${retries} attempts left)`);
-                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        const delay = 3000 * (6 - retries);
+                        console.log(`   ⚠️  Batch ${actualBatchNum} failed, retrying in ${delay/1000}s... (${retries} attempts left) - ${error.message}`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
                     } else {
-                        console.log(`   ❌ Batch ${actualBatchNum} failed after 3 attempts - SKIPPING and continuing...`);
+                        console.log(`   ❌ Batch ${actualBatchNum} failed after 5 attempts - SKIPPING and continuing...`);
                         console.log(`      Error: ${error.message}`);
                         failedBatches++;
                         failedBatchNumbers.push(actualBatchNum);

@@ -52,8 +52,8 @@ async function debugScoreCalculation(query) {
         });
         
         console.log('\n💡 KEY INSIGHTS:');
-        console.log('   • Scores are calculated using cosine similarity between 768-dimensional vectors');
-        console.log('   • Each vector represents semantic meaning via Gemini text-embedding-004');
+        console.log('   • Scores are calculated using cosine similarity between 3072-dimensional vectors');
+        console.log('   • Each vector represents semantic meaning via gemini-embedding-001');
         console.log('   • Higher scores = more semantically similar content');
         console.log('   • Scores > 0.7 are considered good matches');
         console.log('   • Scores < 0.5 may be tangentially related');
