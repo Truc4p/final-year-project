@@ -150,19 +150,64 @@ class VectorService {
     }
 
     /**
-     * Index documents into Qdrant with resume support and adaptive rate limiting
+     * Estimate tokens from text array (rough: 1 token ≈ 4 chars for English)
+     */
+    estimateTokens(texts) {
+        return texts.reduce((sum, t) => sum + Math.ceil(t.length / 4), 0);
+    }
+
+    /**
+     * TPM (tokens-per-minute) rate limiter for Gemini embedding API.
+     * Tracks tokens in a rolling 60s window and proactively waits before exceeding quota.
+     */
+    createTPMTracker(maxTPM = 900000) {
+        const tokenLog = []; // { timestamp, tokens }
+        const self = this;
+        return {
+            async waitIfNeeded(tokens) {
+                const now = Date.now();
+                // Remove entries older than 60s
+                while (tokenLog.length > 0 && now - tokenLog[0].timestamp > 60000) {
+                    tokenLog.shift();
+                }
+                const usedTokens = tokenLog.reduce((sum, e) => sum + e.tokens, 0);
+                if (usedTokens + tokens > maxTPM) {
+                    const waitMs = tokenLog.length > 0
+                        ? 60000 - (now - tokenLog[0].timestamp) + 2000 // wait until oldest entry expires + 2s margin
+                        : 10000;
+                    console.log(`   ⏱️  TPM limit approaching (${usedTokens.toLocaleString()}+${tokens.toLocaleString()} > ${maxTPM.toLocaleString()}), cooling ${(waitMs/1000).toFixed(0)}s...`);
+                    await new Promise(resolve => setTimeout(resolve, waitMs));
+                    return this.waitIfNeeded(tokens); // re-check after waiting
+                }
+            },
+            record(tokens) {
+                tokenLog.push({ timestamp: Date.now(), tokens });
+            },
+            getUsed() {
+                const now = Date.now();
+                while (tokenLog.length > 0 && now - tokenLog[0].timestamp > 60000) {
+                    tokenLog.shift();
+                }
+                return tokenLog.reduce((sum, e) => sum + e.tokens, 0);
+            }
+        };
+    }
+
+    /**
+     * Index documents into Qdrant with TPM-aware rate limiting and resume support
      */
     async indexDocuments(documents, { resumeFrom = 0 } = {}) {
         try {
-            const batchSize = 50; // Gemini can handle larger batches
+            const batchSize = 50;
             const totalBatches = Math.ceil(documents.length / batchSize);
             const startBatch = Math.floor(resumeFrom / batchSize);
             let successfulDocs = resumeFrom;
             let failedBatches = 0;
             const failedBatchNumbers = [];
-            let consecutiveSuccesses = 0;
-            let currentDelay = 1500; // Adaptive delay (ms)
             const startTime = Date.now();
+
+            // TPM tracker: Gemini free tier ≈ 1M TPM, we cap at 900K for safety
+            const tpmTracker = this.createTPMTracker(900000);
 
             // Checkpoint file for resume support
             const checkpointPath = path.join(__dirname, '../.vector-index-checkpoint.json');
@@ -183,16 +228,23 @@ class VectorService {
             for (let i = startBatch * batchSize; i < documents.length; i += batchSize) {
                 const batch = documents.slice(i, i + batchSize);
                 const batchNum = Math.floor(i / batchSize) + 1;
+                const texts = batch.map(doc => doc.pageContent);
+                const estimatedTokens = this.estimateTokens(texts);
                 
                 let retries = 5;
                 let success = false;
-                let backoffDelay = 5000; // Exponential backoff starting point
+                let backoffDelay = 65000; // Start at 65s — full minute window reset + margin
                 
                 while (retries > 0 && !success) {
                     try {
+                        // Proactively wait if we'd exceed the TPM limit
+                        await tpmTracker.waitIfNeeded(estimatedTokens);
+
                         // Generate embeddings for batch
-                        const texts = batch.map(doc => doc.pageContent);
                         const embeddings = await this.embeddings.embedDocuments(texts);
+                        
+                        // Record tokens used after successful API call
+                        tpmTracker.record(estimatedTokens);
                         
                         // Validate embeddings before uploading
                         const invalidEmbeddings = embeddings
@@ -221,7 +273,6 @@ class VectorService {
                         });
                         
                         successfulDocs += batch.length;
-                        consecutiveSuccesses++;
                         success = true;
                         
                         // Save checkpoint every 5 batches
@@ -233,7 +284,7 @@ class VectorService {
                             }));
                         }
                         
-                        // Progress logging (every 5 batches or key points)
+                        // Progress logging (every 5 batches or key milestones)
                         if (batchNum <= 3 || batchNum % 5 === 0 || batchNum === totalBatches) {
                             const pct = (successfulDocs / documents.length * 100).toFixed(1);
                             const elapsed = Date.now() - startTime;
@@ -241,45 +292,44 @@ class VectorService {
                             const msPerDoc = docsProcessed > 0 ? elapsed / docsProcessed : 0;
                             const remaining = documents.length - successfulDocs;
                             const eta = docsProcessed > 0 ? formatETA(remaining, msPerDoc) : '...';
-                            console.log(`✅ Batch ${batchNum}/${totalBatches} | ${successfulDocs}/${documents.length} docs (${pct}%) | ETA: ${eta}`);
+                            const tpmUsed = tpmTracker.getUsed();
+                            console.log(`✅ Batch ${batchNum}/${totalBatches} | ${successfulDocs}/${documents.length} docs (${pct}%) | TPM: ${(tpmUsed/1000).toFixed(0)}K/900K | ETA: ${eta}`);
                         }
                         
-                        // Adaptive delay: speed up after consecutive successes, minimum 500ms
-                        if (consecutiveSuccesses > 10) {
-                            currentDelay = Math.max(500, currentDelay - 100);
-                        } else if (consecutiveSuccesses > 5) {
-                            currentDelay = Math.max(800, currentDelay - 50);
-                        }
-                        await new Promise(resolve => setTimeout(resolve, currentDelay));
+                        // Small base delay — TPM tracker handles the real throttling
+                        await new Promise(resolve => setTimeout(resolve, 500));
                         
                     } catch (error) {
                         retries--;
-                        consecutiveSuccesses = 0;
                         
                         const isRateLimited = error.message.includes('RATE_LIMITED') || 
                                               error.message.includes('429') || 
                                               error.message.includes('Resource exhausted');
                         
                         if (retries > 0) {
-                            // Exponential backoff: 5s, 10s, 20s, 40s
-                            const delay = isRateLimited ? backoffDelay : 3000;
-                            console.log(`   ⏳ Batch ${batchNum}: waiting ${(delay/1000).toFixed(0)}s before retry... (${retries} retries left)`);
+                            const delay = isRateLimited ? backoffDelay : 5000;
+                            console.log(`   ⏳ Batch ${batchNum}: waiting ${(delay/1000).toFixed(0)}s before retry... (${retries} retries left)${isRateLimited ? ' [rate limited]' : ''}`);
                             await new Promise(resolve => setTimeout(resolve, delay));
-                            backoffDelay = Math.min(backoffDelay * 2, 120000); // Max 2 min
-                            // Slow down future batches after a rate limit
-                            currentDelay = Math.min(currentDelay + 500, 3000);
+                            backoffDelay = Math.min(backoffDelay * 1.5, 120000);
                         } else {
-                            // Final fallback: split batch in half and retry each half
+                            // Final fallback: split into sub-batches of 5 with TPM tracking
                             console.log(`   🔄 Batch ${batchNum}: splitting into smaller sub-batches...`);
                             let fallbackSuccess = 0;
-                            const subBatchSize = Math.ceil(batch.length / 5);
+                            const subBatchSize = 5;
+                            
+                            // Wait 65s first to let rate limit fully reset
+                            console.log(`   ⏱️  Waiting 65s for rate limit window to fully reset...`);
+                            await new Promise(resolve => setTimeout(resolve, 65000));
                             
                             for (let s = 0; s < batch.length; s += subBatchSize) {
                                 const subBatch = batch.slice(s, s + subBatchSize);
                                 try {
-                                    await new Promise(resolve => setTimeout(resolve, 5000));
                                     const subTexts = subBatch.map(doc => doc.pageContent);
+                                    const subTokens = this.estimateTokens(subTexts);
+                                    await tpmTracker.waitIfNeeded(subTokens);
+                                    
                                     const subEmbeddings = await this.embeddings.embedDocuments(subTexts);
+                                    tpmTracker.record(subTokens);
                                     
                                     const validPairs = subEmbeddings
                                         .map((emb, idx) => ({ emb, idx }))
@@ -297,8 +347,11 @@ class VectorService {
                                         await this.qdrantClient.upsert(this.collectionName, { wait: true, points: subPoints });
                                         fallbackSuccess += validPairs.length;
                                     }
+                                    
+                                    await new Promise(resolve => setTimeout(resolve, 1000));
                                 } catch (e) {
-                                    // Skip this sub-batch
+                                    // Wait and skip this sub-batch
+                                    await new Promise(resolve => setTimeout(resolve, 10000));
                                 }
                             }
                             
@@ -311,10 +364,6 @@ class VectorService {
                                 failedBatchNumbers.push(batchNum);
                             }
                             success = true;
-                            
-                            // Extra cooldown after fallback
-                            currentDelay = 3000;
-                            await new Promise(resolve => setTimeout(resolve, 15000));
                         }
                     }
                 }
