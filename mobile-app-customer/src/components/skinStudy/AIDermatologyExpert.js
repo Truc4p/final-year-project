@@ -1062,7 +1062,7 @@ What would you like to know more about?`;
       setSpeakingMessageIndex(messageIndex);
       setIsSpeaking(true);
 
-      console.log('🔊 [TTS] Starting sentence-by-sentence playback');
+      console.log('🔊 [TTS] Starting optimized playback');
       console.log('📝 [TTS] Text length:', textToSpeak.length);
 
       // Get detected language from message for accurate TTS voice
@@ -1075,16 +1075,6 @@ What would you like to know more about?`;
         console.log('🌍 [TTS] No language detected, will auto-detect');
       }
 
-      // Split into sentences for faster initial playback
-      const sentences = splitIntoSentences(textToSpeak);
-      console.log('\n📄 [TTS] Split into', sentences.length, 'segments/sentences');
-      console.log('\n🔍 [TTS] DETAILED SENTENCE BREAKDOWN:');
-      sentences.forEach((sentence, idx) => {
-        console.log(`\n  [${idx + 1}/${sentences.length}] Length: ${sentence.length} chars`);
-        console.log(`  Text: "${sentence}"`);
-      });
-      console.log('\n' + '='.repeat(80));
-
       // Set audio mode for playback
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
@@ -1094,61 +1084,119 @@ What would you like to know more about?`;
         staysActiveInBackground: false
       });
 
-      // Play sentences sequentially
-      for (let i = 0; i < sentences.length; i++) {
-        // Check if user stopped playback using ref
+      // For shorter messages, play the entire text at once for natural flow
+      // Only split for very long messages (>2000 chars) to avoid memory issues
+      const SPLIT_THRESHOLD = 2000;
+      
+      if (textToSpeak.length <= SPLIT_THRESHOLD) {
+        // Play entire message at once - no pauses!
+        console.log('🎵 [TTS] Playing entire message (no splitting)');
+        
+        const response = await liveChatService.textToSpeech(textToSpeak, languageCode);
+        console.log(`✅ [TTS] Audio received (${response.audio.length} bytes)`);
+
         if (!playbackControlRef.current.shouldContinue || 
             playbackControlRef.current.currentMessageIndex !== messageIndex) {
           console.log('⏹️ [TTS] Playback stopped by user');
-          break;
+          return;
         }
 
-        console.log(`\n🔊 [TTS] ========== REQUESTING SENTENCE ${i + 1}/${sentences.length} ==========`);
-        console.log(`📤 [TTS] Sending to backend:`);
-        console.log(`   Length: ${sentences[i].length} characters`);
-        console.log(`   Language: ${languageCode || 'auto-detect'}`);
-        console.log(`   Text: "${sentences[i]}"`);
-        
-        // Request TTS from backend with detected language
-        const response = await liveChatService.textToSpeech(sentences[i], languageCode);
-        
-        console.log(`✅ [TTS] Sentence ${i + 1} audio received (${response.audio.length} bytes)`);
-
-        // Check again if user stopped during the request
-        if (!playbackControlRef.current.shouldContinue || 
-            playbackControlRef.current.currentMessageIndex !== messageIndex) {
-          console.log('⏹️ [TTS] Playback stopped during request');
-          break;
-        }
-
-        // Create and play sound
         const { sound: newSound } = await Audio.Sound.createAsync(
           { uri: `data:audio/mp3;base64,${response.audio}` },
           { shouldPlay: true }
         );
 
-        // Store in both state and ref for immediate access
         setSound(newSound);
         playbackControlRef.current.currentSound = newSound;
-        console.log(`▶️ [TTS] Playing sentence ${i + 1}/${sentences.length}`);
+        console.log('▶️ [TTS] Playing audio');
 
-        // Wait for this sentence to finish before playing the next one
         await new Promise((resolve) => {
           newSound.setOnPlaybackStatusUpdate((status) => {
-            if (status.didJustFinish) {
-              resolve();
-            }
-            if (status.error) {
-              console.error('❌ [TTS] Playback error:', status.error);
+            if (status.didJustFinish || status.error) {
               resolve();
             }
           });
         });
 
-        // Clean up this sound before loading the next one
         await newSound.unloadAsync();
         playbackControlRef.current.currentSound = null;
         setSound(null);
+        
+      } else {
+        // For longer messages, use optimized chunking with parallel pre-fetching
+        const sentences = splitIntoSentences(textToSpeak);
+        console.log(`📄 [TTS] Long message - split into ${sentences.length} chunks with parallel pre-fetching`);
+
+        // Pre-fetch audio for multiple chunks in parallel to minimize gaps
+        const audioCache = new Map();
+        
+        // Function to pre-fetch audio
+        const prefetchAudio = async (index) => {
+          if (index >= sentences.length || audioCache.has(index)) return;
+          try {
+            const response = await liveChatService.textToSpeech(sentences[index], languageCode);
+            audioCache.set(index, response.audio);
+            console.log(`✅ [TTS] Pre-fetched chunk ${index + 1}/${sentences.length}`);
+          } catch (error) {
+            console.error(`❌ [TTS] Pre-fetch failed for chunk ${index + 1}:`, error);
+          }
+        };
+
+        // Pre-fetch first 3 chunks
+        await Promise.all([
+          prefetchAudio(0),
+          prefetchAudio(1),
+          prefetchAudio(2)
+        ]);
+
+        // Play chunks with minimal gaps
+        for (let i = 0; i < sentences.length; i++) {
+          if (!playbackControlRef.current.shouldContinue || 
+              playbackControlRef.current.currentMessageIndex !== messageIndex) {
+            console.log('⏹️ [TTS] Playback stopped by user');
+            break;
+          }
+
+          // Pre-fetch next chunk while playing current one
+          if (i + 3 < sentences.length) {
+            prefetchAudio(i + 3);
+          }
+
+          // Get audio from cache or fetch if not available
+          let audioBase64 = audioCache.get(i);
+          if (!audioBase64) {
+            console.log(`📤 [TTS] Fetching chunk ${i + 1}/${sentences.length}`);
+            const response = await liveChatService.textToSpeech(sentences[i], languageCode);
+            audioBase64 = response.audio;
+          }
+
+          if (!playbackControlRef.current.shouldContinue || 
+              playbackControlRef.current.currentMessageIndex !== messageIndex) {
+            break;
+          }
+
+          const { sound: newSound } = await Audio.Sound.createAsync(
+            { uri: `data:audio/mp3;base64,${audioBase64}` },
+            { shouldPlay: true }
+          );
+
+          setSound(newSound);
+          playbackControlRef.current.currentSound = newSound;
+          console.log(`▶️ [TTS] Playing chunk ${i + 1}/${sentences.length}`);
+
+          await new Promise((resolve) => {
+            newSound.setOnPlaybackStatusUpdate((status) => {
+              if (status.didJustFinish || status.error) {
+                resolve();
+              }
+            });
+          });
+
+          await newSound.unloadAsync();
+          playbackControlRef.current.currentSound = null;
+          setSound(null);
+          audioCache.delete(i); // Free memory
+        }
       }
 
       console.log('✅ [TTS] All sentences completed');
