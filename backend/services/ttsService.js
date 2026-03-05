@@ -1,33 +1,42 @@
 const gttsFactory = require('node-gtts');
 const fs = require('fs').promises;
 const path = require('path');
-const { ElevenLabsClient } = require('elevenlabs-js');
+const elevenLabsSDK = require('elevenlabs-js');
 
 class TTSService {
     constructor() {
+        console.log('\n🔧 [TTS SERVICE] Initializing TTS Service...');
+        
         // Initialize ElevenLabs client if API key is available
         this.elevenLabsApiKey = process.env.ELEVENLABS_API_KEY;
         this.elevenLabsClient = null;
         this.monthlyCharacterUsage = 0;
         this.monthlyCharacterLimit = 10000; // Free tier limit
         
+        console.log('🔑 [TTS SERVICE] API Key check:', this.elevenLabsApiKey ? `Found (${this.elevenLabsApiKey.substring(0, 8)}...)` : 'NOT FOUND');
+        
         if (this.elevenLabsApiKey) {
             try {
-                this.elevenLabsClient = new ElevenLabsClient({
-                    apiKey: this.elevenLabsApiKey
-                });
-                console.log('✅ ElevenLabs AI Voice service initialized (Free Tier)');
-                console.log('📊 Monthly limit: 10,000 characters (~10 minutes of audio)');
+                // Set API key for elevenlabs-js SDK
+                elevenLabsSDK.setApiKey(this.elevenLabsApiKey);
+                this.elevenLabsClient = true; // Mark as initialized
+                console.log('✅ [TTS SERVICE] ElevenLabs AI Voice service initialized (Free Tier)');
+                console.log('📊 [TTS SERVICE] Monthly limit: 10,000 characters (~10 minutes of audio)');
+                console.log('🎙️ [TTS SERVICE] ElevenLabs will be used for TTS requests');
             } catch (error) {
-                console.warn('⚠️ ElevenLabs initialization failed:', error.message);
+                console.error('❌ [TTS SERVICE] ElevenLabs initialization failed:', error.message);
+                console.error('❌ [TTS SERVICE] Stack:', error.stack);
                 this.elevenLabsClient = null;
             }
         } else {
-            console.log('ℹ️ ELEVENLABS_API_KEY not found - ElevenLabs disabled');
+            console.log('⚠️ [TTS SERVICE] ELEVENLABS_API_KEY not found in environment');
+            console.log('ℹ️ [TTS SERVICE] ElevenLabs disabled - will use gTTS only');
+            console.log('💡 [TTS SERVICE] To enable ElevenLabs: Add ELEVENLABS_API_KEY to .env file');
         }
         
-        console.log('✅ gTTS (Google Text-to-Speech) service initialized as fallback');
-        console.log('📢 Using free Google Translate TTS API with auto language detection');
+        console.log('✅ [TTS SERVICE] gTTS (Google Text-to-Speech) initialized as fallback');
+        console.log('📢 [TTS SERVICE] Using free Google Translate TTS API with auto language detection');
+        console.log('🏁 [TTS SERVICE] Initialization complete\n');
     }
 
     /**
@@ -75,7 +84,12 @@ class TTSService {
      * @returns {boolean}
      */
     canUseElevenLabs() {
+        console.log('\n🔍 [TTS SERVICE] Checking if ElevenLabs can be used...');
+        console.log('   Client initialized:', !!this.elevenLabsClient);
+        console.log('   Character usage:', this.monthlyCharacterUsage, '/', this.monthlyCharacterLimit);
+        
         if (!this.elevenLabsClient) {
+            console.log('❌ [TTS SERVICE] Cannot use ElevenLabs: Client not initialized');
             return false;
         }
         
@@ -83,7 +97,12 @@ class TTSService {
         const hasCredits = this.monthlyCharacterUsage < (this.monthlyCharacterLimit - 500);
         
         if (!hasCredits) {
-            console.log('⚠️ [TTS SERVICE] ElevenLabs free tier limit reached, falling back to gTTS');
+            console.log('❌ [TTS SERVICE] Cannot use ElevenLabs: Free tier limit reached');
+            console.log('⚠️ [TTS SERVICE] Used', this.monthlyCharacterUsage, '/', this.monthlyCharacterLimit, 'characters');
+            console.log('🔄 [TTS SERVICE] Falling back to gTTS');
+        } else {
+            console.log('✅ [TTS SERVICE] ElevenLabs available - can proceed');
+            console.log('📊 [TTS SERVICE] Remaining credits:', (this.monthlyCharacterLimit - this.monthlyCharacterUsage), 'characters');
         }
         
         return hasCredits;
@@ -97,29 +116,30 @@ class TTSService {
      */
     async textToSpeechElevenLabs(text, outputPath) {
         try {
-            console.log(`🎙️ [TTS SERVICE] Generating speech with ElevenLabs AI Voice...`);
+            console.log('\n🎙️ [TTS SERVICE] ===== USING ELEVENLABS AI VOICE =====');
+            console.log('🎙️ [TTS SERVICE] Generating speech with ElevenLabs AI Voice...');
+            console.log('📝 [TTS SERVICE] Text:', text.substring(0, 100) + (text.length > 100 ? '...' : ''));
+            console.log('🔊 [TTS SERVICE] Voice: Rachel');
+            console.log('🌍 [TTS SERVICE] Model: eleven_multilingual_v2');
             
-            // Use Rachel voice (free tier voice) with multilingual model
-            const audio = await this.elevenLabsClient.textToSpeech.convert({
-                voice_id: 'Rachel', // Popular free tier voice
-                model_id: 'eleven_multilingual_v2',
-                text: text,
-            });
-
             // Ensure output directory exists
             const outputDir = path.dirname(outputPath);
             await fs.mkdir(outputDir, { recursive: true });
-
-            // Write audio stream to file
-            const writeStream = require('fs').createWriteStream(outputPath);
             
-            // Convert async iterator to buffer and write
-            const chunks = [];
-            for await (const chunk of audio) {
-                chunks.push(chunk);
-            }
-            const buffer = Buffer.concat(chunks);
-            await fs.writeFile(outputPath, buffer);
+            // Use elevenLabs textToSpeech with correct positional parameters
+            // textToSpeech(voiceId, text, modelId, voiceSettings)
+            const response = await elevenLabsSDK.textToSpeech(
+                '21m00Tcm4TlvDq8ikWAM', // Rachel voice ID
+                text,
+                'eleven_multilingual_v2',
+                {
+                    stability: 0.5,
+                    similarity_boost: 0.75
+                }
+            );
+
+            // Save the audio file using the saveFile method
+            await response.saveFile(outputPath);
 
             // Update character usage tracking
             this.monthlyCharacterUsage += text.length;
@@ -127,11 +147,15 @@ class TTSService {
             
             console.log(`✅ [TTS SERVICE] ElevenLabs speech generated successfully`);
             console.log(`📊 [TTS SERVICE] Used: ${this.monthlyCharacterUsage}/${this.monthlyCharacterLimit} chars (${remainingChars} remaining)`);
+            console.log('🎙️ [TTS SERVICE] ===== ELEVENLABS SUCCESS =====\n');
             
             return outputPath;
             
         } catch (error) {
+            console.error('\n❌ [TTS SERVICE] ===== ELEVENLABS FAILED =====');
             console.error('❌ [TTS SERVICE] ElevenLabs error:', error.message);
+            console.error('❌ [TTS SERVICE] Error details:', error);
+            console.error('❌ [TTS SERVICE] ===== END ERROR =====\n');
             throw error;
         }
     }
@@ -155,7 +179,10 @@ class TTSService {
             console.log('');
             
             // Try ElevenLabs first if available (better quality)
+            console.log('\n🔀 [TTS SERVICE] Deciding which TTS provider to use...');
+            
             if (this.canUseElevenLabs()) {
+                console.log('✅ [TTS SERVICE] Decision: Use ElevenLabs (AI Voice)');
                 try {
                     const result = await this.textToSpeechElevenLabs(text, outputPath);
                     
@@ -170,12 +197,17 @@ class TTSService {
                     
                     return result;
                 } catch (elevenLabsError) {
-                    console.warn('⚠️ [TTS SERVICE] ElevenLabs failed, falling back to gTTS:', elevenLabsError.message);
+                    console.warn('\n⚠️ [TTS SERVICE] ElevenLabs failed, falling back to gTTS');
+                    console.warn('⚠️ [TTS SERVICE] Reason:', elevenLabsError.message);
+                    console.warn('⚠️ [TTS SERVICE] Will use gTTS instead\n');
                     // Continue to gTTS fallback below
                 }
+            } else {
+                console.log('❌ [TTS SERVICE] Decision: Use gTTS (ElevenLabs not available)');
             }
             
             // Use gTTS as fallback (always free)
+            console.log('\n🔄 [TTS SERVICE] ===== USING GTTS FALLBACK =====');
             console.log('🔄 [TTS SERVICE] Using gTTS (free fallback)');
             
             // Use provided language code or detect from text
