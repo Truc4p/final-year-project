@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
   Alert,
   Keyboard,
-  useWindowDimensions
+  useWindowDimensions,
+  Animated
 } from 'react-native';
 import RenderHtml from 'react-native-render-html';
 import { Audio } from 'expo-av';
@@ -38,6 +39,32 @@ const MessageComponent = memo(({
 }) => {
   const html = useMemo(() => convertMarkdownToHtml(message.content), [message.content, convertMarkdownToHtml]);
   
+  // Animation for pulsing effect when speaking
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  
+  useEffect(() => {
+    if (isThisMessageSpeaking) {
+      // Start pulsing animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.2,
+            duration: 600,
+            useNativeDriver: true
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true
+          })
+        ])
+      ).start();
+    } else {
+      // Reset animation
+      pulseAnim.setValue(1);
+    }
+  }, [isThisMessageSpeaking, pulseAnim]);
+  
   return (
     <View
       style={[
@@ -63,19 +90,22 @@ const MessageComponent = memo(({
             {formatTime(message.timestamp)}
           </Text>
           
-          {/* Voice Button for Assistant Messages */}
+          {/* Voice Button for Assistant Messages with Animation */}
           {message.role === 'assistant' && (
-            <TouchableOpacity
-              style={[
-                styles.voiceButton,
-                isThisMessageSpeaking && styles.voiceButtonActive
-              ]}
-              onPress={() => handleSpeak(index)}
-            >
-              <Text style={styles.voiceButtonIcon}>
-                {isThisMessageSpeaking ? '⏸' : '🔊'}
-              </Text>
-            </TouchableOpacity>
+            <Animated.View style={{ transform: [{ scale: isThisMessageSpeaking ? pulseAnim : 1 }] }}>
+              <TouchableOpacity
+                style={[
+                  styles.voiceButton,
+                  isThisMessageSpeaking && styles.voiceButtonActive
+                ]}
+                onPress={() => handleSpeak(index)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.voiceButtonIcon}>
+                  {isThisMessageSpeaking ? '⏸' : '🔊'}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
           )}
         </View>
       </View>
@@ -1202,6 +1232,17 @@ What would you like to know more about?`;
                 <Text style={styles.disclaimerHighlight}>
                   <Text style={styles.disclaimerBold}>Seek immediate medical attention if you experience:</Text> severe pain, rapid changes, signs of infection, severe allergic reactions, or suspicious skin changes.
                 </Text>
+              </View>
+
+              {/* Voice Feature Info Banner */}
+              <View style={styles.voiceFeatureInfo}>
+                <Text style={styles.voiceFeatureIcon}>🎙️</Text>
+                <View style={styles.voiceFeatureTextContainer}>
+                  <Text style={styles.voiceFeatureTitle}>AI Voice Assistant</Text>
+                  <Text style={styles.voiceFeatureText}>
+                    Click the <Text style={styles.voiceFeatureBold}>🔊 speaker icon</Text> on any AI response to hear it spoken aloud with natural ElevenLabs AI voice!
+                  </Text>
+                </View>
               </View>
 
               {/* Sample Questions Section */}

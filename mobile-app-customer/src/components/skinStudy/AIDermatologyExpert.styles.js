@@ -118,6 +118,40 @@ export const styles = StyleSheet.create({
     color: '#856404'
   },
   
+  // Voice Feature Info Banner
+  voiceFeatureInfo: {
+    flexDirection: 'row',
+    backgroundColor: '#e8f5e9',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#a5d6a7',
+    alignItems: 'center'
+  },
+  voiceFeatureIcon: {
+    fontSize: 32,
+    marginRight: 12
+  },
+  voiceFeatureTextContainer: {
+    flex: 1
+  },
+  voiceFeatureTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#2e7d32',
+    marginBottom: 4
+  },
+  voiceFeatureText: {
+    fontSize: 13,
+    color: '#1b5e20',
+    lineHeight: 18
+  },
+  voiceFeatureBold: {
+    fontWeight: '700',
+    color: '#1b5e20'
+  },
+  
   // Sample Questions Section
   sampleQuestionsSection: {
     marginTop: 16
@@ -233,31 +267,40 @@ export const styles = StyleSheet.create({
   },
   messageTime: {
     fontSize: 12,
-    color: colors.gray400
+    color: colors.gray400,
+    flex: 1
   },
   messageTimeUser: {
     color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'right'
   },
   
-  // Voice Button
+  // Voice Button - Enhanced for better visibility
   voiceButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primary100,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary500,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
-    borderWidth: 1,
-    borderColor: colors.primary200
+    marginLeft: 12,
+    borderWidth: 2,
+    borderColor: colors.primary600,
+    shadowColor: colors.primary800,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4
   },
   voiceButtonActive: {
-    backgroundColor: colors.primary500,
-    borderColor: colors.primary600
+    backgroundColor: colors.primary700,
+    borderColor: colors.primary800,
+    shadowColor: colors.primary900,
+    shadowOpacity: 0.5
   },
   voiceButtonIcon: {
-    fontSize: 16
+    fontSize: 20,
+    color: colors.white
   },
   
   // Typing Indicator
