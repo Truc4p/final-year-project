@@ -168,3 +168,19 @@ $4
 PXAT
 $13
 1784287159410
+*2
+$6
+SELECT
+$1
+0
+*5
+$3
+SET
+$118
+ai_dermatology:English:d2hhdCByb2xlIGRvZXMgbnV0cml0aW9uIHBsYXkgaW4gc2tpbi:what role does nutrition play in skin health
+$3131
+{"question":"What role does nutrition play in skin health","response":"Nutrition plays a significant and complex role in overall health, including the health of your skin [3]. The food we consume can exert far-reaching systemic influences that may manifest on the skin [3]. While more research is continuously being conducted, existing evidence suggests that what you eat can impact your skin's condition [3].\n\n### Dietary Recommendations for Specific Skin Types and Concerns\n\nThe following dietary adjustments can be beneficial for various skin types and conditions:\n\n*   **Dry Skin:**\n    *   Increase your intake of omega-3 fatty acids, found in foods like salmon [1].\n    *   Consume other fatty acids and a small amount of cholesterol to help maintain skin hydration [1].\n    *   Increase your overall water consumption [1].\n\n*   **Oily Skin:**\n    *   Incorporate more green leafy vegetables such as kale and spinach, along with butternut squash, cantaloupe, carrots, mangoes, pumpkins, and sweet potatoes [1]. These foods are rich in vitamin A, which can help decrease oil production [1].\n\n*   **Sensitive Skin:**\n    *   Add omega-3 fatty acids, particularly from fish, to your diet [1].\n    *   Antioxidants are also beneficial as they possess anti-inflammatory effects [1].\n\n*   **Sensitive Skin with Acne Subtype:**\n    *   Focus on consuming a diet with a low glycemic load [1].\n    *   In addition to the foods mentioned for sensitive skin, foods high in vitamin A are particularly beneficial [1].\n    *   Fruits and vegetables generally have lower glycemic loads compared to most other foods [1].\n    *   It is worth noting that while dairy foods have lower glycemic loads than fruits and vegetables, studies suggest a potential link between milk consumption and acne, though other factors may be involved [1].\n    *   Grain products and processed foods, in general, should be avoided [1].\n\n*   **Sensitive Skin with Rosacea Subtype:**\n    *   Incorporate omega-3 fatty acids, especially from fish, into your diet [1, 2].\n    *   Avoid hot (temperature) foods, spicy foods, alcohol, and caffeine [1, 2].\n\n*   **For Vegans:**\n    *   Add flaxseed oil to your diet. This can help hydrate the skin, reduce redness, and plump fine lines, thereby restoring skin radiance [1, 2]. Skin radiance is achieved through the reflection of light off a smooth surface [1, 2].\n\n### General Nutritional Principles for Skin Health\n\n*   **Healthy Eating Patterns:** While a single food item like a chocolate bar is unlikely to directly cause acne, unhealthy eating patterns can contribute to the etiologic pathway of acne [3].\n*   **Fruits and Vegetables:** Recommending generous portions of fruits and vegetables is sound nutritional advice [3].\n*   **Mindful Eating:** The Okinawan practice of eating until 80% full (\"hara hachi bu\") is sound advice for managing obesity and likely benefits the skin if a healthy diet is consumed [2].\n\n### References\n[1,2,3] Cosmetic Dermatology - Principles and Practice","images":[],"timestamp":"2026-03-05T12:53:33.840Z","language":"English","cached":true}
+$4
+PXAT
+$13
+1788267213840

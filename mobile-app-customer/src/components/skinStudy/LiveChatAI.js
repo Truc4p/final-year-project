@@ -669,6 +669,28 @@ const LiveChatAI = ({ navigation, route }) => {
 
       let displayedText = '';
 
+      // Pre-fetch first two sentences to reduce gaps
+      const audioCache = {};
+      
+      // Helper function to fetch audio
+      const fetchAudio = async (index) => {
+        if (index >= sentences.length || audioCache[index]) return;
+        try {
+          console.log(`📥 Pre-fetching sentence ${index + 1}/${sentences.length}`);
+          const ttsResponse = await liveChatService.textToSpeech(sentences[index], languageCode);
+          audioCache[index] = ttsResponse.audio;
+          console.log(`✅ Sentence ${index + 1} audio cached`);
+        } catch (error) {
+          console.error(`❌ Error pre-fetching sentence ${index + 1}:`, error);
+        }
+      };
+
+      // Pre-fetch first two sentences
+      await Promise.all([
+        fetchAudio(0),
+        fetchAudio(1)
+      ]);
+
       // Play sentences sequentially with streaming
       for (let i = 0; i < sentences.length; i++) {
         // Check if user stopped playback
@@ -679,10 +701,18 @@ const LiveChatAI = ({ navigation, route }) => {
 
         console.log(`🔊 Playing sentence ${i + 1}/${sentences.length}`);
         
-        // Request TTS from backend for this sentence with detected language
-        const ttsResponse = await liveChatService.textToSpeech(sentences[i], languageCode);
+        // Start pre-fetching next sentence while current one plays
+        if (i + 2 < sentences.length) {
+          fetchAudio(i + 2).catch(err => console.error('Pre-fetch error:', err));
+        }
         
-        console.log(`✅ Sentence ${i + 1} audio received`);
+        // Wait for audio if not cached yet (shouldn't happen with pre-fetch)
+        if (!audioCache[i]) {
+          console.log(`⏳ Waiting for sentence ${i + 1} audio...`);
+          await fetchAudio(i);
+        }
+        
+        console.log(`✅ Sentence ${i + 1} audio ready`);
 
         // Check again if user stopped during the request
         if (!playbackControlRef.current.shouldContinue) {
@@ -701,9 +731,9 @@ const LiveChatAI = ({ navigation, route }) => {
           }, 100);
         }
 
-        // Create and play sound
+        // Create and play sound using cached audio
         const { sound } = await Audio.Sound.createAsync(
-          { uri: `data:audio/mp3;base64,${ttsResponse.audio}` },
+          { uri: `data:audio/mp3;base64,${audioCache[i]}` },
           { shouldPlay: true }
         );
 
