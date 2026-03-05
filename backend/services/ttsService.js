@@ -109,33 +109,70 @@ class TTSService {
     }
 
     /**
+     * Get the best voice ID for a given language
+     * @param {string} languageCode - Language code (e.g., 'en', 'vi', 'zh')
+     * @returns {Object} - Voice ID and name
+     */
+    getVoiceForLanguage(languageCode) {
+        // Map languages to best voices for natural accent
+        // These are free-tier compatible voices
+        const voiceMap = {
+            'en': { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', description: 'English female' },
+            'vi': { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', description: 'Multilingual male - better for Vietnamese' },
+            'zh': { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', description: 'Multilingual male - good for Chinese' },
+            'ja': { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', description: 'Multilingual male - good for Japanese' },
+            'ko': { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', description: 'Multilingual male - good for Korean' },
+            'es': { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', description: 'Multilingual male - good for Spanish' },
+            'fr': { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', description: 'Multilingual male - good for French' },
+            'de': { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', description: 'Multilingual male - good for German' },
+            'it': { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', description: 'Multilingual male - good for Italian' },
+            'pt': { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', description: 'Multilingual male - good for Portuguese' },
+            'th': { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', description: 'Multilingual male - good for Thai' }
+        };
+        
+        return voiceMap[languageCode] || voiceMap['en']; // Default to English voice
+    }
+
+    /**
      * Convert text to speech using ElevenLabs
      * @param {string} text - Text to convert to speech
      * @param {string} outputPath - Path to save the audio file
+     * @param {string} languageCode - Language code for voice selection
      * @returns {Promise<string>} - Path to the generated audio file
      */
-    async textToSpeechElevenLabs(text, outputPath) {
+    async textToSpeechElevenLabs(text, outputPath, languageCode = 'en') {
         try {
             console.log('\n🎙️ [TTS SERVICE] ===== USING ELEVENLABS AI VOICE =====');
             console.log('🎙️ [TTS SERVICE] Generating speech with ElevenLabs AI Voice...');
             console.log('📝 [TTS SERVICE] Text:', text.substring(0, 100) + (text.length > 100 ? '...' : ''));
-            console.log('🔊 [TTS SERVICE] Voice: Rachel');
+            
+            // Select appropriate voice for language
+            const voice = this.getVoiceForLanguage(languageCode);
+            console.log(`🌍 [TTS SERVICE] Language: ${languageCode}`);
+            console.log(`🔊 [TTS SERVICE] Voice: ${voice.name} (${voice.description})`);
             console.log('🌍 [TTS SERVICE] Model: eleven_multilingual_v2');
             
             // Ensure output directory exists
             const outputDir = path.dirname(outputPath);
             await fs.mkdir(outputDir, { recursive: true });
             
+            // Adjust voice settings based on language
+            // Asian languages often benefit from higher stability
+            const isAsianLanguage = ['vi', 'zh', 'ja', 'ko', 'th'].includes(languageCode);
+            const voiceSettings = {
+                stability: isAsianLanguage ? 0.65 : 0.5,
+                similarity_boost: isAsianLanguage ? 0.8 : 0.75
+            };
+            
+            console.log(`⚙️ [TTS SERVICE] Voice settings: stability=${voiceSettings.stability}, similarity_boost=${voiceSettings.similarity_boost}`);
+            
             // Use elevenLabs textToSpeech with correct positional parameters
             // textToSpeech(voiceId, text, modelId, voiceSettings)
             const response = await elevenLabsSDK.textToSpeech(
-                '21m00Tcm4TlvDq8ikWAM', // Rachel voice ID
+                voice.id,
                 text,
                 'eleven_multilingual_v2',
-                {
-                    stability: 0.5,
-                    similarity_boost: 0.75
-                }
+                voiceSettings
             );
 
             // Save the audio file using the saveFile method
@@ -178,13 +215,17 @@ class TTSService {
             console.log('   "' + text + '"');
             console.log('');
             
+            // Detect language for voice selection
+            const detectedLang = languageCode || this.detectLanguage(text);
+            console.log('🌍 [TTS SERVICE] Language:', languageCode ? `${detectedLang} (provided)` : `${detectedLang} (auto-detected)`);
+            
             // Try ElevenLabs first if available (better quality)
             console.log('\n🔀 [TTS SERVICE] Deciding which TTS provider to use...');
             
             if (this.canUseElevenLabs()) {
                 console.log('✅ [TTS SERVICE] Decision: Use ElevenLabs (AI Voice)');
                 try {
-                    const result = await this.textToSpeechElevenLabs(text, outputPath);
+                    const result = await this.textToSpeechElevenLabs(text, outputPath, detectedLang);
                     
                     // Get file size
                     const stats = await fs.stat(outputPath);
@@ -209,10 +250,7 @@ class TTSService {
             // Use gTTS as fallback (always free)
             console.log('\n🔄 [TTS SERVICE] ===== USING GTTS FALLBACK =====');
             console.log('🔄 [TTS SERVICE] Using gTTS (free fallback)');
-            
-            // Use provided language code or detect from text
-            const detectedLang = languageCode || this.detectLanguage(text);
-            console.log('🌍 [TTS SERVICE] Language:', languageCode ? `${detectedLang} (provided)` : `${detectedLang} (detected)`);
+            console.log('🌍 [TTS SERVICE] Language:', detectedLang);
             
             // Ensure output directory exists
             const outputDir = path.dirname(outputPath);
