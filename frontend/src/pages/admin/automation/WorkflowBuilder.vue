@@ -122,9 +122,17 @@
           @drop="onDrop"
           @dragover.prevent
           @click="selectedNode = null"
-          class="w-full h-full bg-base-200 overflow-auto"
+          class="w-full h-full bg-base-200 overflow-auto relative"
           style="background-image: radial-gradient(circle, #888 1px, transparent 1px); background-size: 20px 20px;"
         >
+          <!-- Connection mode banner -->
+          <div v-if="connectingMode" class="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-success text-success-content px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            <span class="font-bold">Click a node to connect</span>
+          </div>
+          
           <!-- Workflow Nodes -->
           <div
             v-for="node in workflow.nodes"
@@ -142,7 +150,9 @@
                 'bg-secondary text-secondary-content border-secondary': node.type === 'delay',
                 'bg-accent text-accent-content border-accent': node.type === 'split',
                 'bg-error text-error-content border-error': node.type === 'end',
-                'ring-4 ring-accent': selectedNode?.id === node.id
+                'ring-4 ring-accent': selectedNode?.id === node.id,
+                'ring-4 ring-success animate-pulse': connectingMode && connectingFromNode?.id !== node.id,
+                'opacity-50': connectingMode && connectingFromNode?.id === node.id
               }"
             >
               <div class="flex items-center justify-between mb-2">
@@ -283,8 +293,41 @@
         <!-- Connection Settings -->
         <div class="mt-6">
           <h4 class="font-semibold mb-2">Connections</h4>
-          <div class="text-sm text-base-content/70">
-            Click another node to connect
+          
+          <!-- Show existing connections -->
+          <div v-if="selectedNode.nextNodes && selectedNode.nextNodes.length > 0" class="mb-3 space-y-2">
+            <div v-for="(conn, idx) in selectedNode.nextNodes" :key="idx" class="flex items-center justify-between bg-base-200 p-2 rounded">
+              <span class="text-sm">→ {{ getNodeById(conn.nodeId) ? getNodeLabel(getNodeById(conn.nodeId)) : 'Unknown node' }}</span>
+              <button @click="removeConnection(idx)" class="btn btn-xs btn-ghost">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Add connection button -->
+          <button 
+            v-if="!connectingMode"
+            @click="startConnecting" 
+            class="btn btn-sm btn-primary w-full"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            Connect to Node
+          </button>
+          
+          <button 
+            v-else
+            @click="cancelConnecting" 
+            class="btn btn-sm btn-error w-full"
+          >
+            Cancel Connection
+          </button>
+          
+          <div v-if="connectingMode" class="text-xs text-info mt-2">
+            Click on another node to create connection
           </div>
         </div>
       </div>
@@ -356,6 +399,8 @@ const router = useRouter();
 
 const canvas = ref(null);
 const selectedNode = ref(null);
+const connectingMode = ref(false);
+const connectingFromNode = ref(null);
 
 const workflow = ref({
   name: '',
@@ -462,6 +507,27 @@ const addNode = (type, x, y) => {
 };
 
 const selectNode = (node) => {
+  // If in connecting mode, create connection
+  if (connectingMode.value && connectingFromNode.value) {
+    if (connectingFromNode.value.id !== node.id) {
+      // Add connection
+      if (!connectingFromNode.value.nextNodes) {
+        connectingFromNode.value.nextNodes = [];
+      }
+      
+      // Check if connection already exists
+      const exists = connectingFromNode.value.nextNodes.some(n => n.nodeId === node.id);
+      if (!exists) {
+        connectingFromNode.value.nextNodes.push({ nodeId: node.id });
+      }
+    }
+    
+    // Exit connecting mode
+    connectingMode.value = false;
+    connectingFromNode.value = null;
+    return;
+  }
+  
   selectedNode.value = node;
 };
 
@@ -481,6 +547,27 @@ const deleteNode = (nodeId) => {
   if (selectedNode.value?.id === nodeId) {
     selectedNode.value = null;
   }
+};
+
+// Connection management functions
+const startConnecting = () => {
+  connectingMode.value = true;
+  connectingFromNode.value = selectedNode.value;
+};
+
+const cancelConnecting = () => {
+  connectingMode.value = false;
+  connectingFromNode.value = null;
+};
+
+const removeConnection = (index) => {
+  if (selectedNode.value && selectedNode.value.nextNodes) {
+    selectedNode.value.nextNodes.splice(index, 1);
+  }
+};
+
+const getNodeById = (nodeId) => {
+  return workflow.value.nodes.find(n => n.id === nodeId);
 };
 
 const getNodeLabel = (node) => {
@@ -528,17 +615,34 @@ const saveWorkflow = async () => {
   }
 
   try {
+    // Clean up workflow data before sending
+    const workflowData = JSON.parse(JSON.stringify(workflow.value));
+    
+    // Clean up action nodes - remove invalid ObjectId strings
+    workflowData.nodes = workflowData.nodes.map(node => {
+      if (node.type === 'action' && node.actionConfig) {
+        // Remove emailTemplate if it's a string (not a valid ObjectId)
+        if (node.actionConfig.emailTemplate && typeof node.actionConfig.emailTemplate === 'string') {
+          // If it looks like a description, remove it
+          if (!node.actionConfig.emailTemplate.match(/^[0-9a-fA-F]{24}$/)) {
+            delete node.actionConfig.emailTemplate;
+          }
+        }
+      }
+      return node;
+    });
+    
     let response;
     if (isEditing.value) {
       response = await axios.put(
         `http://localhost:3000/automation/workflows/${route.params.id}`,
-        workflow.value,
+        workflowData,
         getAuthHeaders()
       );
     } else {
       response = await axios.post(
         'http://localhost:3000/automation/workflows',
-        workflow.value,
+        workflowData,
         getAuthHeaders()
       );
     }
@@ -549,7 +653,9 @@ const saveWorkflow = async () => {
     }
   } catch (error) {
     console.error('Error saving workflow:', error);
-    alert('Failed to save workflow: ' + (error.response?.data?.message || error.message));
+    console.error('Error response:', error.response?.data);
+    const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message;
+    alert('Failed to save workflow: ' + errorMsg);
   }
 };
 
@@ -571,8 +677,408 @@ const activateWorkflow = async () => {
   }
 };
 
+// Template definitions
+const getTemplateData = (templateType) => {
+  const templates = {
+    welcome_series: {
+      name: 'Welcome Series',
+      description: 'Nurture new customers with a series of welcome emails',
+      category: 'welcome_series',
+      nodes: [
+        {
+          id: 'node_trigger_1',
+          type: 'trigger',
+          position: { x: 400, y: 50 },
+          triggerType: 'customer_signup',
+          nextNodes: [{ nodeId: 'node_action_1' }]
+        },
+        {
+          id: 'node_action_1',
+          type: 'action',
+          position: { x: 400, y: 200 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'Welcome Email - Day 1',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_delay_1' }]
+        },
+        {
+          id: 'node_delay_1',
+          type: 'delay',
+          position: { x: 400, y: 350 },
+          delayDuration: 2,
+          delayUnit: 'days',
+          nextNodes: [{ nodeId: 'node_action_2' }]
+        },
+        {
+          id: 'node_action_2',
+          type: 'action',
+          position: { x: 400, y: 500 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'Product Guide - Day 3',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_delay_2' }]
+        },
+        {
+          id: 'node_delay_2',
+          type: 'delay',
+          position: { x: 400, y: 650 },
+          delayDuration: 4,
+          delayUnit: 'days',
+          nextNodes: [{ nodeId: 'node_action_3' }]
+        },
+        {
+          id: 'node_action_3',
+          type: 'action',
+          position: { x: 400, y: 800 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'Special Offer - Day 7',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_end_1' }]
+        },
+        {
+          id: 'node_end_1',
+          type: 'end',
+          position: { x: 400, y: 950 },
+          nextNodes: []
+        }
+      ],
+      entryNode: 'node_trigger_1'
+    },
+    abandoned_cart: {
+      name: 'Abandoned Cart Recovery',
+      description: 'Recover lost sales with timely reminders',
+      category: 'abandoned_cart',
+      nodes: [
+        {
+          id: 'node_trigger_1',
+          type: 'trigger',
+          position: { x: 400, y: 50 },
+          triggerType: 'cart_abandoned',
+          nextNodes: [{ nodeId: 'node_delay_1' }]
+        },
+        {
+          id: 'node_delay_1',
+          type: 'delay',
+          position: { x: 400, y: 200 },
+          delayDuration: 1,
+          delayUnit: 'hours',
+          nextNodes: [{ nodeId: 'node_action_1' }]
+        },
+        {
+          id: 'node_action_1',
+          type: 'action',
+          position: { x: 400, y: 350 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'Cart Reminder - 1 hour',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_delay_2' }]
+        },
+        {
+          id: 'node_delay_2',
+          type: 'delay',
+          position: { x: 400, y: 500 },
+          delayDuration: 23,
+          delayUnit: 'hours',
+          nextNodes: [{ nodeId: 'node_action_2' }]
+        },
+        {
+          id: 'node_action_2',
+          type: 'action',
+          position: { x: 400, y: 650 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: '10% Discount - 24 hours',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_delay_3' }]
+        },
+        {
+          id: 'node_delay_3',
+          type: 'delay',
+          position: { x: 400, y: 800 },
+          delayDuration: 2,
+          delayUnit: 'days',
+          nextNodes: [{ nodeId: 'node_action_3' }]
+        },
+        {
+          id: 'node_action_3',
+          type: 'action',
+          position: { x: 400, y: 950 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'Last Chance - 3 days',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_end_1' }]
+        },
+        {
+          id: 'node_end_1',
+          type: 'end',
+          position: { x: 400, y: 1100 },
+          nextNodes: []
+        }
+      ],
+      entryNode: 'node_trigger_1'
+    },
+    post_purchase: {
+      name: 'Post-Purchase Follow-up',
+      description: 'Build loyalty and encourage repeat purchases',
+      category: 'post_purchase',
+      nodes: [
+        {
+          id: 'node_trigger_1',
+          type: 'trigger',
+          position: { x: 400, y: 50 },
+          triggerType: 'order_placed',
+          nextNodes: [{ nodeId: 'node_action_1' }]
+        },
+        {
+          id: 'node_action_1',
+          type: 'action',
+          position: { x: 400, y: 200 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'Thank You Email',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_delay_1' }]
+        },
+        {
+          id: 'node_delay_1',
+          type: 'delay',
+          position: { x: 400, y: 350 },
+          delayDuration: 7,
+          delayUnit: 'days',
+          nextNodes: [{ nodeId: 'node_action_2' }]
+        },
+        {
+          id: 'node_action_2',
+          type: 'action',
+          position: { x: 400, y: 500 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'Review Request',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_delay_2' }]
+        },
+        {
+          id: 'node_delay_2',
+          type: 'delay',
+          position: { x: 400, y: 650 },
+          delayDuration: 23,
+          delayUnit: 'days',
+          nextNodes: [{ nodeId: 'node_action_3' }]
+        },
+        {
+          id: 'node_action_3',
+          type: 'action',
+          position: { x: 400, y: 800 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'Cross-sell Recommendations',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_end_1' }]
+        },
+        {
+          id: 'node_end_1',
+          type: 'end',
+          position: { x: 400, y: 950 },
+          nextNodes: []
+        }
+      ],
+      entryNode: 'node_trigger_1'
+    },
+    re_engagement: {
+      name: 'Re-engagement Campaign',
+      description: 'Bring back inactive customers',
+      category: 're_engagement',
+      nodes: [
+        {
+          id: 'node_trigger_1',
+          type: 'trigger',
+          position: { x: 400, y: 50 },
+          triggerType: 'customer_inactive',
+          nextNodes: [{ nodeId: 'node_action_1' }]
+        },
+        {
+          id: 'node_action_1',
+          type: 'action',
+          position: { x: 400, y: 200 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'We Miss You',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_delay_1' }]
+        },
+        {
+          id: 'node_delay_1',
+          type: 'delay',
+          position: { x: 400, y: 350 },
+          delayDuration: 7,
+          delayUnit: 'days',
+          nextNodes: [{ nodeId: 'node_action_2' }]
+        },
+        {
+          id: 'node_action_2',
+          type: 'action',
+          position: { x: 400, y: 500 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'Special Comeback Offer',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_end_1' }]
+        },
+        {
+          id: 'node_end_1',
+          type: 'end',
+          position: { x: 400, y: 650 },
+          nextNodes: []
+        }
+      ],
+      entryNode: 'node_trigger_1'
+    },
+    win_back: {
+      name: 'Win-back Campaign',
+      description: 'Aggressive campaign to win back churned customers',
+      category: 'win_back',
+      nodes: [
+        {
+          id: 'node_trigger_1',
+          type: 'trigger',
+          position: { x: 400, y: 50 },
+          triggerType: 'customer_inactive',
+          nextNodes: [{ nodeId: 'node_action_1' }]
+        },
+        {
+          id: 'node_action_1',
+          type: 'action',
+          position: { x: 400, y: 200 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'We Want You Back - 20% Off',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_delay_1' }]
+        },
+        {
+          id: 'node_delay_1',
+          type: 'delay',
+          position: { x: 400, y: 350 },
+          delayDuration: 3,
+          delayUnit: 'days',
+          nextNodes: [{ nodeId: 'node_action_2' }]
+        },
+        {
+          id: 'node_action_2',
+          type: 'action',
+          position: { x: 400, y: 500 },
+          actionType: 'send_sms',
+          actionConfig: {
+            smsTemplate: 'Limited time: 20% off everything!',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_delay_2' }]
+        },
+        {
+          id: 'node_delay_2',
+          type: 'delay',
+          position: { x: 400, y: 650 },
+          delayDuration: 4,
+          delayUnit: 'days',
+          nextNodes: [{ nodeId: 'node_action_3' }]
+        },
+        {
+          id: 'node_action_3',
+          type: 'action',
+          position: { x: 400, y: 800 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'Final Chance - Offer Expires',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_end_1' }]
+        },
+        {
+          id: 'node_end_1',
+          type: 'end',
+          position: { x: 400, y: 950 },
+          nextNodes: []
+        }
+      ],
+      entryNode: 'node_trigger_1'
+    },
+    birthday: {
+      name: 'Birthday Campaign',
+      description: 'Celebrate customer birthdays with special offers',
+      category: 'promotional',
+      nodes: [
+        {
+          id: 'node_trigger_1',
+          type: 'trigger',
+          position: { x: 400, y: 50 },
+          triggerType: 'custom_event',
+          nextNodes: [{ nodeId: 'node_action_1' }]
+        },
+        {
+          id: 'node_action_1',
+          type: 'action',
+          position: { x: 400, y: 200 },
+          actionType: 'send_email',
+          actionConfig: {
+            emailTemplate: 'Happy Birthday with Gift',
+            pushTemplate: { title: '', body: '' }
+          },
+          nextNodes: [{ nodeId: 'node_end_1' }]
+        },
+        {
+          id: 'node_end_1',
+          type: 'end',
+          position: { x: 400, y: 350 },
+          nextNodes: []
+        }
+      ],
+      entryNode: 'node_trigger_1'
+    }
+  };
+
+  return templates[templateType] || null;
+};
+
+const loadTemplate = () => {
+  const templateType = route.query.template;
+  if (!templateType) return;
+
+  const templateData = getTemplateData(templateType);
+  if (templateData) {
+    workflow.value = {
+      ...workflow.value,
+      name: templateData.name,
+      description: templateData.description,
+      category: templateData.category,
+      nodes: templateData.nodes,
+      entryNode: templateData.entryNode
+    };
+  }
+};
+
 onMounted(() => {
-  loadWorkflow();
+  if (isEditing.value) {
+    loadWorkflow();
+  } else {
+    loadTemplate();
+  }
 });
 </script>
 

@@ -189,40 +189,94 @@
               <ol class="list-decimal pl-5 space-y-2 mb-4">
                 <li>In your app dashboard, find <strong>"Facebook Login"</strong> and click <strong>"Set Up"</strong></li>
                 <li>Choose <strong>"Web"</strong> platform</li>
-                <li>Enter your website URL (e.g., <code class="bg-gray-100 px-1 rounded">http://localhost:5173</code> for development)</li>
-                <li>Go to <strong>Settings → Basic</strong> and add:
+                <li>In the <strong>Site URL</strong> field, enter: <code class="bg-gray-100 px-1 rounded">http://localhost:5173</code> (for development)</li>
+                <li>Go to <strong>Settings → Basic</strong>:
+                  <ul class="list-disc pl-5 mt-1 space-y-1">
+                    <li><strong>App Domains:</strong> <span class="text-red-600 font-medium">Leave this EMPTY for local development</span> (Facebook doesn't accept "localhost" here)</li>
+                    <li><strong>Privacy Policy URL:</strong> Required (use any URL like <code class="bg-gray-100 px-1 rounded">http://example.com/privacy</code> for testing)</li>
+                    <li><strong>Terms of Service URL:</strong> Optional</li>
+                  </ul>
+                </li>
+                <li>In <strong>Settings → Advanced → Security</strong>, turn OFF <strong>"Require App Secret"</strong> for development</li>
+                <li>Go to <strong>Facebook Login → Settings</strong> and add to <strong>Valid OAuth Redirect URIs:</strong>
                   <ul class="list-disc pl-5 mt-1">
-                    <li>App Domains: <code class="bg-gray-100 px-1 rounded">localhost</code></li>
-                    <li>Privacy Policy URL (required)</li>
-                    <li>Terms of Service URL (optional)</li>
+                    <li><code class="bg-gray-100 px-1 rounded">http://localhost:5173/</code></li>
+                    <li><code class="bg-gray-100 px-1 rounded">https://localhost:5173/</code></li>
                   </ul>
                 </li>
               </ol>
 
-              <h5 class="font-semibold text-base mb-2">Step 3: Add Facebook Pages API</h5>
+              <h5 class="font-semibold text-base mb-2">Step 3: Add Facebook Pages Management (CRITICAL)</h5>
+              <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-3">
+                <p class="text-sm text-red-900 font-semibold">⚠️ If you don't see <code class="bg-white px-1 rounded">pages_manage_posts</code> permission, follow these steps carefully:</p>
+              </div>
               <ol class="list-decimal pl-5 space-y-2 mb-4">
-                <li>In the left sidebar, click <strong>"Add Product"</strong></li>
-                <li>Find <strong>"Facebook Login for Business"</strong> and click <strong>"Set Up"</strong></li>
-                <li>Configure permissions:
+                <li>In your app dashboard left sidebar, click <strong>"Use cases"</strong></li>
+                <li>Click <strong>"Customize"</strong> on any use case, OR click <strong>"Add use cases"</strong></li>
+                <li>Look for and enable: <strong>"Manage Page for Business"</strong> or <strong>"Page Management"</strong></li>
+                <li>This will give you access to <code class="bg-gray-100 px-1 rounded">pages_manage_posts</code> permission</li>
+                <li><strong>Alternative method:</strong>
                   <ul class="list-disc pl-5 mt-1">
-                    <li><code class="bg-gray-100 px-1 rounded">pages_show_list</code> - Read your pages</li>
-                    <li><code class="bg-gray-100 px-1 rounded">pages_read_engagement</code> - Read page insights</li>
-                    <li><code class="bg-gray-100 px-1 rounded">pages_manage_posts</code> - Create and publish posts</li>
-                    <li><code class="bg-gray-100 px-1 rounded">pages_read_user_content</code> - Read user content</li>
+                    <li>Go to <strong>App Dashboard → Products</strong></li>
+                    <li>Add <strong>"Facebook Login for Business"</strong> if not already added</li>
+                    <li>In left sidebar, find <strong>"App Review → Permissions and Features"</strong></li>
+                    <li>Search for <strong>"pages_manage_posts"</strong> and request it</li>
+                    <li>For development, it should be instantly available without review</li>
                   </ul>
                 </li>
               </ol>
+
+              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <p class="text-sm text-yellow-900"><strong>Note:</strong> If you only see 4 basic permissions in Graph API Explorer, your app is missing the Pages Management feature. Complete Step 3 first before generating tokens.</p>
+              </div>
 
               <h5 class="font-semibold text-base mb-2">Step 4: Get Your Access Token</h5>
               <ol class="list-decimal pl-5 space-y-2 mb-4">
                 <li>Go to <a href="https://developers.facebook.com/tools/explorer" target="_blank" class="text-blue-600 underline">Graph API Explorer</a></li>
-                <li>Select your app from the dropdown</li>
-                <li>Click <strong>"Generate Access Token"</strong></li>
-                <li>Grant all the required permissions</li>
-                <li>Click <strong>"Get User Access Token"</strong></li>
-                <li>Copy the token (it will be a long string)</li>
-                <li><strong>Important:</strong> To get a long-lived token (60 days), use the <a href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank" class="text-blue-600 underline">Access Token Debugger</a> to extend it</li>
+                <li>In the top right, select <strong>your app</strong> from the "Meta App" dropdown</li>
+                <li>Make sure "User Token" is selected (not "Page Token")</li>
+                <li>Click the <strong>"4 options selected"</strong> dropdown (or "Add a Permission") to see available permissions</li>
+                <li>You should now see and check:
+                  <ul class="list-disc pl-5 mt-1 space-y-1">
+                    <li>✅ <code class="bg-gray-100 px-1 rounded">pages_show_list</code></li>
+                    <li>✅ <code class="bg-gray-100 px-1 rounded">pages_read_engagement</code></li>
+                    <li>✅ <code class="bg-gray-100 px-1 rounded font-bold text-red-700">pages_manage_posts</code> (should appear after Step 3)</li>
+                    <li>✅ <code class="bg-gray-100 px-1 rounded">business_management</code> (optional but useful)</li>
+                  </ul>
+                </li>
+                <li><strong>If pages_manage_posts is still missing:</strong> Go back to Step 3 and ensure you've enabled "Page Management" use case</li>
+                <li>Click <strong>"Generate Access Token"</strong> button (blue button)</li>
+                <li>A popup will appear - verify permissions and click <strong>"Continue"</strong></li>
+                <li>If asked to choose pages, select the page(s) you want to manage</li>
+                <li>Copy the short-lived token that appears (starts with "EAAM...")</li>
               </ol>
+
+              <h5 class="font-semibold text-base mb-2 text-purple-700">Step 4b: Extend Token to 60 Days (REQUIRED)</h5>
+              <ol class="list-decimal pl-5 space-y-2 mb-4">
+                <li>Go to <a href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank" class="text-blue-600 underline">Access Token Debugger</a></li>
+                <li>Paste your short-lived token</li>
+                <li>Click "Debug" and verify all 4 scopes are present (especially <code class="bg-gray-100 px-1 rounded">pages_manage_posts</code>)</li>
+                <li>Scroll to bottom and click <strong>"Extend Access Token"</strong> button</li>
+                <li>Copy the new extended token (this one lasts 60 days)</li>
+                <li>Use this extended token in your app</li>
+              </ol>
+
+              <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+                <div class="flex items-start gap-2">
+                  <svg class="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <div class="text-sm text-orange-900">
+                    <strong>Troubleshooting:</strong> If you get error 1357045 when testing <code class="bg-white px-1 rounded">me/accounts</code>:
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                      <li>Make sure you clicked "Generate Access Token" AND authorized in the popup</li>
+                      <li>Verify you have at least one Facebook Page (not just a personal profile)</li>
+                      <li>Try logging out of Facebook and back in, then regenerate the token</li>
+                      <li>Check that your app is in "Development Mode" (Settings → Basic)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
 
               <h5 class="font-semibold text-base mb-2">Step 5: Get Account Information</h5>
               <div class="bg-gray-50 rounded-lg p-4 space-y-3">
@@ -246,8 +300,20 @@
               </div>
 
               <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                <h5 class="font-semibold text-sm mb-2">💡 Quick Test:</h5>
-                <p class="text-sm text-gray-700">After getting your token, test it at <a href="https://developers.facebook.com/tools/explorer" target="_blank" class="text-blue-600 underline">Graph API Explorer</a> with query: <code class="bg-white px-2 py-1 rounded border">me?fields=id,name</code></p>
+                <h5 class="font-semibold text-sm mb-2">✅ Test Your Setup:</h5>
+                <div class="text-sm text-gray-700 space-y-2">
+                  <p><strong>1. Test your token in Graph API Explorer:</strong></p>
+                  <ul class="list-disc pl-5 space-y-1">
+                    <li>Query: <code class="bg-white px-2 py-1 rounded border">me/accounts</code></li>
+                    <li>Expected result: List of your Facebook Pages with their <code class="bg-white px-1 rounded">id</code> and <code class="bg-white px-1 rounded">name</code></li>
+                    <li>If successful, copy the Page ID from the response</li>
+                  </ul>
+                  <p class="mt-2"><strong>2. Verify token permissions:</strong></p>
+                  <ul class="list-disc pl-5">
+                    <li>Use <a href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank" class="text-blue-600 underline">Access Token Debugger</a></li>
+                    <li>Paste your token and check the "Scopes" section shows all 4 permissions</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
