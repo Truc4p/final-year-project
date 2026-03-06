@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { getUserRole } from '../utils/auth';
+import { getUserRole, getAuthToken, isAuthenticated } from '../utils/auth';
 
 import Login from "@/pages/public/Login.vue";
 import Register from "@/pages/public/Register.vue";
@@ -209,19 +209,32 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const userRole = getUserRole();
+  const hasToken = getAuthToken();
+  const tokenValid = isAuthenticated();
 
   if (requiresAuth) {
-    if (!userRole) {
+    // Check if user has a valid token
+    if (!hasToken || !tokenValid) {
+      console.log('🔐 No valid token, redirecting to login');
       next('/login');
-    } else {
-      const routeRole = to.meta.role;
-      if (routeRole && routeRole !== userRole) {
-        next('/login');
-      } else {
-        next();
-      }
+      return;
     }
+
+    // Get cached role from localStorage (for UX only)
+    // Backend will verify the actual role from JWT token in API calls
+    const userRole = getUserRole();
+    const routeRole = to.meta.role;
+    
+    if (routeRole && routeRole !== userRole) {
+      console.log('🔐 Role mismatch, redirecting to login');
+      // Clear potentially invalid cache
+      localStorage.removeItem('role');
+      localStorage.removeItem('token');
+      next('/login');
+      return;
+    }
+
+    next();
   } else {
     next();
   }

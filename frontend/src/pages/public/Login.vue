@@ -6,6 +6,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from 'vue-i18n';
 import { API_URL } from '../../utils/config';
+import { fetchCurrentUser } from '../../utils/auth';
 import ChatWidget from '../../components/ChatWidget.vue';
 
 const { t } = useI18n();
@@ -50,10 +51,9 @@ const handleLogin = async () => {
     const res = await axios.post(`${API_URL}/auth/login`, data);
     console.log("Login response:", res.data);
 
+    // Store the token
     localStorage.setItem("token", res.data.token);
     localStorage.setItem("username", username.value);
-    localStorage.setItem("role", res.data.role);
-    localStorage.setItem("userId", res.data.userId);
 
     // Handle "Remember Me" functionality
     if (rememberMe.value) {
@@ -67,11 +67,21 @@ const handleLogin = async () => {
       localStorage.removeItem('rememberMe');
     }
 
-    // Check if the user is an admin
-    if (res.data.role === "admin") {
-      router.push("/admin");
-    } else {
-      router.push("/customer");
+    // Fetch verified user info from backend (SECURE - verified by JWT)
+    try {
+      const user = await fetchCurrentUser();
+      console.log("Verified user from backend:", user);
+      
+      // Redirect based on verified role from backend
+      if (user.role === "admin" || user.role === "staff") {
+        router.push("/admin");
+      } else {
+        router.push("/customer");
+      }
+    } catch (verifyError) {
+      console.error("Failed to verify user:", verifyError);
+      errorMessage.value = t('loginFailed');
+      localStorage.removeItem("token");
     }
 
   } catch (error) {

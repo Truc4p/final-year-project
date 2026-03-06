@@ -36,12 +36,19 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+      // Handle unauthorized access (invalid/expired token)
+      console.error('🔐 Unauthorized: Token is invalid or expired');
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('username');
+      window.location.href = '/login';
+    } else if (error.response?.status === 403) {
+      // Handle forbidden access (insufficient permissions)
+      console.error('🔐 Forbidden: Insufficient permissions for this action');
+      // You could redirect to an error page or show a notification
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
 )
 

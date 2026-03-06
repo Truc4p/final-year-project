@@ -120,6 +120,31 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+// Get authenticated user info from JWT token
+exports.getUser = async (req, res) => {
+  try {
+    // req.user is set by auth middleware from JWT token
+    const user = await User.findById(req.user.id).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    
+    res.json({
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
+      createdAt: user.createdAt
+    });
+  } catch (err) {
+    console.error('Error fetching user:', err.message);
+    res.status(500).send("Server error");
+  }
+};
+
 // Endpoint to get admin key for authorized users (development only)
 exports.getAdminKey = async (req, res) => {
   try {

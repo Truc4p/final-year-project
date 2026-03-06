@@ -3,12 +3,15 @@ const secretManager = require('./services/secretManager');
 
 const connectDB = async () => {
   try {
-    // Get MongoDB URI from secret manager
+    // Get MongoDB URI from secret manager, fallback to environment variable
     const mongoUri = await secretManager.getSecret('MONGODB_URI').catch(() => {
-      // Fallback to hardcoded URI for initial setup
-      console.log('⚠️  Using fallback MongoDB URI - consider setting MONGODB_URI in secret manager');
-      return "mongodb+srv://mongo-api:7TZYsdhwiXhiKRp9@cluster0.18pi3.mongodb.net/Wrencos?retryWrites=true&w=majority";
+      console.log('Using MongoDB URI from environment variable');
+      return process.env.MONGODB_URI;
     });
+    
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI not found in secret manager or environment variables. Please set it in .env file.');
+    }
     
     await mongoose.connect(mongoUri);
     console.log("MongoDB connected successfully");
