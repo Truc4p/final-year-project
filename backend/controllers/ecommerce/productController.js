@@ -1,20 +1,5 @@
 const Product = require("../../models/ecommerce/product");
-const fs = require("fs");
-const path = require("path");
-
-// Utility function to delete old image file
-const deleteImageFile = (imagePath) => {
-  if (imagePath) {
-    const fullPath = path.join(__dirname, '../', imagePath);
-    fs.unlink(fullPath, (err) => {
-      if (err) {
-        console.error('Error deleting old image file:', err);
-      } else {
-        console.log('Old image file deleted successfully:', imagePath);
-      }
-    });
-  }
-};
+const { deleteCloudinaryImage } = require('../../utils/cloudinary');
 
 exports.getAllProducts = async (req, res) => {
   try {
@@ -53,6 +38,7 @@ exports.createProduct = async (req, res) => {
       usage,
       skinConcerns
     } = req.body;
+    // req.file.path is the Cloudinary URL when using multer-storage-cloudinary
     const image = req.file ? req.file.path : null;
 
     // Debug logging
@@ -99,9 +85,9 @@ exports.createProduct = async (req, res) => {
     res.status(201).json(product);
   } catch (err) {
     console.error("Error creating product:", err);
-    // If product creation fails and we have uploaded file, clean it up
+    // If product creation fails and we have uploaded file, clean it up from Cloudinary
     if (req.file) {
-      deleteImageFile(req.file.path);
+      await deleteCloudinaryImage(req.file.path);
     }
     res.status(500).send("Server Error");
   }
@@ -122,14 +108,15 @@ exports.updateProduct = async (req, res) => {
       usage,
       skinConcerns
     } = req.body;
+    // req.file.path is the Cloudinary URL when using multer-storage-cloudinary
     const newImage = req.file ? req.file.path : null;
 
     // First, get the current product to access the old image path
     const currentProduct = await Product.findById(req.params.id);
     if (!currentProduct) {
-      // If new image was uploaded but product not found, clean up the uploaded file
+      // If new image was uploaded but product not found, clean it up from Cloudinary
       if (newImage) {
-        deleteImageFile(newImage);
+        await deleteCloudinaryImage(newImage);
       }
       return res.status(404).send("Product not found");
     }
@@ -166,16 +153,16 @@ exports.updateProduct = async (req, res) => {
     
     // Only delete the old image after successful database update
     if (newImage && currentProduct.image) {
-      deleteImageFile(currentProduct.image);
+      await deleteCloudinaryImage(currentProduct.image);
     }
     
     res.json(product);
   } catch (err) {
     console.error("Error updating product:", err);
     
-    // If database update failed and we have new image, clean it up
+    // If database update failed and we have new image, clean it up from Cloudinary
     if (req.file) {
-      deleteImageFile(req.file.path);
+      await deleteCloudinaryImage(req.file.path);
     }
     
     res.status(500).send("Server Error");
@@ -189,9 +176,9 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).send("Product not found");
     }
 
-    // Delete the associated image file if it exists
+    // Delete the associated image from Cloudinary if it exists
     if (product.image) {
-      deleteImageFile(product.image);
+      await deleteCloudinaryImage(product.image);
     }
 
     // Delete the product from database

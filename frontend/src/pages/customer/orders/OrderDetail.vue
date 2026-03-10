@@ -13,6 +13,8 @@ const route = useRoute();
 const username = ref('');
 
 const getImageUrl = (relativePath) => {
+  if (!relativePath) return '/images/fallback-image.jpg';
+  if (relativePath.startsWith('http')) return relativePath;
   const url = `${API_URL}/${relativePath}`; // Adjust the base URL as needed
   return url;
 };

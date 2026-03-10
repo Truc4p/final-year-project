@@ -213,7 +213,7 @@ onMounted(() => {
                   <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                     <img 
                       v-if="product.productId?.image" 
-                      :src="`${$API_URL || API_URL}/${product.productId.image}`" 
+                      :src="product.productId.image.startsWith('http') ? product.productId.image : `${API_URL}/${product.productId.image}`" 
                       :alt="product.productId?.name || 'Product'"
                       class="w-full h-full object-cover"
                       @error="$event.target.src = '/images/fallback-image.jpg'"

@@ -4,25 +4,19 @@ const productController = require("../../controllers/ecommerce/productController
 const auth = require("../../middleware/auth");
 const role = require("../../middleware/role");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { cloudinary } = require('../../utils/cloudinary');
 
-// Ensure the uploads directory exists
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Set the destination folder for uploaded files
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname); // Set the file name
+// Configure multer to upload directly to Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'wrencos/products',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    transformation: [{ width: 1200, height: 1200, crop: 'limit' }],
   },
 });
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 router.post("/", auth, role(["admin"]), upload.single("image"), productController.createProduct);
 

@@ -363,6 +363,7 @@ const apiUrl = 'http://localhost:3000';
 // Get product image URL
 const getProductImageUrl = (imagePath) => {
   if (!imagePath) return '/images/fallback-image.jpg';
+  if (imagePath.startsWith('http')) return imagePath;
   return `${apiUrl}/${imagePath}`;
 };
 

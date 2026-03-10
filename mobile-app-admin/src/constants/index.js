@@ -2,8 +2,10 @@
 // For physical iOS devices, use your Mac's IP address (find with: ipconfig getifaddr en0)
 // For Android emulator, use localhost (ADB reverse forwards the port)
 // For iOS simulator, use localhost
-export const API_BASE_URL = 'http://192.168.88.55:3000';
-export const WS_BASE_URL = 'ws://192.168.88.55:3000';
+// export const API_BASE_URL = 'http://192.168.88.55:3000'; // local dev
+// export const WS_BASE_URL = 'ws://192.168.88.55:3000'; // local dev
+export const API_BASE_URL = 'https://final-year-project-production-ba1a.up.railway.app';
+export const WS_BASE_URL = 'wss://final-year-project-production-ba1a.up.railway.app';
 
 // Colors
 export const COLORS = {

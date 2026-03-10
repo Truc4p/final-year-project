@@ -13,6 +13,8 @@ const isLoading = ref(true);
 const isProcessing = ref(false);
 
 const getImageUrl = (relativePath) => {
+  if (!relativePath) return '/images/fallback-image.jpg';
+  if (relativePath.startsWith('http')) return relativePath;
   return `${API_URL}/${relativePath}`;
 };
 

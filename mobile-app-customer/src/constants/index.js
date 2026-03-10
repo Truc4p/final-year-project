@@ -3,7 +3,8 @@
 // IMPORTANT: Backend routes do NOT use /api prefix, so we connect directly to the base URL
 
 // For iOS Simulator (use localhost)
-export const API_BASE_URL = 'http://localhost:3000';
+// export const API_BASE_URL = 'http://localhost:3000'; // local dev
+export const API_BASE_URL = 'https://final-year-project-production-ba1a.up.railway.app';
 
 // Alternative configurations:
 // For physical device on current network: export const API_BASE_URL = 'http://172.25.175.149:3000';

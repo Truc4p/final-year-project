@@ -88,6 +88,8 @@ const fetchProducts = async () => {
 };
 
 const getImageUrl = (relativePath) => {
+  if (!relativePath) return '/images/fallback-image.jpg';
+  if (relativePath.startsWith('http')) return relativePath;
   return `${API_URL}/${relativePath}`; // Adjust the base URL as needed
 };
 
