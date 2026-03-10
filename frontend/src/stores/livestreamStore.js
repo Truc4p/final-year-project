@@ -3,6 +3,9 @@
 
 import { reactive } from 'vue'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const WS_BASE_URL = import.meta.env.VITE_WS_URL || API_BASE_URL.replace(/^http/, 'ws');
+
 export const livestreamStore = reactive({
   // WebSocket connection
   ws: null,
@@ -51,7 +54,7 @@ export const livestreamStore = reactive({
     }
 
     try {
-      this.ws = new WebSocket('ws://localhost:3000');
+      this.ws = new WebSocket(WS_BASE_URL);
       this.connectionType = type;
       
       this.ws.onopen = () => {
@@ -370,7 +373,7 @@ export const livestreamStore = reactive({
   // Pinned Products Methods
   async fetchPinnedProducts(streamId) {
     try {
-      const response = await fetch(`http://localhost:3000/livestreams/${streamId}/pinned-products`);
+      const response = await fetch(`${API_BASE_URL}/livestreams/${streamId}/pinned-products`);
       if (response.ok) {
         const data = await response.json();
         this.pinnedProducts = data.pinnedProducts || [];
@@ -384,7 +387,7 @@ export const livestreamStore = reactive({
   async pinProduct(streamId, productId, displayOrder = 0) {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/livestreams/${streamId}/pin-product`, {
+      const response = await fetch(`${API_BASE_URL}/livestreams/${streamId}/pin-product`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -413,7 +416,7 @@ export const livestreamStore = reactive({
   async unpinProduct(streamId, productId) {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/livestreams/${streamId}/unpin-product/${productId}`, {
+      const response = await fetch(`${API_BASE_URL}/livestreams/${streamId}/unpin-product/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -440,7 +443,7 @@ export const livestreamStore = reactive({
   async updatePinnedProductOrder(streamId, productOrders) {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/livestreams/${streamId}/pinned-products/order`, {
+      const response = await fetch(`${API_BASE_URL}/livestreams/${streamId}/pinned-products/order`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -482,7 +482,7 @@ const chatContainer = ref(null);
 
 // Backend integration
 const currentStreamId = ref(null);
-const apiUrl = 'http://localhost:3000';
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // Pinned products management
 const availableProducts = ref([]);
