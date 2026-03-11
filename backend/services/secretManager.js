@@ -219,29 +219,35 @@ class SecretManager {
     }
 
     /**
-     * Encrypt data
+     * Encrypt data using AES-256-GCM (authenticated encryption)
+     * Output format: [iv (12 bytes)][authTag (16 bytes)][ciphertext]
      */
     encrypt(text) {
-        const iv = crypto.randomBytes(16);
-        const cipher = crypto.createCipheriv('aes-256-cbc', this.encryptionKey, iv);
+        const iv = crypto.randomBytes(12); // GCM standard IV size
+        const cipher = crypto.createCipheriv(this.algorithm, this.encryptionKey, iv);
         
         let encrypted = cipher.update(text, 'utf8', 'hex');
         encrypted += cipher.final('hex');
+        const authTag = cipher.getAuthTag(); // 16-byte integrity tag
         
         return Buffer.concat([
             iv,
+            authTag,
             Buffer.from(encrypted, 'hex')
         ]);
     }
 
     /**
-     * Decrypt data
+     * Decrypt data using AES-256-GCM (authenticated encryption)
+     * Expects format: [iv (12 bytes)][authTag (16 bytes)][ciphertext]
      */
     decrypt(encryptedBuffer) {
-        const iv = encryptedBuffer.slice(0, 16);
-        const encrypted = encryptedBuffer.slice(16);
+        const iv = encryptedBuffer.slice(0, 12);
+        const authTag = encryptedBuffer.slice(12, 28);
+        const encrypted = encryptedBuffer.slice(28);
         
-        const decipher = crypto.createDecipheriv('aes-256-cbc', this.encryptionKey, iv);
+        const decipher = crypto.createDecipheriv(this.algorithm, this.encryptionKey, iv);
+        decipher.setAuthTag(authTag); // Verifies integrity — throws if tampered
         
         let decrypted = decipher.update(encrypted, null, 'utf8');
         decrypted += decipher.final('utf8');
