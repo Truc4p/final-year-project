@@ -572,6 +572,9 @@ class VectorService {
         try {
             console.log('Starting vector database setup...');
             
+            // 0. Ensure service is initialized (connects to Qdrant)
+            await this.ensureInitialized();
+            
             // 1. Initialize collection
             await this.initializeCollection();
             
