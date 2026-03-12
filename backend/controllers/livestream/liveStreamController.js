@@ -3,7 +3,7 @@ const Product = require('../../models/ecommerce/product');
 const multer = require('multer');
 const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { cloudinary, deleteCloudinaryImage } = require('../../utils/cloudinary');
+const { cloudinary, deleteCloudinaryImage, deleteCloudinaryVideo } = require('../../utils/cloudinary');
 
 // Configure multer to upload livestream videos to Cloudinary
 const storage = new CloudinaryStorage({
@@ -353,7 +353,8 @@ exports.deleteLiveStream = async (req, res) => {
     // Delete associated files from Cloudinary
     const deletePromises = [];
     if (livestream.videoUrl) {
-      deletePromises.push(deleteCloudinaryImage(livestream.videoUrl).catch(e => console.warn('⚠️ Could not delete video:', e.message)));
+      // Videos must be deleted with resource_type: 'video', not the default 'image'
+      deletePromises.push(deleteCloudinaryVideo(livestream.videoUrl).catch(e => console.warn('⚠️ Could not delete video:', e.message)));
     }
     if (livestream.thumbnailUrl) {
       deletePromises.push(deleteCloudinaryImage(livestream.thumbnailUrl).catch(e => console.warn('⚠️ Could not delete thumbnail:', e.message)));

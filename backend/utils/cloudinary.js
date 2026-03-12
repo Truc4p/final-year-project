@@ -35,4 +35,17 @@ const deleteCloudinaryImage = async (imageUrl) => {
   }
 };
 
-module.exports = { cloudinary, deleteCloudinaryImage };
+/**
+ * Delete a video from Cloudinary. Must use resource_type: 'video' or Cloudinary ignores it.
+ */
+const deleteCloudinaryVideo = async (videoUrl) => {
+  const publicId = extractPublicId(videoUrl);
+  if (!publicId) return;
+  try {
+    await cloudinary.uploader.destroy(publicId, { resource_type: 'video' });
+  } catch (err) {
+    console.error('Error deleting Cloudinary video:', publicId, err);
+  }
+};
+
+module.exports = { cloudinary, deleteCloudinaryImage, deleteCloudinaryVideo };
