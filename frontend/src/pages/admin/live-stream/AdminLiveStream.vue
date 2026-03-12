@@ -649,7 +649,10 @@ const fetchPastStreams = async () => {
       duration: stream.formattedDuration || formatDuration(stream.duration),
       views: stream.viewCount.toLocaleString(),
       videoUrl: stream.videoUrl,
-      thumbnailUrl: stream.thumbnailUrl ? `${apiUrl}${stream.thumbnailUrl}` : ''
+      // If already an absolute URL (Cloudinary), use as-is; otherwise prepend apiUrl for legacy local paths
+      thumbnailUrl: stream.thumbnailUrl
+        ? (stream.thumbnailUrl.startsWith('http') ? stream.thumbnailUrl : `${apiUrl}/${stream.thumbnailUrl}`)
+        : ''
     }));
     console.log('Mapped past streams:', pastStreams.value);
   } catch (error) {
