@@ -505,6 +505,7 @@ const uploadProgress = ref({
 });
 
 const pendingRecording = ref(null); // Store recording blob for retry
+const pendingUploadStreamId = ref(null); // Preserve stream ID across async upload boundary
 
 // Mock past streams data - will be replaced with API call
 const pastStreams = ref([]);
@@ -832,13 +833,16 @@ const stopRecording = () => {
   }
 };
 
-const uploadRecording = async (videoBlob) => {
-  // Use the stored stream ID, don't rely on currentStreamId which might be null
-  const streamId = currentStreamId.value;
+const uploadRecording = async (videoBlob, overrideStreamId = null) => {
+  // Use override (from retry) → pendingUploadStreamId (captured before stopLiveStream cleared it) → currentStreamId
+  const streamId = overrideStreamId || pendingUploadStreamId.value || currentStreamId.value;
   if (!streamId) {
     console.warn('⚠️ No stream ID available for recording upload');
     return;
   }
+
+  // Store for retry in case upload fails
+  pendingRecording.value = { videoBlob, streamId };
   
   try {
     // Create FormData to upload the video
@@ -926,8 +930,9 @@ const uploadRecording = async (videoBlob) => {
       success: true
     };
     
-    // Clear pending recording
+    // Clear pending recording and preserved stream ID
     pendingRecording.value = null;
+    pendingUploadStreamId.value = null;
     
     // Clear success message after 5 seconds
     setTimeout(() => {
@@ -938,6 +943,9 @@ const uploadRecording = async (videoBlob) => {
     
   } catch (error) {
     console.error('Error uploading recording:', error);
+    
+    // Keep pendingRecording so the Retry button can reuse the blob + streamId
+    pendingUploadStreamId.value = null;
     
     uploadProgress.value = {
       isUploading: false,
@@ -1175,6 +1183,9 @@ const toggleStream = async () => {
     
     // Stop recording if active (but keep currentStreamId for upload)
     const recordingStreamId = currentStreamId.value; // Preserve for recording upload
+    // Capture stream ID NOW before stopLiveStream() nullifies currentStreamId.value.
+    // mediaRecorder.onstop fires asynchronously after stopLiveStream() has already run.
+    pendingUploadStreamId.value = currentStreamId.value;
     if (isRecording.value) {
       stopRecording();
     }
