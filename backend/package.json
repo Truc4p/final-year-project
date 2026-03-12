@@ -21,6 +21,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1007.0",
     "@google/generative-ai": "^0.24.1",
     "@langchain/core": "^1.1.19",
     "@langchain/google-genai": "^2.1.15",
