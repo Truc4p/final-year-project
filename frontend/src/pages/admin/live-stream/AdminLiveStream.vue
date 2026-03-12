@@ -901,7 +901,7 @@ const uploadRecording = async (videoBlob, overrideStreamId = null) => {
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        videoUrl: `uploads/livestreams/${uploadData.filename}`,
+        videoUrl: uploadData.url || uploadData.path,
         thumbnailUrl: thumbnailUrl,
         isRecorded: true
       })

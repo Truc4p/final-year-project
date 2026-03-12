@@ -43,12 +43,23 @@ router.put('/:id', auth, role('admin'), liveStreamController.updateLiveStream);
 router.post('/:id/stop', auth, role('admin'), liveStreamController.stopLiveStream);
 
 // Upload video file (admin only)
-router.post('/:id/upload', auth, role('admin'), liveStreamController.uploadVideo, (req, res) => {
-  res.json({
-    message: 'Video uploaded successfully',
-    filename: req.file.filename,
-    path: req.file.path,
-    size: req.file.size
+router.post('/:id/upload', auth, role('admin'), (req, res, next) => {
+  liveStreamController.uploadVideo(req, res, (err) => {
+    if (err) {
+      console.error('Video upload error:', err);
+      return res.status(400).json({ message: err.message || 'Video upload failed' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: 'No video file provided' });
+    }
+    res.json({
+      message: 'Video uploaded successfully',
+      // Cloudinary returns the public URL in req.file.path
+      url: req.file.path,
+      filename: req.file.filename,
+      path: req.file.path,
+      size: req.file.size
+    });
   });
 });
 

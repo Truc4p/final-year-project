@@ -1,37 +1,25 @@
 const LiveStream = require('../../models/livestream/liveStream');
 const Product = require('../../models/ecommerce/product');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs').promises;
 const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { cloudinary, deleteCloudinaryImage } = require('../../utils/cloudinary');
 
-// Configure multer for video uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/livestreams/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
+// Configure multer to upload livestream videos to Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: (req, file) => ({
+    folder: 'wrencos/livestreams',
+    resource_type: 'video',
+    allowed_formats: ['mp4', 'webm', 'ogg', 'avi', 'mov'],
+  }),
 });
 
 const upload = multer({
-  storage: storage,
+  storage,
   limits: {
     fileSize: 500 * 1024 * 1024 // 500MB limit
   },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /mp4|webm|ogg|avi|mov/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only video files are allowed'));
-    }
-  }
 });
 
 // Create a new livestream
@@ -362,38 +350,21 @@ exports.deleteLiveStream = async (req, res) => {
       return res.status(404).json({ message: 'Livestream not found' });
     }
 
-    // Delete associated files from filesystem
-    const filesToDelete = [];
-    
-    // Add video file to deletion list if it exists
+    // Delete associated files from Cloudinary
+    const deletePromises = [];
     if (livestream.videoUrl) {
-      const videoPath = path.join(__dirname, '..', '..', 'uploads', 'livestreams', path.basename(livestream.videoUrl));
-      filesToDelete.push(videoPath);
+      deletePromises.push(deleteCloudinaryImage(livestream.videoUrl).catch(e => console.warn('⚠️ Could not delete video:', e.message)));
     }
-    
-    // Add thumbnail file to deletion list if it exists
     if (livestream.thumbnailUrl) {
-      const thumbnailPath = path.join(__dirname, '..', '..', 'uploads', 'thumbnails', path.basename(livestream.thumbnailUrl));
-      filesToDelete.push(thumbnailPath);
+      deletePromises.push(deleteCloudinaryImage(livestream.thumbnailUrl).catch(e => console.warn('⚠️ Could not delete thumbnail:', e.message)));
     }
-
-    // Delete files from filesystem
-    for (const filePath of filesToDelete) {
-      try {
-        await fs.unlink(filePath);
-        console.log(`✅ Deleted file: ${filePath}`);
-      } catch (fileError) {
-        // Log warning but don't fail the operation if file doesn't exist
-        console.warn(`⚠️ Could not delete file ${filePath}:`, fileError.message);
-      }
-    }
+    await Promise.all(deletePromises);
 
     // Delete the database record
     await LiveStream.findByIdAndDelete(id);
 
     res.json({
-      message: 'Livestream and associated files deleted successfully',
-      deletedFiles: filesToDelete.map(f => path.basename(f))
+      message: 'Livestream and associated files deleted successfully'
     });
   } catch (error) {
     console.error('Error deleting livestream:', error);
@@ -401,7 +372,7 @@ exports.deleteLiveStream = async (req, res) => {
   }
 };
 
-// Upload video file
+// Upload video file middleware (use as route middleware, not final handler)
 exports.uploadVideo = upload.single('video');
 
 // Pin a product to livestream
