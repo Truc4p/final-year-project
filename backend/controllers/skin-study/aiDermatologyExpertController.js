@@ -76,7 +76,13 @@ exports.chat = async (req, res) => {
         console.log('🔄 No cache hit, generating new response...');
 
         // Use RAG to retrieve relevant context (using translated English query)
-        const ragResult = await vectorService.ragQuery(queryForRAG, conversationHistory || []);
+        // Graceful fallback: if Qdrant is unavailable, proceed with empty context
+        let ragResult = { context: '', sources: [] };
+        try {
+            ragResult = await vectorService.ragQuery(queryForRAG, conversationHistory || []);
+        } catch (ragError) {
+            console.warn('⚠️ RAG/Qdrant unavailable, proceeding without knowledge base context:', ragError.message);
+        }
 
         // Generate response using Gemini with retrieved context (original message for context)
         const result = await geminiService.generateResponseWithContext(
@@ -124,7 +130,8 @@ exports.chat = async (req, res) => {
 
         res.json(responseObj);
     } catch (error) {
-        console.error('AI Chat error:', error);
+        console.error('AI Chat error:', error.message);
+        console.error('AI Chat error stack:', error.stack);
         
         // Determine appropriate user-facing error message
         let userMessage = 'Failed to generate response';
