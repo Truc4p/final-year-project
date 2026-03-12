@@ -2,23 +2,24 @@ const LiveStream = require('../../models/livestream/liveStream');
 const Product = require('../../models/ecommerce/product');
 const multer = require('multer');
 const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
-const { deleteCloudinaryImage } = require('../../utils/cloudinary');
-const { uploadToR2, deleteFromR2 } = require('../../utils/r2');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { cloudinary, deleteCloudinaryImage } = require('../../utils/cloudinary');
 
-// Buffer uploads in memory, then stream to Cloudflare R2
+// Configure multer to upload livestream videos to Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: (req, file) => ({
+    folder: 'wrencos/livestreams',
+    resource_type: 'video',
+    allowed_formats: ['mp4', 'webm', 'ogg', 'avi', 'mov'],
+  }),
+});
+
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage,
   limits: {
     fileSize: 500 * 1024 * 1024 // 500MB limit
   },
-  fileFilter: (req, file, cb) => {
-    const allowed = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/quicktime'];
-    if (allowed.includes(file.mimetype) || file.mimetype.startsWith('video/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only video files are allowed'));
-    }
-  }
 });
 
 // Create a new livestream
@@ -349,10 +350,10 @@ exports.deleteLiveStream = async (req, res) => {
       return res.status(404).json({ message: 'Livestream not found' });
     }
 
-    // Delete video from R2, thumbnail from Cloudinary
+    // Delete associated files from Cloudinary
     const deletePromises = [];
     if (livestream.videoUrl) {
-      deletePromises.push(deleteFromR2(livestream.videoUrl).catch(e => console.warn('⚠️ Could not delete R2 video:', e.message)));
+      deletePromises.push(deleteCloudinaryImage(livestream.videoUrl).catch(e => console.warn('⚠️ Could not delete video:', e.message)));
     }
     if (livestream.thumbnailUrl) {
       deletePromises.push(deleteCloudinaryImage(livestream.thumbnailUrl).catch(e => console.warn('⚠️ Could not delete thumbnail:', e.message)));
@@ -371,31 +372,8 @@ exports.deleteLiveStream = async (req, res) => {
   }
 };
 
-// Multer middleware — buffers the file into memory (req.file.buffer)
+// Upload video file middleware (use as route middleware, not final handler)
 exports.uploadVideo = upload.single('video');
-
-// Upload the buffered video to Cloudflare R2 and return the public URL
-exports.saveVideoToR2 = async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'No video file provided' });
-  }
-  try {
-    const ext = req.file.originalname.split('.').pop() || 'webm';
-    const key = `livestreams/${req.params.id}-${Date.now()}.${ext}`;
-    const url = await uploadToR2(req.file.buffer, key, req.file.mimetype);
-    console.log('✅ Video uploaded to R2:', url);
-    res.json({
-      message: 'Video uploaded successfully',
-      url,
-      filename: key,
-      path: url,
-      size: req.file.size
-    });
-  } catch (error) {
-    console.error('R2 upload error:', error);
-    res.status(500).json({ message: 'Failed to upload video to storage', error: error.message });
-  }
-};
 
 // Pin a product to livestream
 exports.pinProduct = async (req, res) => {
